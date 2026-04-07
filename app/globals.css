@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --bg-0: #050810;
+  --bg-1: #0c1322;
+  --panel: rgba(15, 23, 42, 0.74);
+  --panel-strong: rgba(15, 23, 42, 0.9);
+  --panel-border: rgba(148, 163, 184, 0.22);
+  --line: rgba(148, 163, 184, 0.22);
+  --fg: #f8fafc;
+  --fg-muted: #94a3b8;
+  --primary: #10b981;
+  --primary-soft: rgba(16, 185, 129, 0.18);
+  --positive: #22c55e;
+  --negative: #f43f5e;
+  --shadow-soft: 0 12px 30px rgba(2, 6, 23, 0.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background:
+    radial-gradient(1200px 720px at 8% -16%, rgba(16, 185, 129, 0.08), transparent 58%),
+    radial-gradient(900px 620px at 86% -10%, rgba(15, 23, 42, 0.62), transparent 55%),
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 52%, #05060d 100%);
+  color: var(--fg);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.font-display {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.shell-grid {
+  background-image:
+    linear-gradient(rgba(132, 162, 191, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132, 162, 191, 0.05) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(12px);
+}
+
+.glass-strong {
+  background: var(--panel-strong);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(16px);
+}
+
+.line-dim {
+  border-color: var(--line);
+}
+
+.text-muted {
+  color: var(--fg-muted);
+}
+
+.cta-primary {
+  background: var(--primary);
+  color: #022c22;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.22);
+}
+
+.cta-primary:hover {
+  filter: brightness(1.03);
+}
+
+.text-positive {
+  color: var(--positive);
+}
+
+.text-negative {
+  color: var(--negative);
+}
+
+.noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 3px 3px;
+}

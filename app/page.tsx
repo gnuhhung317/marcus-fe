@@ -1,5 +1,7 @@
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { getHomePageData } from '../../lib/contracts/client';
+import { getHomePageData } from '../lib/contracts/client';
 
 function formatCompactUsd(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -10,7 +12,18 @@ function formatCompactUsd(value: number) {
   }).format(value);
 }
 
-export default async function HomePage() {
+export default async function RootPage() {
+  // Check if user is authenticated
+  const cookieStore = cookies();
+  const accessToken = cookieStore.get('marcus_access_token')?.value;
+  const role = cookieStore.get('marcus_role')?.value;
+
+  // If authenticated and role is not GUEST, redirect to marketplace
+  if (accessToken && role && role !== 'GUEST') {
+    redirect('/terminal/marketplace');
+  }
+
+  // Otherwise, show marketing home
   const { marketOverview, principles } = await getHomePageData();
 
   return (

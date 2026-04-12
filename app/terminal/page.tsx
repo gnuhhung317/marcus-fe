@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { KpiCard } from '../../components/shared/kpi-card';
+import { ErrorStateCard, LoadingStateCard } from '../../components/shared/api-state';
 import { getDashboardPageData } from '../../lib/contracts/client';
 import { DashboardPageData } from '../../lib/contracts/types';
 
@@ -10,15 +11,21 @@ export default function TerminalDashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardPageData | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isBootstrapping, setIsBootstrapping] = useState(true);
 
   const loadDashboardData = useCallback(async () => {
     setIsRefreshing(true);
+    setErrorMessage(null);
 
     try {
       const response = await getDashboardPageData();
       setDashboardData(response);
       setLastSyncedAt(new Date());
+    } catch {
+      setErrorMessage('Failed to fetch dashboard overview.');
     } finally {
+      setIsBootstrapping(false);
       setIsRefreshing(false);
     }
   }, []);
@@ -27,9 +34,9 @@ export default function TerminalDashboardPage() {
     void loadDashboardData();
   }, [loadDashboardData]);
 
-  const terminalKpis = dashboardData?.terminalKpis ?? [];
-  const strategyTrades = dashboardData?.strategyTrades ?? [];
-  const allocations = dashboardData?.allocations ?? [];
+  const terminalKpis = useMemo(() => dashboardData?.terminalKpis ?? [], [dashboardData]);
+  const strategyTrades = useMemo(() => dashboardData?.strategyTrades ?? [], [dashboardData]);
+  const allocations = useMemo(() => dashboardData?.allocations ?? [], [dashboardData]);
 
   const pnlKpi = useMemo(() => {
     return terminalKpis.find((kpi) => kpi.label === 'Today PnL')?.value ?? '$0.00';
@@ -76,13 +83,24 @@ export default function TerminalDashboardPage() {
         </div>
       </header>
 
+      {errorMessage ? (
+        <ErrorStateCard title="Dashboard sync error" message={errorMessage} onAction={() => void loadDashboardData()} />
+      ) : null}
+
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {terminalKpis.length ? (
+        {isBootstrapping ? (
+          <>
+            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
+            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
+            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
+            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
+          </>
+        ) : terminalKpis.length ? (
           terminalKpis.map((kpi) => (
             <KpiCard key={kpi.label} label={kpi.label} value={kpi.value} delta={kpi.delta} context={kpi.context} trend={kpi.trend} />
           ))
         ) : (
-          <article className="glass-strong rounded-2xl p-5 text-sm text-muted">Loading KPI snapshot...</article>
+          <article className="glass-strong rounded-2xl p-5 text-sm text-muted">No KPI snapshot available for this account yet.</article>
         )}
       </section>
 

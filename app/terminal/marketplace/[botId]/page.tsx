@@ -74,7 +74,7 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
         </article>
 
         <div className="space-y-5">
-          <SubscribeBotPanel botId={bot.botId} />
+          <SubscribeBotPanel botId={bot.botId} botStatus={bot.status} />
 
           <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
             <h2 className="text-xl font-semibold text-white">Next Steps</h2>

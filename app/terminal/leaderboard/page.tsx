@@ -1,21 +1,136 @@
+import Link from 'next/link';
 import { getLeaderboardPageData } from '../../../lib/contracts/client';
+import { LeaderboardQueryParams, LeaderboardSortBy } from '../../../lib/contracts/types';
 
-export default async function TerminalLeaderboardPage() {
-  const { featured, rows } = await getLeaderboardPageData();
+interface LeaderboardSearchParams {
+  timeframe?: string | string[];
+  sortBy?: string | string[];
+  page?: string | string[];
+  pageSize?: string | string[];
+}
+
+function toSingleValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parseInteger(value: string | undefined, fallback: number) {
+  const parsed = Number.parseInt(value ?? '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseLeaderboardSearchParams(searchParams?: LeaderboardSearchParams): LeaderboardQueryParams {
+  const timeframe = toSingleValue(searchParams?.timeframe);
+  const sortBy = toSingleValue(searchParams?.sortBy);
+
+  return {
+    timeframe: timeframe === '7D' || timeframe === '30D' ? timeframe : '24H',
+    sortBy: sortBy === 'DRAWDOWN' || sortBy === 'SHARPE' || sortBy === 'RETURN_24H' ? (sortBy as LeaderboardSortBy) : 'RETURN_24H',
+    page: parseInteger(toSingleValue(searchParams?.page), 1),
+    pageSize: parseInteger(toSingleValue(searchParams?.pageSize), 12),
+  };
+}
+
+function buildLeaderboardHref(query: LeaderboardQueryParams, page: number) {
+  const searchParams = new URLSearchParams();
+
+  searchParams.set('timeframe', query.timeframe ?? '24H');
+  searchParams.set('sortBy', query.sortBy ?? 'RETURN_24H');
+  searchParams.set('page', String(page));
+  searchParams.set('pageSize', String(query.pageSize ?? 12));
+
+  const queryString = searchParams.toString();
+  return queryString ? `/terminal/leaderboard?${queryString}` : '/terminal/leaderboard';
+}
+
+function sortLabel(sortBy: LeaderboardSortBy) {
+  if (sortBy === 'DRAWDOWN') {
+    return 'Lowest Drawdown';
+  }
+
+  if (sortBy === 'SHARPE') {
+    return 'Highest Sharpe';
+  }
+
+  return 'Highest Return';
+}
+
+export default async function TerminalLeaderboardPage({ searchParams }: { searchParams?: LeaderboardSearchParams }) {
+  const query = parseLeaderboardSearchParams(searchParams);
+  const leaderboardPage = await getLeaderboardPageData(query);
+  const hasPrev = leaderboardPage.page > 1;
+  const hasNext = leaderboardPage.rows.length >= leaderboardPage.pageSize;
 
   return (
     <div className="space-y-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Verified Performance</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Leaderboard</h1>
-          <p className="mt-2 text-sm text-muted">Third-party verified metrics with live strategy ranking.</p>
+      <header className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">Verified Performance</p>
+            <h1 className="mt-3 text-4xl font-semibold text-white">Leaderboard</h1>
+            <p className="mt-2 text-sm text-muted">Third-party verified metrics with live strategy ranking.</p>
+          </div>
+          <button className="rounded-xl border border-[rgba(132,162,191,0.3)] px-4 py-2 text-sm text-white">Advanced Filters</button>
         </div>
-        <button className="rounded-xl border border-[rgba(132,162,191,0.3)] px-4 py-2 text-sm text-white">Advanced Filters</button>
+
+        <form method="get" className="grid gap-3 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.42)] p-4 lg:grid-cols-[0.8fr_0.95fr_0.65fr_auto]">
+          <label className="space-y-2">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Timeframe</span>
+            <select
+              name="timeframe"
+              defaultValue={query.timeframe ?? '24H'}
+              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[rgba(16,185,129,0.45)]"
+            >
+              <option value="24H">24H</option>
+              <option value="7D">7D</option>
+              <option value="30D">30D</option>
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Sort</span>
+            <select
+              name="sortBy"
+              defaultValue={query.sortBy ?? 'RETURN_24H'}
+              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[rgba(16,185,129,0.45)]"
+            >
+              <option value="RETURN_24H">Highest Return</option>
+              <option value="DRAWDOWN">Lowest Drawdown</option>
+              <option value="SHARPE">Highest Sharpe</option>
+            </select>
+          </label>
+
+          <label className="space-y-2">
+            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Page Size</span>
+            <select
+              name="pageSize"
+              defaultValue={String(query.pageSize ?? 12)}
+              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[rgba(16,185,129,0.45)]"
+            >
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+            </select>
+          </label>
+
+          <input type="hidden" name="page" value="1" />
+
+          <button type="submit" className="rounded-xl cta-primary px-4 py-2.5 text-sm font-semibold">
+            Apply Filters
+          </button>
+        </form>
       </header>
 
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+        <p>
+          Showing {leaderboardPage.rows.length} strategies · {sortLabel(query.sortBy ?? 'RETURN_24H')}
+        </p>
+        <p>
+          Page {leaderboardPage.page}
+        </p>
+      </div>
+
       <section className="grid gap-5 xl:grid-cols-3">
-        {featured.map((row) => (
+        {leaderboardPage.featured.map((row) => (
           <article key={row.strategyId} className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
             <p className="text-xs uppercase tracking-[0.16em] text-muted">Rank #{row.rank}</p>
             <h2 className="mt-3 text-3xl font-semibold text-white">{row.strategyName}</h2>
@@ -42,7 +157,7 @@ export default async function TerminalLeaderboardPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
+            {leaderboardPage.rows.map((row) => (
               <tr key={row.strategyId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
                 <td className="px-4 py-3.5 text-white">#{row.rank}</td>
                 <td className="px-4 py-3.5 font-medium text-white">{row.strategyName}</td>
@@ -58,6 +173,28 @@ export default async function TerminalLeaderboardPage() {
           </tbody>
         </table>
       </section>
+
+      <nav className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
+        <span className="text-muted">
+          Page {leaderboardPage.page}
+        </span>
+        <div className="flex items-center gap-2">
+          <Link
+            aria-disabled={!hasPrev}
+            href={hasPrev ? buildLeaderboardHref(query, leaderboardPage.page - 1) : buildLeaderboardHref(query, leaderboardPage.page)}
+            className={`rounded-lg border px-3 py-2 transition-colors ${hasPrev ? 'border-[rgba(148,163,184,0.24)] text-white hover:bg-[rgba(148,163,184,0.1)]' : 'pointer-events-none border-[rgba(148,163,184,0.12)] text-muted opacity-50'}`}
+          >
+            Previous
+          </Link>
+          <Link
+            aria-disabled={!hasNext}
+            href={hasNext ? buildLeaderboardHref(query, leaderboardPage.page + 1) : buildLeaderboardHref(query, leaderboardPage.page)}
+            className={`rounded-lg border px-3 py-2 transition-colors ${hasNext ? 'border-[rgba(148,163,184,0.24)] text-white hover:bg-[rgba(148,163,184,0.1)]' : 'pointer-events-none border-[rgba(148,163,184,0.12)] text-muted opacity-50'}`}
+          >
+            Next
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }

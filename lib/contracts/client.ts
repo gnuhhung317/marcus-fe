@@ -29,6 +29,9 @@ import {
   MarketplacePageData,
   MarketplaceQueryParams,
   PaperTradingPageData,
+  PaperOrderInput,
+  PaperOrderResult,
+  PaperSessionData,
   ProfileApiKey,
   ProfilePageData,
   ProfileLoginActivity,
@@ -229,6 +232,14 @@ interface PaperSignalResponse {
   confidence?: number;
   status?: string;
   generatedAt?: string;
+}
+
+interface PaperOrderResponse {
+  orderId?: string;
+  status?: string;
+  filledQuantity?: number;
+  avgFillPrice?: number;
+  submittedAt?: string;
 }
 
 interface UserProfileResponse {
@@ -1204,6 +1215,23 @@ export async function subscribeToBot(botId: string): Promise<SubscriptionResult>
   };
 }
 
+export async function unsubscribeFromBot(botId: string): Promise<SubscriptionResult> {
+  const response = await withFallback(
+    () => requestJson<SubscribeBotResultResponse>(`/subscriptions/${encodeURIComponent(botId)}`, { method: 'DELETE' }),
+    async () => ({
+      botId,
+      wsToken: '',
+      status: 'UNSUBSCRIBED',
+    }),
+  );
+
+  return {
+    botId: response.botId ?? botId,
+    wsToken: response.wsToken ?? '',
+    status: response.status ?? 'UNSUBSCRIBED',
+  };
+}
+
 export async function getLeaderboardPageData(query: LeaderboardQueryParams = {}): Promise<LeaderboardPageData> {
   const page = Math.max(1, query.page ?? 1);
   const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
@@ -1291,6 +1319,67 @@ export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
   };
 }
 
+export async function createPaperOrder(payload: PaperOrderInput): Promise<PaperOrderResult> {
+  const response = await withFallback(
+    () =>
+      requestJson<PaperOrderResponse>('/paper/orders', {
+        method: 'POST',
+        body: JSON.stringify({
+          assetPair: payload.assetPair,
+          side: payload.side,
+          quantity: payload.quantity,
+          estimatedPrice: payload.estimatedPrice,
+          signalId: payload.signalId,
+        }),
+      }),
+    async () => ({
+      orderId: randomToken('paper_order'),
+      status: 'ACCEPTED',
+      filledQuantity: payload.quantity,
+      avgFillPrice: payload.estimatedPrice,
+      submittedAt: new Date().toISOString(),
+    }),
+  );
+
+  return {
+    orderId: response.orderId ?? randomToken('paper_order'),
+    status: response.status ?? 'ACCEPTED',
+    filledQuantity: toNumber(response.filledQuantity, payload.quantity),
+    avgFillPrice: toNumber(response.avgFillPrice, payload.estimatedPrice),
+    submittedAt: response.submittedAt ?? new Date().toISOString(),
+  };
+}
+
+export async function pausePaperSession(): Promise<PaperSessionData> {
+  const response = await withFallback(
+    () => requestJson<PaperSessionSummaryResponse>('/paper/session/pause', { method: 'POST' }),
+    async () => undefined,
+  );
+
+  return {
+    sessionId: response?.sessionId ?? '992-ARC-04',
+    status: response?.status ?? 'PAUSED',
+    virtualBalance: toNumber(response?.virtualBalance, 248502.94),
+    openPnl: toNumber(response?.openPnl, 4210),
+    buyingPower: toNumber(response?.buyingPower, 1200000),
+  };
+}
+
+export async function resumePaperSession(): Promise<PaperSessionData> {
+  const response = await withFallback(
+    () => requestJson<PaperSessionSummaryResponse>('/paper/session/resume', { method: 'POST' }),
+    async () => undefined,
+  );
+
+  return {
+    sessionId: response?.sessionId ?? '992-ARC-04',
+    status: response?.status ?? 'RUNNING',
+    virtualBalance: toNumber(response?.virtualBalance, 248502.94),
+    openPnl: toNumber(response?.openPnl, 4210),
+    buyingPower: toNumber(response?.buyingPower, 1200000),
+  };
+}
+
 export async function getProfilePageData(): Promise<ProfilePageData> {
   const [profileResponse, preferencesResponse, apiKeyResponse, loginActivityResponse] = await Promise.all([
     withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined),
@@ -1324,6 +1413,20 @@ export async function getProfilePageData(): Promise<ProfilePageData> {
 
 export async function getCurrentUserProfile(): Promise<UserProfile> {
   const response = await withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined);
+
+  return {
+    userId: response?.userId ?? defaultProfile.userId,
+    username: response?.username ?? defaultProfile.username,
+    email: response?.email ?? defaultProfile.email,
+    role: response?.role ?? defaultProfile.role,
+  };
+}
+
+export async function updateCurrentUserProfile(payload: UpdateProfileRequest): Promise<UserProfile> {
+  const response = await requestJson<UserProfileResponse>('/users/me', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
 
   return {
     userId: response?.userId ?? defaultProfile.userId,

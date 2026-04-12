@@ -11,7 +11,13 @@ const navItems = [
   { href: '/research', label: 'Research' },
 ];
 
-export function SiteHeader() {
+interface SiteHeaderProps {
+  isAuthenticated?: boolean;
+  role?: string;
+  username?: string;
+}
+
+export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps) {
   const pathname = usePathname();
 
   return (
@@ -38,14 +44,91 @@ export function SiteHeader() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <Link
-            href="/login?next=/terminal"
-            className="rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200"
-          >
-            Launch App
-          </Link>
+        <div className="hidden items-center gap-3 md:flex">
+          {!isAuthenticated ? (
+            <>
+              <Link
+                href="/register"
+                className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-200 ${
+                  pathname === '/register' ? 'bg-[rgba(148,163,184,0.16)] text-white' : 'text-muted hover:text-white'
+                }`}
+              >
+                Sign Up
+              </Link>
+              <Link
+                href="/login?next=/terminal"
+                className="rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200"
+              >
+                Launch App
+              </Link>
+            </>
+          ) : (
+            <>
+              <span className="rounded-xl bg-[rgba(148,163,184,0.12)] px-3 py-2 text-sm text-muted">
+                {username || 'Trader'} · {role}
+              </span>
+              <Link
+                href="/terminal"
+                className="rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/logout"
+                className="rounded-xl border border-[rgba(148,163,184,0.3)] px-4 py-2 text-sm text-white transition-colors hover:bg-[rgba(148,163,184,0.12)]"
+              >
+                Sign Out
+              </Link>
+            </>
+          )}
         </div>
+
+        <details className="relative md:hidden">
+          <summary className="list-none cursor-pointer rounded-lg border border-[rgba(148,163,184,0.24)] px-3 py-2 text-xs uppercase tracking-[0.12em] text-white">
+            Menu
+          </summary>
+          <div className="absolute right-0 mt-2 w-56 rounded-xl border border-[rgba(148,163,184,0.2)] bg-[rgba(6,10,18,0.95)] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
+            <nav className="flex flex-col gap-1">
+              {navItems.map((item) => {
+                const active = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`rounded-lg px-3 py-2 text-sm transition-colors ${
+                      active ? 'bg-[rgba(148,163,184,0.16)] text-white' : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <div className="my-2 h-px bg-[rgba(148,163,184,0.18)]" />
+              {!isAuthenticated ? (
+                <>
+                  <Link href="/register" className="rounded-lg px-3 py-2 text-sm text-white hover:bg-[rgba(148,163,184,0.08)]">
+                    Sign Up
+                  </Link>
+                  <Link href="/login?next=/terminal" className="rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center">
+                    Launch App
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <span className="rounded-lg bg-[rgba(148,163,184,0.12)] px-3 py-2 text-xs text-muted">
+                    {username || 'Trader'} · {role}
+                  </span>
+                  <Link href="/terminal" className="rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center">
+                    Dashboard
+                  </Link>
+                  <Link href="/logout" className="rounded-lg border border-[rgba(148,163,184,0.3)] px-3 py-2 text-sm text-white hover:bg-[rgba(148,163,184,0.08)]">
+                    Sign Out
+                  </Link>
+                </>
+              )}
+            </nav>
+          </div>
+        </details>
       </div>
     </header>
   );

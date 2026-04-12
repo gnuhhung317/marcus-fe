@@ -246,6 +246,22 @@ export interface PaperTradingPageData {
   signals: PaperSignal[];
 }
 
+export interface PaperOrderInput {
+  assetPair: string;
+  side: 'BUY' | 'SELL';
+  quantity: number;
+  estimatedPrice: number;
+  signalId?: string;
+}
+
+export interface PaperOrderResult {
+  orderId: string;
+  status: string;
+  filledQuantity: number;
+  avgFillPrice: number;
+  submittedAt: string;
+}
+
 export interface UserProfile {
   userId: string;
   username: string;

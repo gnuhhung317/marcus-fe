@@ -6,6 +6,7 @@ import {
   createCurrentUserApiKey,
   deleteCurrentUserApiKey,
   updateCurrentUserPreferences,
+  updateCurrentUserProfile,
 } from '../../../lib/contracts/client';
 
 function toBool(value: FormDataEntryValue | null) {
@@ -67,5 +68,26 @@ export async function revokeApiKeyAction(formData: FormData) {
     redirect('/terminal/profile?status=apikey_revoked');
   } catch {
     redirect('/terminal/profile?status=apikey_revoke_failed');
+  }
+}
+
+export async function updateProfileAction(formData: FormData) {
+  const username = String(formData.get('username') ?? '').trim();
+  const email = String(formData.get('email') ?? '').trim();
+
+  if (!username && !email) {
+    redirect('/terminal/profile?status=profile_failed');
+  }
+
+  try {
+    await updateCurrentUserProfile({
+      ...(username && { username }),
+      ...(email && { email }),
+    });
+
+    revalidatePath('/terminal/profile');
+    redirect('/terminal/profile?status=profile_updated');
+  } catch {
+    redirect('/terminal/profile?status=profile_failed');
   }
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
+import { SiteHeader } from '../marketing/site-header';
 
 const terminalNav = [
   { href: '/terminal', label: 'Dashboard', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
@@ -25,6 +26,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(148,163,184,0.14),transparent_45%),#050810] text-white">
+      <SiteHeader isAuthenticated role={role} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[230px_1fr] lg:px-6">
         <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4">
           <Link href="/" className="text-sm font-semibold tracking-[0.03em] text-white">

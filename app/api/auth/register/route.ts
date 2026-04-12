@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1';
+const isProduction = process.env.NODE_ENV === 'production';
 
 export async function POST(request: Request) {
   const payload = await request.json().catch(() => null);
@@ -19,7 +20,49 @@ export async function POST(request: Request) {
     });
 
     const body = await response.json().catch(() => ({}));
-    return NextResponse.json(body, { status: response.status });
+
+    const responsePayload = {
+      ...body,
+      next:
+        body?.accessToken && body?.refreshToken
+          ? '/terminal?onboard=true'
+          : '/login?registered=true&next=/terminal',
+    };
+
+    const nextResponse = NextResponse.json(responsePayload, { status: response.status });
+
+    if (response.ok && body?.accessToken && body?.refreshToken) {
+      nextResponse.cookies.set('marcus_access_token', String(body.accessToken), {
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
+        path: '/',
+      });
+
+      nextResponse.cookies.set('marcus_refresh_token', String(body.refreshToken), {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: Number(body?.refreshTokenExpiresInSeconds ?? 604800),
+        path: '/',
+      });
+
+      nextResponse.cookies.set('marcus_role', String(body?.role ?? 'TRADER'), {
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
+        path: '/',
+      });
+
+      nextResponse.cookies.set('marcus_username', String(body?.username ?? body?.displayName ?? payload?.displayName ?? 'Trader'), {
+        sameSite: 'lax',
+        secure: isProduction,
+        maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
+        path: '/',
+      });
+    }
+
+    return nextResponse;
   } catch {
     return NextResponse.json(
       { message: 'Registration service is not available yet. Please contact support or use an existing account.' },

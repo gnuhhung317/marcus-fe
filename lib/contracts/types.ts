@@ -37,6 +37,13 @@ export interface HomePageData {
   principles: Principle[];
 }
 
+export interface MarketplacePageData {
+  bots: MarketplaceBot[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
 export interface TrainingCourse {
   id: string;
   title: string;
@@ -64,6 +71,15 @@ export interface MarketplaceBot {
   pnl30d: number;
   winRate: number;
   drawdown: number;
+}
+
+export type MarketplaceSortBy = 'RETURN_30D' | 'DRAWDOWN' | 'WIN_RATE';
+
+export interface MarketplaceQueryParams {
+  search?: string;
+  sortBy?: MarketplaceSortBy;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface LeaderboardRow {
@@ -134,6 +150,22 @@ export interface ProfileApiKey {
   label: string;
   maskedKey: string;
   createdAt: string;
+}
+
+export interface ProfilePreferences {
+  timezone: string;
+  baseCurrency: string;
+  emailNotifications: boolean;
+  sessionTimeoutMinutes: number;
+}
+
+export interface ProfileLoginActivity {
+  id: string;
+  device: string;
+  location: string;
+  ipMasked: string;
+  createdAt: string;
+  status: string;
 }
 
 export interface BotPerformance {
@@ -223,7 +255,9 @@ export interface UserProfile {
 
 export interface ProfilePageData {
   profile: UserProfile;
+  preferences: ProfilePreferences;
   apiKeys: ProfileApiKey[];
+  loginActivities: ProfileLoginActivity[];
 }
 
 export interface ConnectivityDependency {
@@ -263,6 +297,18 @@ export interface DeveloperConsolePageData {
 export interface LeaderboardPageData {
   rows: LeaderboardRow[];
   featured: LeaderboardRow[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+export type LeaderboardSortBy = 'RETURN_24H' | 'DRAWDOWN' | 'SHARPE';
+
+export interface LeaderboardQueryParams {
+  timeframe?: '24H' | '7D' | '30D';
+  sortBy?: LeaderboardSortBy;
+  page?: number;
+  pageSize?: number;
 }
 
 export interface RegisterBotInput {

@@ -1,6 +1,15 @@
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
 import { getDeveloperConsolePageData } from '../../../lib/contracts/client';
 
 export default async function TerminalDeveloperConsolePage() {
+  const cookieStore = cookies();
+  const role = cookieStore.get('marcus_role')?.value;
+
+  if (role !== 'OPERATOR' && role !== 'ADMIN') {
+    redirect('/terminal');
+  }
+
   const { connectivity, signalStream, executionLogs } = await getDeveloperConsolePageData();
   const isConnected = connectivity.overallStatus === 'UP';
 

@@ -40,7 +40,7 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-3">
           <Link
-            href="/terminal"
+            href="/login?next=/terminal"
             className="rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200"
           >
             Launch App

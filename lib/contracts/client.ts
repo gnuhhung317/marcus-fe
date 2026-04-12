@@ -23,11 +23,16 @@ import {
   HomePageData,
   LeaderboardPageData,
   LeaderboardRow,
+  LeaderboardQueryParams,
   MarketTicker,
   MarketplaceBot,
+  MarketplacePageData,
+  MarketplaceQueryParams,
   PaperTradingPageData,
   ProfileApiKey,
   ProfilePageData,
+  ProfileLoginActivity,
+  ProfilePreferences,
   RegisterBotInput,
   ResearchLibraryFile,
   ResearchPageData,
@@ -44,6 +49,10 @@ import {
 
 const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1';
 const DEFAULT_STRATEGY_ID = 'kinetic-alpha-v4';
+const ACCESS_TOKEN_COOKIE = 'marcus_access_token';
+const REFRESH_TOKEN_COOKIE = 'marcus_refresh_token';
+
+let browserRefreshInFlight: Promise<string | undefined> | null = null;
 
 const defaultAllocations: AllocationSlice[] = [
   { name: 'Binance Global', value: 52.4 },
@@ -57,6 +66,32 @@ const defaultProfile: UserProfile = {
   email: 'marcus.vane@marcus.trade',
   role: 'TRADER',
 };
+
+const defaultProfilePreferences: ProfilePreferences = {
+  timezone: 'UTC+7',
+  baseCurrency: 'USD',
+  emailNotifications: true,
+  sessionTimeoutMinutes: 30,
+};
+
+const defaultLoginActivities: ProfileLoginActivity[] = [
+  {
+    id: 'login-1',
+    device: 'MacBook Pro · Chrome',
+    location: 'Singapore',
+    ipMasked: '192.168.**.24',
+    createdAt: '2026-04-10T19:22:00Z',
+    status: 'SUCCESS',
+  },
+  {
+    id: 'login-2',
+    device: 'iPhone · Safari',
+    location: 'Ho Chi Minh City',
+    ipMasked: '10.8.**.13',
+    createdAt: '2026-04-09T06:40:00Z',
+    status: 'SUCCESS',
+  },
+];
 
 const defaultConnectivity = {
   overallStatus: 'UP',
@@ -203,12 +238,71 @@ interface UserProfileResponse {
   role?: string;
 }
 
+interface AuthLoginRequest {
+  username: string;
+  password: string;
+}
+
+interface AuthRefreshRequest {
+  refreshToken: string;
+}
+
+interface AuthLoginResponse {
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string;
+  accessTokenExpiresInSeconds?: number;
+  refreshTokenExpiresInSeconds?: number;
+  userId?: string;
+  username?: string;
+  role?: string;
+}
+
+interface UserPreferencesResponse {
+  timezone?: string;
+  baseCurrency?: string;
+  emailNotifications?: boolean;
+  sessionTimeoutMinutes?: number;
+}
+
+interface LoginActivityResponse {
+  activityId?: string;
+  device?: string;
+  location?: string;
+  ipAddress?: string;
+  createdAt?: string;
+  status?: string;
+}
+
 interface ApiKeySummaryResponse {
   apiKeyId?: string;
   label?: string;
   maskedKey?: string;
   createdAt?: string;
   lastUsedAt?: string;
+}
+
+interface ApiKeyCreateResponse {
+  apiKeyId?: string;
+  label?: string;
+  maskedKey?: string;
+  createdAt?: string;
+}
+
+interface ApiKeyCreateRequest {
+  label: string;
+}
+
+interface UpdateProfileRequest {
+  username?: string;
+  email?: string;
+}
+
+interface UpdatePreferencesRequest {
+  timezone?: string;
+  baseCurrency?: string;
+  emailNotifications?: boolean;
+  sessionTimeoutMinutes?: number;
 }
 
 interface StrategyDetailResponse {
@@ -341,6 +435,123 @@ function getApiBaseUrl() {
   return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, '');
 }
 
+function normalizePath(path: string) {
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+function readBrowserCookie(name: string): string | undefined {
+  if (typeof document === 'undefined') {
+    return undefined;
+  }
+
+  const prefix = `${name}=`;
+  const cookie = document.cookie
+    .split(';')
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix));
+
+  if (!cookie) {
+    return undefined;
+  }
+
+  return decodeURIComponent(cookie.slice(prefix.length));
+}
+
+async function readServerCookie(name: string): Promise<string | undefined> {
+  if (typeof window !== 'undefined') {
+    return undefined;
+  }
+
+  try {
+    const { cookies } = await import('next/headers');
+    return cookies().get(name)?.value;
+  } catch {
+    return undefined;
+  }
+}
+
+async function resolveAccessToken(): Promise<string | undefined> {
+  const browserToken = readBrowserCookie(ACCESS_TOKEN_COOKIE);
+  if (browserToken) {
+    return browserToken;
+  }
+
+  return readServerCookie(ACCESS_TOKEN_COOKIE);
+}
+
+async function executeApiRequest(path: string, init?: RequestInit): Promise<Response> {
+  const normalizedPath = normalizePath(path);
+  const headers = new Headers(init?.headers);
+
+  if (init?.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  return fetch(`${getApiBaseUrl()}${normalizedPath}`, {
+    cache: 'no-store',
+    ...init,
+    headers,
+  });
+}
+
+async function refreshSessionInBrowser(): Promise<string | undefined> {
+  if (browserRefreshInFlight) {
+    return browserRefreshInFlight;
+  }
+
+  browserRefreshInFlight = (async () => {
+    const response = await fetch('/api/auth/refresh', {
+      method: 'POST',
+      cache: 'no-store',
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      return undefined;
+    }
+
+    const payload = (await response.json()) as { accessToken?: string };
+    return payload.accessToken;
+  })();
+
+  try {
+    return await browserRefreshInFlight;
+  } finally {
+    browserRefreshInFlight = null;
+  }
+}
+
+async function tryRefreshAccessToken(): Promise<string | undefined> {
+  if (typeof window !== 'undefined') {
+    return refreshSessionInBrowser();
+  }
+
+  const refreshToken = await readServerCookie(REFRESH_TOKEN_COOKIE);
+  if (!refreshToken) {
+    return undefined;
+  }
+
+  try {
+    const session = await refreshWithToken({ refreshToken });
+    return session.accessToken || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function requestAuthJson(path: string, body: unknown): Promise<AuthLoginResponse> {
+  const response = await executeApiRequest(path, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${normalizePath(path)}`);
+  }
+
+  return (await response.json()) as AuthLoginResponse;
+}
+
 function toQuery(params: Record<string, string | number | undefined>) {
   const searchParams = new URLSearchParams();
 
@@ -357,18 +568,36 @@ function toQuery(params: Record<string, string | number | undefined>) {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const normalizedPath = normalizePath(path);
   const headers = new Headers(init?.headers);
+  const currentAccessToken = await resolveAccessToken();
 
   if (init?.body && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`${getApiBaseUrl()}${normalizedPath}`, {
-    cache: 'no-store',
+  if (currentAccessToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${currentAccessToken}`);
+  }
+
+  let response = await executeApiRequest(normalizedPath, {
     ...init,
     headers,
   });
+
+  if (response.status === 401) {
+    const refreshedAccessToken = await tryRefreshAccessToken();
+
+    if (refreshedAccessToken) {
+      const retryHeaders = new Headers(headers);
+      retryHeaders.set('Authorization', `Bearer ${refreshedAccessToken}`);
+
+      response = await executeApiRequest(normalizedPath, {
+        ...init,
+        headers: retryHeaders,
+      });
+    }
+  }
 
   if (!response.ok) {
     throw new Error(`API request failed: ${response.status} ${normalizedPath}`);
@@ -387,6 +616,31 @@ async function withFallback<T>(work: () => Promise<T>, fallback: () => Promise<T
   } catch {
     return await fallback();
   }
+}
+
+function mapAuthSession(response?: AuthLoginResponse) {
+  return {
+    accessToken: response?.accessToken ?? '',
+    refreshToken: response?.refreshToken ?? '',
+    tokenType: response?.tokenType ?? 'Bearer',
+    accessTokenExpiresInSeconds: Math.max(60, Math.round(toNumber(response?.accessTokenExpiresInSeconds, 3600))),
+    refreshTokenExpiresInSeconds: Math.max(60, Math.round(toNumber(response?.refreshTokenExpiresInSeconds, 604800))),
+    userId: response?.userId ?? '',
+    username: response?.username ?? '',
+    role: response?.role ?? 'TRADER',
+  };
+}
+
+export async function loginWithCredentials(payload: AuthLoginRequest) {
+  const response = await requestAuthJson('/auth/login', payload);
+
+  return mapAuthSession(response);
+}
+
+export async function refreshWithToken(payload: AuthRefreshRequest) {
+  const response = await requestAuthJson('/auth/refresh', payload);
+
+  return mapAuthSession(response);
 }
 
 function toNumber(value: unknown, fallback = 0): number {
@@ -586,6 +840,74 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
   };
 }
 
+function normalizeSearchText(value: string | undefined) {
+  return (value ?? '').trim().toLowerCase();
+}
+
+function sortMarketplaceBots(bots: MarketplaceBot[], sortBy?: MarketplaceQueryParams['sortBy']) {
+  const sorted = [...bots];
+
+  if (sortBy === 'DRAWDOWN') {
+    sorted.sort((left, right) => left.drawdown - right.drawdown);
+  } else if (sortBy === 'WIN_RATE') {
+    sorted.sort((left, right) => right.winRate - left.winRate);
+  } else {
+    sorted.sort((left, right) => right.pnl30d - left.pnl30d);
+  }
+
+  return sorted;
+}
+
+function applyMarketplaceFilters(bots: MarketplaceBot[], query: MarketplaceQueryParams = {}) {
+  const search = normalizeSearchText(query.search);
+  const filtered = search
+    ? bots.filter((bot) => {
+        const searchable = [bot.botId, bot.name, ...bot.tags].join(' ').toLowerCase();
+        return searchable.includes(search);
+      })
+    : bots;
+
+  const sorted = sortMarketplaceBots(filtered, query.sortBy);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
+  const page = Math.max(1, query.page ?? 1);
+  const startIndex = (page - 1) * pageSize;
+
+  return {
+    bots: sorted.slice(startIndex, startIndex + pageSize),
+    total: sorted.length,
+    page,
+    pageSize,
+  };
+}
+
+function sortLeaderboardRows(rows: LeaderboardRow[], sortBy?: LeaderboardQueryParams['sortBy']) {
+  const sorted = [...rows];
+
+  if (sortBy === 'DRAWDOWN') {
+    sorted.sort((left, right) => left.drawdown - right.drawdown);
+  } else if (sortBy === 'SHARPE') {
+    sorted.sort((left, right) => right.sharpe - left.sharpe);
+  } else {
+    sorted.sort((left, right) => right.return24h - left.return24h);
+  }
+
+  return sorted;
+}
+
+function applyLeaderboardFilters(rows: LeaderboardRow[], query: LeaderboardQueryParams = {}) {
+  const sorted = sortLeaderboardRows(rows, query.sortBy);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
+  const page = Math.max(1, query.page ?? 1);
+  const startIndex = (page - 1) * pageSize;
+
+  return {
+    rows: sorted.slice(startIndex, startIndex + pageSize),
+    total: sorted.length,
+    page,
+    pageSize,
+  };
+}
+
 function mapBotDetail(bot: BotDetailResponse, fallbackBot?: MarketplaceBot): BotDetail {
   const performance = bot.performance
     ? {
@@ -622,6 +944,26 @@ function mapApiKeySummary(item: ApiKeySummaryResponse): ProfileApiKey | null {
     label: item.label,
     maskedKey: item.maskedKey,
     createdAt: item.createdAt,
+  };
+}
+
+function mapProfilePreferences(item?: UserPreferencesResponse): ProfilePreferences {
+  return {
+    timezone: item?.timezone ?? defaultProfilePreferences.timezone,
+    baseCurrency: item?.baseCurrency ?? defaultProfilePreferences.baseCurrency,
+    emailNotifications: item?.emailNotifications ?? defaultProfilePreferences.emailNotifications,
+    sessionTimeoutMinutes: Math.max(5, Math.round(toNumber(item?.sessionTimeoutMinutes, defaultProfilePreferences.sessionTimeoutMinutes))),
+  };
+}
+
+function mapLoginActivity(item: LoginActivityResponse, index: number): ProfileLoginActivity {
+  return {
+    id: item.activityId ?? `login-${index + 1}`,
+    device: item.device ?? 'Unknown device',
+    location: item.location ?? 'Unknown location',
+    ipMasked: item.ipAddress ?? '0.0.**.**',
+    createdAt: item.createdAt ?? new Date().toISOString(),
+    status: item.status ?? 'SUCCESS',
   };
 }
 
@@ -786,14 +1128,34 @@ export async function getDashboardPageData(): Promise<DashboardPageData> {
   };
 }
 
-export async function listMarketplaceBots(): Promise<MarketplaceBot[]> {
+async function fetchMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
   const response = await withFallback(
-    () => requestJson<BotSummaryResponse[]>(`/bots${toQuery({ page: 0, size: 12 })}`),
+    () => requestJson<BotSummaryResponse[]>('/bots'),
     async () => [],
   );
 
   const mapped = response.map((bot) => mapBotSummary(bot));
   return mapped.length ? mapped : marketplaceBots;
+}
+
+export async function getMarketplacePageData(query: MarketplaceQueryParams = {}): Promise<MarketplacePageData> {
+  const page = Math.max(1, query.page ?? 1);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
+
+  const resolvedBots = await fetchMarketplaceBots({ ...query, page, pageSize });
+  const paged = applyMarketplaceFilters(resolvedBots, { ...query, page, pageSize });
+
+  return {
+    bots: paged.bots,
+    page: paged.page,
+    pageSize: paged.pageSize,
+    total: paged.total,
+  };
+}
+
+export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
+  const pageData = await getMarketplacePageData(query);
+  return pageData.bots;
 }
 
 export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
@@ -842,10 +1204,12 @@ export async function subscribeToBot(botId: string): Promise<SubscriptionResult>
   };
 }
 
-export async function getLeaderboardPageData(): Promise<LeaderboardPageData> {
+export async function getLeaderboardPageData(query: LeaderboardQueryParams = {}): Promise<LeaderboardPageData> {
+  const page = Math.max(1, query.page ?? 1);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
   const [strategiesPage, featuredResponse] = await Promise.all([
     withFallback(
-      () => requestJson<LeaderboardStrategiesPageResponse>(`/leaderboard/strategies${toQuery({ timeframe: '24H', page: 0, size: 12 })}`),
+      () => requestJson<LeaderboardStrategiesPageResponse>('/leaderboard/strategies'),
       async () => ({ items: [] }),
     ),
     withFallback(() => requestJson<LeaderboardFeaturedResponse>('/leaderboard/featured'), async () => ({ items: [] })),
@@ -853,6 +1217,7 @@ export async function getLeaderboardPageData(): Promise<LeaderboardPageData> {
 
   const rows = (strategiesPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
   const resolvedRows = rows.length ? rows : leaderboardRows;
+  const pagedRows = applyLeaderboardFilters(resolvedRows, { ...query, page, pageSize });
 
   const featured = (featuredResponse.items ?? [])
     .map((item, index) => {
@@ -876,8 +1241,11 @@ export async function getLeaderboardPageData(): Promise<LeaderboardPageData> {
     .slice(0, 3);
 
   return {
-    rows: resolvedRows,
+    rows: pagedRows.rows,
     featured: featured.length ? featured : resolvedRows.slice(0, 3),
+    page: pagedRows.page,
+    pageSize: pagedRows.pageSize,
+    total: pagedRows.total,
   };
 }
 
@@ -924,9 +1292,11 @@ export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
 }
 
 export async function getProfilePageData(): Promise<ProfilePageData> {
-  const [profileResponse, apiKeyResponse] = await Promise.all([
+  const [profileResponse, preferencesResponse, apiKeyResponse, loginActivityResponse] = await Promise.all([
     withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined),
+    withFallback(() => requestJson<UserPreferencesResponse>('/users/me/preferences'), async () => undefined),
     withFallback(() => requestJson<ApiKeySummaryResponse[]>('/users/me/api-keys'), async () => []),
+    withFallback(() => requestJson<LoginActivityResponse[]>('/users/me/login-activities'), async () => []),
   ]);
 
   const profile: UserProfile = {
@@ -936,14 +1306,80 @@ export async function getProfilePageData(): Promise<ProfilePageData> {
     role: profileResponse?.role ?? defaultProfile.role,
   };
 
+  const preferences = mapProfilePreferences(preferencesResponse);
+
   const mappedApiKeys = apiKeyResponse
     .map((key) => mapApiKeySummary(key))
     .filter((key): key is ProfileApiKey => key !== null);
 
+  const loginActivities = (loginActivityResponse ?? []).map((activity, index) => mapLoginActivity(activity, index));
+
   return {
     profile,
+    preferences,
     apiKeys: mappedApiKeys.length ? mappedApiKeys : profileApiKeys,
+    loginActivities: loginActivities.length ? loginActivities : defaultLoginActivities,
   };
+}
+
+export async function getCurrentUserProfile(): Promise<UserProfile> {
+  const response = await withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined);
+
+  return {
+    userId: response?.userId ?? defaultProfile.userId,
+    username: response?.username ?? defaultProfile.username,
+    email: response?.email ?? defaultProfile.email,
+    role: response?.role ?? defaultProfile.role,
+  };
+}
+
+export async function getCurrentUserPreferences(): Promise<ProfilePreferences> {
+  const response = await withFallback(() => requestJson<UserPreferencesResponse>('/users/me/preferences'), async () => undefined);
+  return mapProfilePreferences(response);
+}
+
+export async function updateCurrentUserPreferences(payload: UpdatePreferencesRequest): Promise<ProfilePreferences> {
+  const response = await requestJson<UserPreferencesResponse>('/users/me/preferences', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+
+  return mapProfilePreferences(response);
+}
+
+export async function listCurrentUserApiKeys(): Promise<ProfileApiKey[]> {
+  const response = await withFallback(() => requestJson<ApiKeySummaryResponse[]>('/users/me/api-keys'), async () => []);
+
+  return response
+    .map((key) => mapApiKeySummary(key))
+    .filter((key): key is ProfileApiKey => key !== null);
+}
+
+export async function createCurrentUserApiKey(payload: ApiKeyCreateRequest): Promise<ProfileApiKey> {
+  const response = await requestJson<ApiKeyCreateResponse>('/users/me/api-keys', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+
+  return {
+    id: response.apiKeyId ?? randomToken('key'),
+    label: response.label ?? payload.label,
+    maskedKey: response.maskedKey ?? 'mt_ak_************0000',
+    createdAt: response.createdAt ?? new Date().toISOString(),
+  } satisfies ProfileApiKey;
+}
+
+export async function deleteCurrentUserApiKey(apiKeyId: string) {
+  await requestJson<void>(`/users/me/api-keys/${encodeURIComponent(apiKeyId)}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActivity[]> {
+  const response = await withFallback(() => requestJson<LoginActivityResponse[]>('/users/me/login-activities'), async () => []);
+  const activities = response.map((activity, index) => mapLoginActivity(activity, index));
+
+  return activities.length ? activities : defaultLoginActivities;
 }
 
 export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_ID): Promise<StrategyPageData> {

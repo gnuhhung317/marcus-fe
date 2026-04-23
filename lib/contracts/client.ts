@@ -1,4 +1,10 @@
-import { availableContracts, missingContracts } from './endpoints';
+import { availableContracts, contractRoutes, missingContracts } from './endpoints';
+import {
+  AuthLoginResponse,
+  AuthRefreshRequest,
+  requestAuthJson,
+  requestJson,
+} from '../api/http';
 import {
   blogPosts,
   leaderboardRows,
@@ -50,7 +56,6 @@ import {
   UserProfile,
 } from './types';
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1';
 const DEFAULT_STRATEGY_ID = 'kinetic-alpha-v4';
 const ACCESS_TOKEN_COOKIE = 'marcus_access_token';
 const REFRESH_TOKEN_COOKIE = 'marcus_refresh_token';
@@ -254,21 +259,6 @@ interface AuthLoginRequest {
   password: string;
 }
 
-interface AuthRefreshRequest {
-  refreshToken: string;
-}
-
-interface AuthLoginResponse {
-  accessToken?: string;
-  refreshToken?: string;
-  tokenType?: string;
-  accessTokenExpiresInSeconds?: number;
-  refreshTokenExpiresInSeconds?: number;
-  userId?: string;
-  username?: string;
-  role?: string;
-}
-
 interface UserPreferencesResponse {
   timezone?: string;
   baseCurrency?: string;
@@ -442,128 +432,58 @@ interface ResearchLibraryFileResponse {
   sizeMb?: number;
 }
 
-function getApiBaseUrl() {
-  return (process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL).replace(/\/$/, '');
-}
-
 function normalizePath(path: string) {
   return path.startsWith('/') ? path : `/${path}`;
 }
 
-function readBrowserCookie(name: string): string | undefined {
-  if (typeof document === 'undefined') {
-    return undefined;
+type PathParams = Record<string, string | number>;
+
+function getContractRoute(routeId: string) {
+  const route = contractRoutes.find((item) => item.id === routeId);
+  if (!route) {
+    throw new Error(`Contract route not found: ${routeId}`);
   }
 
-  const prefix = `${name}=`;
-  const cookie = document.cookie
-    .split(';')
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(prefix));
-
-  if (!cookie) {
-    return undefined;
-  }
-
-  return decodeURIComponent(cookie.slice(prefix.length));
+  return route;
 }
 
-async function readServerCookie(name: string): Promise<string | undefined> {
-  if (typeof window !== 'undefined') {
-    return undefined;
-  }
+function buildContractPath(
+  routeId: string,
+  pathParams?: PathParams,
+  queryParams?: Record<string, string | number | boolean | undefined>,
+) {
+  const route = getContractRoute(routeId);
+  let path = route.path;
 
-  try {
-    const { cookies } = await import('next/headers');
-    return cookies().get(name)?.value;
-  } catch {
-    return undefined;
-  }
-}
-
-async function resolveAccessToken(): Promise<string | undefined> {
-  const browserToken = readBrowserCookie(ACCESS_TOKEN_COOKIE);
-  if (browserToken) {
-    return browserToken;
-  }
-
-  return readServerCookie(ACCESS_TOKEN_COOKIE);
-}
-
-async function executeApiRequest(path: string, init?: RequestInit): Promise<Response> {
-  const normalizedPath = normalizePath(path);
-  const headers = new Headers(init?.headers);
-
-  if (init?.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  return fetch(`${getApiBaseUrl()}${normalizedPath}`, {
-    cache: 'no-store',
-    ...init,
-    headers,
-  });
-}
-
-async function refreshSessionInBrowser(): Promise<string | undefined> {
-  if (browserRefreshInFlight) {
-    return browserRefreshInFlight;
-  }
-
-  browserRefreshInFlight = (async () => {
-    const response = await fetch('/api/auth/refresh', {
-      method: 'POST',
-      cache: 'no-store',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      return undefined;
+  path = path.replace(/\{([^}]+)\}/g, (_match, key) => {
+    const value = pathParams?.[key];
+    if (value === undefined || value === null) {
+      throw new Error(`Missing path parameter '${key}' for route '${routeId}'`);
     }
-
-    const payload = (await response.json()) as { accessToken?: string };
-    return payload.accessToken;
-  })();
-
-  try {
-    return await browserRefreshInFlight;
-  } finally {
-    browserRefreshInFlight = null;
-  }
-}
-
-async function tryRefreshAccessToken(): Promise<string | undefined> {
-  if (typeof window !== 'undefined') {
-    return refreshSessionInBrowser();
-  }
-
-  const refreshToken = await readServerCookie(REFRESH_TOKEN_COOKIE);
-  if (!refreshToken) {
-    return undefined;
-  }
-
-  try {
-    const session = await refreshWithToken({ refreshToken });
-    return session.accessToken || undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-async function requestAuthJson(path: string, body: unknown): Promise<AuthLoginResponse> {
-  const response = await executeApiRequest(path, {
-    method: 'POST',
-    body: JSON.stringify(body),
+    return encodeURIComponent(String(value));
   });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${normalizePath(path)}`);
-  }
-
-  return (await response.json()) as AuthLoginResponse;
+  return `${normalizePath(path)}${toQuery(queryParams ?? {})}`;
 }
 
-function toQuery(params: Record<string, string | number | undefined>) {
+export async function requestContractJson<T>(
+  routeId: string,
+  options?: {
+    pathParams?: PathParams;
+    queryParams?: Record<string, string | number | boolean | undefined>;
+    init?: RequestInit;
+  },
+): Promise<T> {
+  const route = getContractRoute(routeId);
+  const normalizedPath = buildContractPath(routeId, options?.pathParams, options?.queryParams);
+
+  return requestJson<T>(normalizedPath, {
+    method: options?.init?.method ?? route.method,
+    ...options?.init,
+  });
+}
+
+function toQuery(params: Record<string, string | number | boolean | undefined>) {
   const searchParams = new URLSearchParams();
 
   Object.entries(params).forEach(([key, value]) => {
@@ -576,49 +496,6 @@ function toQuery(params: Record<string, string | number | undefined>) {
 
   const query = searchParams.toString();
   return query ? `?${query}` : '';
-}
-
-async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const normalizedPath = normalizePath(path);
-  const headers = new Headers(init?.headers);
-  const currentAccessToken = await resolveAccessToken();
-
-  if (init?.body && !headers.has('Content-Type')) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  if (currentAccessToken && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${currentAccessToken}`);
-  }
-
-  let response = await executeApiRequest(normalizedPath, {
-    ...init,
-    headers,
-  });
-
-  if (response.status === 401) {
-    const refreshedAccessToken = await tryRefreshAccessToken();
-
-    if (refreshedAccessToken) {
-      const retryHeaders = new Headers(headers);
-      retryHeaders.set('Authorization', `Bearer ${refreshedAccessToken}`);
-
-      response = await executeApiRequest(normalizedPath, {
-        ...init,
-        headers: retryHeaders,
-      });
-    }
-  }
-
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${normalizedPath}`);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return (await response.json()) as T;
 }
 
 async function withFallback<T>(work: () => Promise<T>, fallback: () => Promise<T> | T): Promise<T> {
@@ -1011,7 +888,7 @@ export async function getContractSnapshot() {
 
 export async function getHomePageData(): Promise<HomePageData> {
   const response = await withFallback(
-    () => requestJson<MarketOverviewResponse>('/market/overview'),
+    () => requestContractJson<MarketOverviewResponse>('market-hero-stats'),
     async () => undefined,
   );
 
@@ -1029,8 +906,13 @@ export async function getHomePageData(): Promise<HomePageData> {
 
 export async function getTrainingPageData(): Promise<TrainingPageData> {
   const [coursesResponse, metricsResponse] = await Promise.all([
-    withFallback(() => requestJson<AcademyCoursesResponse>(`/academy/courses${toQuery({ limit: 12 })}`), async () => ({ items: [] })),
-    withFallback(() => requestJson<AcademyMetricsResponse>('/academy/metrics'), async () => undefined),
+    withFallback(
+      () => requestContractJson<AcademyCoursesResponse>('academy-courses', {
+        queryParams: { limit: 12 },
+      }),
+      async () => ({ items: [] }),
+    ),
+    withFallback(() => requestContractJson<AcademyMetricsResponse>('academy-metrics'), async () => undefined),
   ]);
 
   const courses = (coursesResponse.items ?? []).map((course, index) => mapAcademyCourse(course, index));
@@ -1049,7 +931,9 @@ export async function getTrainingPageData(): Promise<TrainingPageData> {
 
 export async function getBlogPageData(): Promise<BlogPageData> {
   const response = await withFallback(
-    () => requestJson<BlogPostsResponse>(`/content/blog/posts${toQuery({ page: 0, size: 12 })}`),
+    () => requestContractJson<BlogPostsResponse>('content-blog', {
+      queryParams: { page: 0, size: 12 },
+    }),
     async () => ({ items: [] }),
   );
 
@@ -1063,11 +947,15 @@ export async function getBlogPageData(): Promise<BlogPageData> {
 export async function getResearchPageData(): Promise<ResearchPageData> {
   const [reportsResponse, libraryResponse] = await Promise.all([
     withFallback(
-      () => requestJson<ResearchReportsResponse>(`/content/research/reports${toQuery({ page: 0, size: 12 })}`),
+      () => requestContractJson<ResearchReportsResponse>('content-research', {
+        queryParams: { page: 0, size: 12 },
+      }),
       async () => ({ items: [] }),
     ),
     withFallback(
-      () => requestJson<ResearchLibraryFileResponse[]>(`/content/research/reports/library${toQuery({ limit: 8 })}`),
+      () => requestContractJson<ResearchLibraryFileResponse[]>('content-research-library', {
+        queryParams: { limit: 8 },
+      }),
       async () => [],
     ),
   ]);
@@ -1113,10 +1001,13 @@ export async function getMarketingData() {
 
 export async function getDashboardPageData(): Promise<DashboardPageData> {
   const [overview, allocationItems, tradeLogPage] = await Promise.all([
-    withFallback(() => requestJson<DashboardOverviewResponse>('/dashboard/overview'), async () => undefined),
-    withFallback(() => requestJson<ExchangeAllocationItemResponse[]>('/dashboard/exchange-allocation'), async () => []),
+    withFallback(() => requestContractJson<DashboardOverviewResponse>('dashboard-overview'), async () => undefined),
+    withFallback(() => requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'), async () => []),
     withFallback(
-      () => requestJson<TradeLogPageResponse>(`/strategies/${encodeURIComponent(DEFAULT_STRATEGY_ID)}/trades${toQuery({ page: 0, size: 8 })}`),
+      () => requestContractJson<TradeLogPageResponse>('strategy-trades', {
+        pathParams: { strategyId: DEFAULT_STRATEGY_ID },
+        queryParams: { page: 0, size: 8 },
+      }),
       async () => ({ items: [] }),
     ),
   ]);
@@ -1141,7 +1032,7 @@ export async function getDashboardPageData(): Promise<DashboardPageData> {
 
 async function fetchMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
   const response = await withFallback(
-    () => requestJson<BotSummaryResponse[]>('/bots'),
+    () => requestContractJson<BotSummaryResponse[]>('bots-list'),
     async () => [],
   );
 
@@ -1172,7 +1063,9 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
 export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
   const fallbackBot = marketplaceBots.find((bot) => bot.botId === botId);
   const response = await withFallback(
-    () => requestJson<BotDetailResponse>(`/bots/${encodeURIComponent(botId)}`),
+    () => requestContractJson<BotDetailResponse>('bot-detail', {
+      pathParams: { botId },
+    }),
     async () => undefined,
   );
 
@@ -1200,7 +1093,10 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {
   const response = await withFallback(
-    () => requestJson<SubscribeBotResultResponse>(`/subscriptions/${encodeURIComponent(botId)}`, { method: 'POST' }),
+    () => requestContractJson<SubscribeBotResultResponse>('bot-subscribe', {
+      pathParams: { botId },
+      init: { method: 'POST' },
+    }),
     async () => ({
       botId,
       wsToken: randomToken('ws'),
@@ -1217,7 +1113,10 @@ export async function subscribeToBot(botId: string): Promise<SubscriptionResult>
 
 export async function unsubscribeFromBot(botId: string): Promise<SubscriptionResult> {
   const response = await withFallback(
-    () => requestJson<SubscribeBotResultResponse>(`/subscriptions/${encodeURIComponent(botId)}`, { method: 'DELETE' }),
+    () => requestContractJson<SubscribeBotResultResponse>('bot-unsubscribe', {
+      pathParams: { botId },
+      init: { method: 'DELETE' },
+    }),
     async () => ({
       botId,
       wsToken: '',
@@ -1237,10 +1136,10 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
   const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
   const [strategiesPage, featuredResponse] = await Promise.all([
     withFallback(
-      () => requestJson<LeaderboardStrategiesPageResponse>('/leaderboard/strategies'),
+      () => requestContractJson<LeaderboardStrategiesPageResponse>('leaderboard-list'),
       async () => ({ items: [] }),
     ),
-    withFallback(() => requestJson<LeaderboardFeaturedResponse>('/leaderboard/featured'), async () => ({ items: [] })),
+    withFallback(() => requestContractJson<LeaderboardFeaturedResponse>('leaderboard-featured'), async () => ({ items: [] })),
   ]);
 
   const rows = (strategiesPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
@@ -1279,8 +1178,13 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
 
 export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
   const [sessionResponse, signalResponse] = await Promise.all([
-    withFallback(() => requestJson<PaperSessionSummaryResponse>('/paper/session'), async () => undefined),
-    withFallback(() => requestJson<PaperSignalResponse[]>(`/paper/signals${toQuery({ limit: 8, status: 'ALL' })}`), async () => []),
+    withFallback(() => requestContractJson<PaperSessionSummaryResponse>('paper-session'), async () => undefined),
+    withFallback(
+      () => requestContractJson<PaperSignalResponse[]>('paper-signals', {
+        queryParams: { limit: 8, status: 'ALL' },
+      }),
+      async () => [],
+    ),
   ]);
 
   const session = {
@@ -1322,15 +1226,17 @@ export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
 export async function createPaperOrder(payload: PaperOrderInput): Promise<PaperOrderResult> {
   const response = await withFallback(
     () =>
-      requestJson<PaperOrderResponse>('/paper/orders', {
-        method: 'POST',
-        body: JSON.stringify({
-          assetPair: payload.assetPair,
-          side: payload.side,
-          quantity: payload.quantity,
-          estimatedPrice: payload.estimatedPrice,
-          signalId: payload.signalId,
-        }),
+      requestContractJson<PaperOrderResponse>('paper-order', {
+        init: {
+          method: 'POST',
+          body: JSON.stringify({
+            assetPair: payload.assetPair,
+            side: payload.side,
+            quantity: payload.quantity,
+            estimatedPrice: payload.estimatedPrice,
+            signalId: payload.signalId,
+          }),
+        },
       }),
     async () => ({
       orderId: randomToken('paper_order'),
@@ -1352,7 +1258,9 @@ export async function createPaperOrder(payload: PaperOrderInput): Promise<PaperO
 
 export async function pausePaperSession(): Promise<PaperSessionData> {
   const response = await withFallback(
-    () => requestJson<PaperSessionSummaryResponse>('/paper/session/pause', { method: 'POST' }),
+    () => requestContractJson<PaperSessionSummaryResponse>('paper-session-pause', {
+      init: { method: 'POST' },
+    }),
     async () => undefined,
   );
 
@@ -1367,7 +1275,9 @@ export async function pausePaperSession(): Promise<PaperSessionData> {
 
 export async function resumePaperSession(): Promise<PaperSessionData> {
   const response = await withFallback(
-    () => requestJson<PaperSessionSummaryResponse>('/paper/session/resume', { method: 'POST' }),
+    () => requestContractJson<PaperSessionSummaryResponse>('paper-session-resume', {
+      init: { method: 'POST' },
+    }),
     async () => undefined,
   );
 
@@ -1382,10 +1292,10 @@ export async function resumePaperSession(): Promise<PaperSessionData> {
 
 export async function getProfilePageData(): Promise<ProfilePageData> {
   const [profileResponse, preferencesResponse, apiKeyResponse, loginActivityResponse] = await Promise.all([
-    withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined),
-    withFallback(() => requestJson<UserPreferencesResponse>('/users/me/preferences'), async () => undefined),
-    withFallback(() => requestJson<ApiKeySummaryResponse[]>('/users/me/api-keys'), async () => []),
-    withFallback(() => requestJson<LoginActivityResponse[]>('/users/me/login-activities'), async () => []),
+    withFallback(() => requestContractJson<UserProfileResponse>('profile-me'), async () => undefined),
+    withFallback(() => requestContractJson<UserPreferencesResponse>('profile-preferences'), async () => undefined),
+    withFallback(() => requestContractJson<ApiKeySummaryResponse[]>('profile-api-keys'), async () => []),
+    withFallback(() => requestContractJson<LoginActivityResponse[]>('profile-login-activities'), async () => []),
   ]);
 
   const profile: UserProfile = {
@@ -1412,7 +1322,7 @@ export async function getProfilePageData(): Promise<ProfilePageData> {
 }
 
 export async function getCurrentUserProfile(): Promise<UserProfile> {
-  const response = await withFallback(() => requestJson<UserProfileResponse>('/users/me'), async () => undefined);
+  const response = await withFallback(() => requestContractJson<UserProfileResponse>('profile-me'), async () => undefined);
 
   return {
     userId: response?.userId ?? defaultProfile.userId,
@@ -1423,9 +1333,11 @@ export async function getCurrentUserProfile(): Promise<UserProfile> {
 }
 
 export async function updateCurrentUserProfile(payload: UpdateProfileRequest): Promise<UserProfile> {
-  const response = await requestJson<UserProfileResponse>('/users/me', {
-    method: 'PUT',
-    body: JSON.stringify(payload),
+  const response = await requestContractJson<UserProfileResponse>('profile-update', {
+    init: {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    },
   });
 
   return {
@@ -1437,21 +1349,23 @@ export async function updateCurrentUserProfile(payload: UpdateProfileRequest): P
 }
 
 export async function getCurrentUserPreferences(): Promise<ProfilePreferences> {
-  const response = await withFallback(() => requestJson<UserPreferencesResponse>('/users/me/preferences'), async () => undefined);
+  const response = await withFallback(() => requestContractJson<UserPreferencesResponse>('profile-preferences'), async () => undefined);
   return mapProfilePreferences(response);
 }
 
 export async function updateCurrentUserPreferences(payload: UpdatePreferencesRequest): Promise<ProfilePreferences> {
-  const response = await requestJson<UserPreferencesResponse>('/users/me/preferences', {
-    method: 'PUT',
-    body: JSON.stringify(payload),
+  const response = await requestContractJson<UserPreferencesResponse>('profile-preferences-update', {
+    init: {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    },
   });
 
   return mapProfilePreferences(response);
 }
 
 export async function listCurrentUserApiKeys(): Promise<ProfileApiKey[]> {
-  const response = await withFallback(() => requestJson<ApiKeySummaryResponse[]>('/users/me/api-keys'), async () => []);
+  const response = await withFallback(() => requestContractJson<ApiKeySummaryResponse[]>('profile-api-keys'), async () => []);
 
   return response
     .map((key) => mapApiKeySummary(key))
@@ -1459,9 +1373,11 @@ export async function listCurrentUserApiKeys(): Promise<ProfileApiKey[]> {
 }
 
 export async function createCurrentUserApiKey(payload: ApiKeyCreateRequest): Promise<ProfileApiKey> {
-  const response = await requestJson<ApiKeyCreateResponse>('/users/me/api-keys', {
-    method: 'POST',
-    body: JSON.stringify(payload),
+  const response = await requestContractJson<ApiKeyCreateResponse>('profile-api-key-create', {
+    init: {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    },
   });
 
   return {
@@ -1473,13 +1389,14 @@ export async function createCurrentUserApiKey(payload: ApiKeyCreateRequest): Pro
 }
 
 export async function deleteCurrentUserApiKey(apiKeyId: string) {
-  await requestJson<void>(`/users/me/api-keys/${encodeURIComponent(apiKeyId)}`, {
-    method: 'DELETE',
+  await requestContractJson<void>('profile-api-key-delete', {
+    pathParams: { apiKeyId },
+    init: { method: 'DELETE' },
   });
 }
 
 export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActivity[]> {
-  const response = await withFallback(() => requestJson<LoginActivityResponse[]>('/users/me/login-activities'), async () => []);
+  const response = await withFallback(() => requestContractJson<LoginActivityResponse[]>('profile-login-activities'), async () => []);
   const activities = response.map((activity, index) => mapLoginActivity(activity, index));
 
   return activities.length ? activities : defaultLoginActivities;
@@ -1489,11 +1406,31 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
   const safeStrategyId = strategyId || DEFAULT_STRATEGY_ID;
 
   const [detailResponse, metricsResponse, seriesResponse, tradeLogPage] = await Promise.all([
-    withFallback(() => requestJson<StrategyDetailResponse>(`/strategies/${encodeURIComponent(safeStrategyId)}`), async () => undefined),
-    withFallback(() => requestJson<StrategyMetricsResponse>(`/strategies/${encodeURIComponent(safeStrategyId)}/metrics${toQuery({ feeMode: 'AFTER_FEES' })}`), async () => undefined),
-    withFallback(() => requestJson<TimeSeriesPointResponse[]>(`/strategies/${encodeURIComponent(safeStrategyId)}/performance-series${toQuery({ range: '1W' })}`), async () => []),
     withFallback(
-      () => requestJson<TradeLogPageResponse>(`/strategies/${encodeURIComponent(safeStrategyId)}/trades${toQuery({ page: 0, size: 12 })}`),
+      () => requestContractJson<StrategyDetailResponse>('strategy-detail', {
+        pathParams: { strategyId: safeStrategyId },
+      }),
+      async () => undefined,
+    ),
+    withFallback(
+      () => requestContractJson<StrategyMetricsResponse>('strategy-metrics', {
+        pathParams: { strategyId: safeStrategyId },
+        queryParams: { feeMode: 'AFTER_FEES' },
+      }),
+      async () => undefined,
+    ),
+    withFallback(
+      () => requestContractJson<TimeSeriesPointResponse[]>('strategy-series', {
+        pathParams: { strategyId: safeStrategyId },
+        queryParams: { range: '1W' },
+      }),
+      async () => [],
+    ),
+    withFallback(
+      () => requestContractJson<TradeLogPageResponse>('strategy-trades', {
+        pathParams: { strategyId: safeStrategyId },
+        queryParams: { page: 0, size: 12 },
+      }),
       async () => ({ items: [] }),
     ),
   ]);
@@ -1532,9 +1469,19 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
 
 export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePageData> {
   const [connectivityResponse, signalResponse, executionResponse] = await Promise.all([
-    withFallback(() => requestJson<ConnectivityHealthResponse>('/system/connectivity'), async () => undefined),
-    withFallback(() => requestJson<SignalItemResponse[]>(`/signals${toQuery({ limit: 8, status: 'ALL' })}`), async () => []),
-    withFallback(() => requestJson<ExecutionLogPageResponse>(`/system/execution-logs${toQuery({ limit: 10 })}`), async () => ({ items: [] })),
+    withFallback(() => requestContractJson<ConnectivityHealthResponse>('system-connectivity'), async () => undefined),
+    withFallback(
+      () => requestContractJson<SignalItemResponse[]>('system-signals', {
+        queryParams: { limit: 8, status: 'ALL' },
+      }),
+      async () => [],
+    ),
+    withFallback(
+      () => requestContractJson<ExecutionLogPageResponse>('system-execution-logs', {
+        queryParams: { limit: 10 },
+      }),
+      async () => ({ items: [] }),
+    ),
   ]);
 
   const connectivity = {
@@ -1596,14 +1543,16 @@ function randomToken(prefix: string) {
 export async function registerBotProvisioning(payload: RegisterBotInput): Promise<BotProvisioningCredentials> {
   const response = await withFallback(
     () =>
-      requestJson<BotRegistrationResponse>('/bots', {
-        method: 'POST',
-        body: JSON.stringify({
-          botName: payload.botName,
-          exchange: payload.exchange,
-          tradingPair: payload.tradingPair,
-          description: payload.botName,
-        }),
+      requestContractJson<BotRegistrationResponse>('bot-register', {
+        init: {
+          method: 'POST',
+          body: JSON.stringify({
+            botName: payload.botName,
+            exchange: payload.exchange,
+            tradingPair: payload.tradingPair,
+            description: payload.botName,
+          }),
+        },
       }),
     async () => ({
       botId: randomToken('bot'),

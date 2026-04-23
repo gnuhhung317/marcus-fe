@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
   try {
     const apiBaseUrl = getApiBaseUrl();
-    const response = await fetch(`${apiBaseUrl}/auth/register`, {
+    const response = await fetch(`${apiBaseUrl}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -21,15 +21,7 @@ export async function POST(request: Request) {
 
     const body = await response.json().catch(() => ({}));
 
-    const responsePayload = {
-      ...body,
-      next:
-        body?.accessToken && body?.refreshToken
-          ? '/terminal?onboard=true'
-          : '/login?registered=true&next=/terminal',
-    };
-
-    const nextResponse = NextResponse.json(responsePayload, { status: response.status });
+    const nextResponse = NextResponse.json(body, { status: response.status });
 
     if (response.ok && body?.accessToken && body?.refreshToken) {
       nextResponse.cookies.set('marcus_access_token', String(body.accessToken), {
@@ -54,7 +46,7 @@ export async function POST(request: Request) {
         path: '/',
       });
 
-      nextResponse.cookies.set('marcus_username', String(body?.username ?? body?.displayName ?? payload?.displayName ?? 'Trader'), {
+      nextResponse.cookies.set('marcus_username', String(body?.username ?? payload?.username ?? 'Trader'), {
         sameSite: 'lax',
         secure: isProduction,
         maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
@@ -64,9 +56,6 @@ export async function POST(request: Request) {
 
     return nextResponse;
   } catch {
-    return NextResponse.json(
-      { message: 'Registration service is not available yet. Please contact support or use an existing account.' },
-      { status: 503 }
-    );
+    return NextResponse.json({ message: 'Login service is not available yet.' }, { status: 503 });
   }
 }

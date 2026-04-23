@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { refreshWithToken } from '../../../../lib/contracts/client';
+import { refreshWithToken } from '../../../../lib/api/http';
 
 const isProduction = process.env.NODE_ENV === 'production';
 

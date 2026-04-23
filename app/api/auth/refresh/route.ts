@@ -19,14 +19,23 @@ export async function POST() {
       throw new Error('invalid_refresh_response');
     }
 
-    cookieStore.set('marcus_access_token', session.accessToken, {
+    const nextResponse = NextResponse.json(
+      {
+        accessToken: session.accessToken,
+        role: session.role,
+        username: session.username,
+      },
+      { status: 200 },
+    );
+
+    nextResponse.cookies.set('marcus_access_token', session.accessToken, {
       sameSite: 'lax',
       secure: isProduction,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
 
-    cookieStore.set('marcus_refresh_token', session.refreshToken, {
+    nextResponse.cookies.set('marcus_refresh_token', session.refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
       secure: isProduction,
@@ -34,31 +43,29 @@ export async function POST() {
       path: '/',
     });
 
-    cookieStore.set('marcus_role', session.role || 'TRADER', {
+    nextResponse.cookies.set('marcus_role', session.role || 'TRADER', {
       sameSite: 'lax',
       secure: isProduction,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
 
-    cookieStore.set('marcus_username', session.username || 'trader', {
+    nextResponse.cookies.set('marcus_username', session.username || 'trader', {
       sameSite: 'lax',
       secure: isProduction,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
 
-    return NextResponse.json({
-      accessToken: session.accessToken,
-      role: session.role,
-      username: session.username,
-    });
+    return nextResponse;
   } catch {
-    cookieStore.delete('marcus_access_token');
-    cookieStore.delete('marcus_refresh_token');
-    cookieStore.delete('marcus_role');
-    cookieStore.delete('marcus_username');
+    const nextResponse = NextResponse.json({ error: 'refresh_failed' }, { status: 401 });
 
-    return NextResponse.json({ error: 'refresh_failed' }, { status: 401 });
+    nextResponse.cookies.delete('marcus_access_token');
+    nextResponse.cookies.delete('marcus_refresh_token');
+    nextResponse.cookies.delete('marcus_role');
+    nextResponse.cookies.delete('marcus_username');
+
+    return nextResponse;
   }
 }

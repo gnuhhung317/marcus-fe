@@ -43,6 +43,7 @@ import {
   ProfileLoginActivity,
   ProfilePreferences,
   RegisterBotInput,
+  RegisterUserInput,
   ResearchLibraryFile,
   ResearchPageData,
   ResearchReport,
@@ -158,6 +159,9 @@ interface TradeLogItemResponse {
   assetPair?: string;
   side?: string;
   netPnl?: number;
+  size?: number;
+  entryPrice?: number;
+  exitPrice?: number;
 }
 
 interface TradeLogPageResponse {
@@ -208,6 +212,17 @@ interface LeaderboardStrategyItemResponse {
 
 interface LeaderboardStrategiesPageResponse {
   items?: LeaderboardStrategyItemResponse[];
+}
+
+interface BotSummaryPageResponse {
+  items?: BotSummaryResponse[];
+  meta?: {
+    page?: number;
+    size?: number;
+    totalElements?: number;
+    totalPages?: number;
+    hasNext?: boolean;
+  };
 }
 
 interface LeaderboardFeaturedItemResponse {
@@ -531,6 +546,12 @@ export async function refreshWithToken(payload: AuthRefreshRequest) {
   return mapAuthSession(response);
 }
 
+export async function registerWithCredentials(payload: RegisterUserInput) {
+  const response = await requestAuthJson('/auth/register', payload);
+
+  return mapAuthSession(response);
+}
+
 function toNumber(value: unknown, fallback = 0): number {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     return fallback;
@@ -712,6 +733,9 @@ function mapTradeLogItem(item: TradeLogItemResponse): StrategyTrade | null {
     pair: item.assetPair,
     side: normalizeTradeSide(item.side),
     pnl: toNumber(item.netPnl),
+    size: toNumber(item.size, 0),
+    entryPrice: toNumber(item.entryPrice, 0),
+    exitPrice: toNumber(item.exitPrice, 0),
   };
 }
 
@@ -999,8 +1023,8 @@ export async function getMarketingData() {
   };
 }
 
-export async function getDashboardPageData(): Promise<DashboardPageData> {
-  const [overview, allocationItems, tradeLogPage] = await Promise.all([
+export async function getDashboardPageData(): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
+  const [overview, allocationItems, tradeLogPage, equitySeriesResponse] = await Promise.all([
     withFallback(() => requestContractJson<DashboardOverviewResponse>('dashboard-overview'), async () => undefined),
     withFallback(() => requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'), async () => []),
     withFallback(
@@ -1009,6 +1033,12 @@ export async function getDashboardPageData(): Promise<DashboardPageData> {
         queryParams: { page: 0, size: 8 },
       }),
       async () => ({ items: [] }),
+    ),
+    withFallback(
+      () => requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
+        queryParams: { range: '1W' },
+      }),
+      async () => [],
     ),
   ]);
 
@@ -1023,20 +1053,29 @@ export async function getDashboardPageData(): Promise<DashboardPageData> {
     .map((item) => mapTradeLogItem(item))
     .filter((item): item is StrategyTrade => item !== null);
 
+  const performanceSeries = (equitySeriesResponse ?? [])
+    .map((point) => ({
+      timestamp: point.timestamp ?? new Date().toISOString(),
+      value: toNumber(point.value),
+    }))
+    .filter((point) => Number.isFinite(point.value));
+
   return {
     terminalKpis: overview ? mapDashboardKpis(overview) : terminalKpis,
     strategyTrades: mappedTrades.length ? mappedTrades : strategyTrades,
     allocations: mappedAllocations.length ? mappedAllocations : defaultAllocations,
+    performanceSeries: performanceSeries.length ? performanceSeries : buildFallbackStrategySeries(),
   };
 }
 
 async function fetchMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
   const response = await withFallback(
-    () => requestContractJson<BotSummaryResponse[]>('bots-list'),
-    async () => [],
+    () => requestContractJson<BotSummaryPageResponse>('bots-list'),
+    async () => ({ items: [] }),
   );
 
-  const mapped = response.map((bot) => mapBotSummary(bot));
+  const items = response.items ?? [];
+  const mapped = items.map((bot) => mapBotSummary(bot));
   return mapped.length ? mapped : marketplaceBots;
 }
 

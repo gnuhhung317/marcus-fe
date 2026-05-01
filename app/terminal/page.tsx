@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { KpiCard } from '../../components/shared/kpi-card';
+import { PerformanceChart } from '../../components/shared/performance-chart';
 import { ErrorStateCard, LoadingStateCard } from '../../components/shared/api-state';
 import { getDashboardPageData } from '../../lib/contracts/client';
-import { DashboardPageData } from '../../lib/contracts/types';
+import { DashboardPageData, TimeSeriesValue } from '../../lib/contracts/types';
 
 export default function TerminalDashboardPage() {
-  const [dashboardData, setDashboardData] = useState<DashboardPageData | null>(null);
+  const [dashboardData, setDashboardData] = useState<(DashboardPageData & { performanceSeries: TimeSeriesValue[] }) | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<Date | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export default function TerminalDashboardPage() {
       setDashboardData(response);
       setLastSyncedAt(new Date());
     } catch {
-      setErrorMessage('Failed to fetch dashboard overview.');
+      setErrorMessage('Failed to synchronize with Marcus Trading Terminal.');
     } finally {
       setIsBootstrapping(false);
       setIsRefreshing(false);
@@ -37,118 +38,207 @@ export default function TerminalDashboardPage() {
   const terminalKpis = useMemo(() => dashboardData?.terminalKpis ?? [], [dashboardData]);
   const strategyTrades = useMemo(() => dashboardData?.strategyTrades ?? [], [dashboardData]);
   const allocations = useMemo(() => dashboardData?.allocations ?? [], [dashboardData]);
+  const performanceSeries = useMemo(() => dashboardData?.performanceSeries ?? [], [dashboardData]);
 
   const pnlKpi = useMemo(() => {
     return terminalKpis.find((kpi) => kpi.label === 'Today PnL')?.value ?? '$0.00';
   }, [terminalKpis]);
 
-  const attentionCount = useMemo(() => {
-    return strategyTrades.filter((trade) => trade.pnl < 0).length;
-  }, [strategyTrades]);
-
   const totalAllocation = useMemo(() => {
     return allocations.reduce((acc, item) => acc + item.value, 0);
   }, [allocations]);
 
-  const handleManualRefresh = async () => {
-    await loadDashboardData();
+  // Mock series for KPI sparklines to add visual depth
+  const mockSeries = useMemo(() => [30, 40, 35, 50, 49, 60, 70, 91], []);
+  const mockSeriesDown = useMemo(() => [90, 80, 85, 70, 75, 60, 50, 45], []);
+
+  const [isMounted, setIsMounted] = useState(false);
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const formatSafeDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateStr;
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
+
   return (
-    <div className="space-y-7">
-      <header className="flex flex-wrap items-start justify-between gap-4">
+    <div className="space-y-8 pb-12">
+      <header className="flex flex-wrap items-center justify-between gap-6 border-b border-white/5 pb-8">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Terminal Dashboard</p>
-          <h1 className="mt-2 text-3xl font-semibold text-white md:text-4xl">Portfolio Control Center</h1>
-          <p className="mt-2 text-sm text-muted">
-            Today PnL <span className="font-semibold text-positive">{pnlKpi}</span>
-            {attentionCount > 0 ? ` · ${attentionCount} strategy needs attention` : ' · No critical risk alerts'}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            Last sync: {lastSyncedAt ? lastSyncedAt.toLocaleTimeString() : 'Not synced'} · Manual refresh mode
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-positive shadow-[0_0_8px_var(--positive)]" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-muted/60">System Status: Live</p>
+          </div>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-white md:text-5xl">
+            Marcus <span className="text-positive">Terminal</span>
+          </h1>
+          <p className="mt-3 text-sm text-muted max-w-md leading-relaxed">
+            Real-time portfolio intelligence and algorithmic execution. Today&apos;s performance: <span className="font-bold text-positive">{pnlKpi}</span>.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        
+        <div className="flex items-center gap-3 bg-white/5 p-1.5 rounded-xl border border-white/5">
           <button
             type="button"
-            onClick={handleManualRefresh}
+            onClick={() => void loadDashboardData()}
             disabled={isRefreshing}
-            className="rounded-lg border border-[rgba(148,163,184,0.32)] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-[rgba(148,163,184,0.12)]"
+            className="flex items-center gap-2 rounded-lg px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-white/10 active:scale-95 disabled:opacity-50"
           >
-            {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
+            {isRefreshing ? 'Syncing...' : 'Sync Data'}
           </button>
-          <Link href="/terminal/marketplace" className="rounded-lg cta-primary px-4 py-2 text-sm font-semibold">
-            Open Marketplace
+          <Link href="/terminal/marketplace" className="rounded-lg bg-positive px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black shadow-[0_8px_20px_rgba(0,190,115,0.2)] transition-all hover:brightness-110 active:scale-95">
+            Deployment
           </Link>
         </div>
       </header>
 
-      {errorMessage ? (
-        <ErrorStateCard title="Dashboard sync error" message={errorMessage} onAction={() => void loadDashboardData()} />
-      ) : null}
+      {errorMessage && (
+        <ErrorStateCard title="Sync Failure" message={errorMessage} onAction={() => void loadDashboardData()} />
+      )}
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {/* KPI Section */}
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {isBootstrapping ? (
-          <>
-            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
-            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
-            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
-            <LoadingStateCard title="Loading KPI cards" message="Preparing current equity and performance deltas." />
-          </>
+          Array.from({ length: 4 }).map((_, i) => (
+            <LoadingStateCard key={i} title="Loading Metrics" message="Connecting to signal core..." />
+          ))
         ) : terminalKpis.length ? (
-          terminalKpis.map((kpi) => (
-            <KpiCard key={kpi.label} label={kpi.label} value={kpi.value} delta={kpi.delta} context={kpi.context} trend={kpi.trend} />
+          terminalKpis.map((kpi, index) => (
+            <KpiCard 
+              key={kpi.label} 
+              {...kpi} 
+              data={index % 2 === 0 ? mockSeries : mockSeriesDown} 
+            />
           ))
         ) : (
-          <article className="glass-strong rounded-2xl p-5 text-sm text-muted">No KPI snapshot available for this account yet.</article>
+          <div className="col-span-full py-12 text-center glass rounded-2xl text-muted font-medium">
+            Waiting for terminal telemetry...
+          </div>
         )}
       </section>
 
-      <section className="grid gap-5 lg:grid-cols-[1.8fr_1fr]">
-        <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-          <div className="flex items-end justify-between gap-3">
+      {/* Main Performance Section */}
+      <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <article className="glass-strong overflow-hidden rounded-3xl p-6 shadow-2xl">
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-white">Active Bot Performance</h2>
-              <p className="mt-1 text-sm text-muted">Manual refresh stream · showing latest execution snapshot.</p>
+              <h2 className="text-xl font-bold text-white tracking-tight">Portfolio Performance</h2>
+              <p className="text-sm text-muted/60 font-medium">Aggregated equity curve across all active vaults.</p>
             </div>
-            <span className="rounded-md bg-[rgba(148,163,184,0.12)] px-2 py-1 text-xs text-muted">{strategyTrades.length} trades</span>
+            <div className="flex gap-2">
+              {['1D', '1W', '1M', 'ALL'].map((r) => (
+                <button key={r} className={`rounded-md px-3 py-1 text-[10px] font-bold tracking-tighter ${r === '1W' ? 'bg-positive text-black' : 'bg-white/5 text-muted hover:bg-white/10'}`}>
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="min-h-[300px]">
+             {isBootstrapping ? (
+               <div className="h-64 animate-pulse rounded-xl bg-white/5" />
+             ) : (
+               <PerformanceChart data={performanceSeries} />
+             )}
+          </div>
+        </article>
+
+        <article className="glass-strong flex flex-col rounded-3xl p-6 shadow-2xl">
+          <h2 className="text-xl font-bold text-white tracking-tight">Asset Allocation</h2>
+          <p className="mt-1 text-sm text-muted/60 font-medium">Capital concentration by venue.</p>
+          
+          <div className="mt-8 flex-1 space-y-6">
+            {allocations.length ? (
+              allocations.map((item, index) => (
+                <div key={item.name} className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-white/80 uppercase tracking-widest">{item.name}</span>
+                    <span className="text-xs font-black text-positive">{item.value}%</span>
+                  </div>
+                  <div className="relative h-2 w-full overflow-hidden rounded-full bg-white/5">
+                    <div
+                      className={`h-full rounded-full transition-all duration-1000 ${index === 0 ? 'bg-positive shadow-[0_0_12px_rgba(0,190,115,0.4)]' : 'bg-white/20'}`}
+                      style={{ width: `${item.value}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex h-full items-center justify-center text-muted text-sm italic">
+                No active allocations detected.
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-8 border-t border-white/5 pt-6 flex items-center justify-between">
+            <span className="text-[10px] font-bold text-muted uppercase tracking-tighter">Total Allocation</span>
+            <span className="text-lg font-black text-white">{totalAllocation.toFixed(1)}%</span>
+          </div>
+        </article>
+      </section>
+
+      {/* Execution Log Section */}
+      <section>
+        <article className="glass-strong overflow-hidden rounded-3xl shadow-2xl">
+          <div className="p-6 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">Real-time Execution Stream</h2>
+              <p className="mt-1 text-sm text-muted/60 font-medium">Live trade logs from connected algorithmic engines.</p>
+            </div>
+            <div className="rounded-full bg-positive/10 px-3 py-1 text-[10px] font-black text-positive uppercase">
+              {strategyTrades.length} Active Events
+            </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto rounded-xl border border-[rgba(148,163,184,0.22)]">
-            <table className="min-w-full border-collapse text-left text-sm">
-              <thead className="bg-[rgba(148,163,184,0.08)] text-xs uppercase tracking-[0.12em] text-muted">
-                <tr>
-                  <th className="px-4 py-3 font-medium">Asset Pair</th>
-                  <th className="px-4 py-3 font-medium">Side</th>
-                  <th className="px-4 py-3 font-medium">PnL</th>
-                  <th className="px-4 py-3 font-medium">Timestamp</th>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/[0.01] text-[10px] font-black uppercase tracking-[0.2em] text-muted/60">
+                  <th className="px-6 py-4">Instrument</th>
+                  <th className="px-6 py-4 text-center">Side</th>
+                  <th className="px-6 py-4 text-right">Size</th>
+                  <th className="px-6 py-4 text-right">Entry</th>
+                  <th className="px-6 py-4 text-right">Exit</th>
+                  <th className="px-6 py-4 text-right">Net PnL</th>
+                  <th className="px-6 py-4 text-right">Timestamp</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-white/5">
                 {strategyTrades.length ? (
-                  strategyTrades.map((trade) => (
-                    <tr key={`${trade.timestamp}-${trade.pair}`} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
-                      <td className="px-4 py-3.5 font-medium text-white">{trade.pair}</td>
-                      <td className="px-4 py-3.5">
-                        <span className={`rounded-full px-2 py-1 text-xs ${trade.side === 'LONG' ? 'bg-[rgba(34,197,94,0.15)] text-positive' : 'bg-[rgba(244,63,94,0.14)] text-negative'}`}>
+                  strategyTrades.map((trade, i) => (
+                    <tr key={`${trade.timestamp}-${trade.pair}-${i}`} className="group transition-colors hover:bg-white/[0.03]">
+                      <td className="px-6 py-4">
+                        <span className="font-bold text-white tracking-tight">{trade.pair}</span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className={`inline-block rounded-md px-2 py-0.5 text-[9px] font-black uppercase tracking-widest ${trade.side === 'LONG' ? 'bg-positive/10 text-positive' : 'bg-negative/10 text-negative'}`}>
                           {trade.side}
                         </span>
                       </td>
-                      <td className={`px-4 py-3.5 font-semibold ${trade.pnl >= 0 ? 'text-positive' : 'text-negative'}`}>
-                        {trade.pnl >= 0 ? '+' : ''}
-                        ${trade.pnl.toFixed(2)}
+                      <td className="px-6 py-4 text-right font-mono text-xs text-white/70">
+                        {trade.size ? trade.size.toFixed(4) : '--'}
                       </td>
-                      <td className="px-4 py-3.5 text-muted">
-                        {Number.isNaN(Date.parse(trade.timestamp))
-                          ? trade.timestamp
-                          : new Date(trade.timestamp).toLocaleString()}
+                      <td className="px-6 py-4 text-right font-mono text-xs text-white/70">
+                        {trade.entryPrice ? `$${trade.entryPrice.toLocaleString()}` : '--'}
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono text-xs text-white/70">
+                        {trade.exitPrice ? `$${trade.exitPrice.toLocaleString()}` : '--'}
+                      </td>
+                      <td className={`px-6 py-4 text-right font-mono text-xs font-bold ${trade.pnl >= 0 ? 'text-positive' : 'text-negative'}`}>
+                        {trade.pnl >= 0 ? '+' : ''}${Math.abs(trade.pnl).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 text-right text-[11px] font-medium text-muted/40 uppercase">
+                        {isMounted ? formatSafeDate(trade.timestamp) : '...'}
                       </td>
                     </tr>
                   ))
                 ) : (
-                  <tr className="border-t border-[rgba(148,163,184,0.18)]">
-                    <td className="px-4 py-4 text-sm text-muted" colSpan={4}>
-                      No execution data available.
+                  <tr>
+                    <td className="px-6 py-12 text-center text-muted font-medium italic" colSpan={7}>
+                      Awaiting market signals...
                     </td>
                   </tr>
                 )}
@@ -156,37 +246,13 @@ export default function TerminalDashboardPage() {
             </table>
           </div>
         </article>
-
-        <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-xl font-semibold text-white">Exchange Allocation</h2>
-          <p className="mt-1 text-sm text-muted">Capital distribution by venue · Total {totalAllocation.toFixed(1)}%</p>
-          <div className="mt-5 space-y-4">
-            {allocations.length ? (
-              allocations.map((item, index) => (
-                <div key={item.name}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white">{item.name}</span>
-                    <span className="font-medium text-muted">{item.value}%</span>
-                  </div>
-                  <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-[rgba(148,163,184,0.22)]">
-                    <div
-                      className={index === 0 ? 'h-full rounded-full bg-[var(--primary)]' : 'h-full rounded-full bg-[rgba(148,163,184,0.85)]'}
-                      style={{ width: `${item.value}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted">No allocation slices available.</p>
-            )}
-          </div>
-          <div className="mt-5 flex items-center justify-between text-xs text-muted">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
-          </div>
-        </article>
       </section>
+
+      {/* Manual Sync Footer */}
+      <footer className="flex items-center justify-between px-2 text-[10px] font-bold uppercase tracking-widest text-muted/30">
+        <span>Marcus v0.1.0-alpha</span>
+        <span>Last Synced: {isMounted && lastSyncedAt ? lastSyncedAt.toLocaleTimeString() : '...'}</span>
+      </footer>
     </div>
   );
 }

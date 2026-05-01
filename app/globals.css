@@ -4,20 +4,21 @@
 
 :root {
   color-scheme: dark;
-  --bg-0: #050810;
-  --bg-1: #0c1322;
-  --panel: rgba(15, 23, 42, 0.74);
-  --panel-strong: rgba(15, 23, 42, 0.9);
-  --panel-border: rgba(148, 163, 184, 0.22);
-  --line: rgba(148, 163, 184, 0.22);
+  --bg-0: #05060b;
+  --bg-1: #0b0e14;
+  --panel: rgba(21, 25, 33, 0.75);
+  --panel-strong: rgba(21, 25, 33, 0.95);
+  --panel-border: rgba(255, 255, 255, 0.08);
+  --line: rgba(255, 255, 255, 0.08);
   --fg: #f8fafc;
   --fg-muted: #94a3b8;
-  --primary: #10b981;
-  --primary-soft: rgba(16, 185, 129, 0.18);
-  --positive: #22c55e;
+  --primary: #00be73;
+  --primary-soft: rgba(0, 190, 115, 0.12);
+  --positive: #00be73;
   --negative: #f43f5e;
-  --shadow-soft: 0 12px 30px rgba(2, 6, 23, 0.32);
+  --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
+
 
 @media (prefers-reduced-motion: reduce) {
   *,

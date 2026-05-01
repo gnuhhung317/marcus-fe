@@ -25,7 +25,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
   const visibleNav = terminalNav.filter((item) => isAllowedRole(role, item.roles));
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(148,163,184,0.14),transparent_45%),#050810] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,190,115,0.08),transparent_50%),var(--bg-0)] text-white">
       <SiteHeader isAuthenticated role={role} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[230px_1fr] lg:px-6">
         <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4">

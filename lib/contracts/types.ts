@@ -143,6 +143,9 @@ export interface StrategyTrade {
   pair: string;
   side: 'LONG' | 'SHORT';
   pnl: number;
+  size?: number;
+  entryPrice?: number;
+  exitPrice?: number;
 }
 
 export interface ProfileApiKey {
@@ -267,6 +270,13 @@ export interface UserProfile {
   username: string;
   email: string;
   role: string;
+}
+
+export interface RegisterUserInput {
+  email: string;
+  password: string;
+  displayName?: string;
+  role?: 'USER' | 'DEVELOPER';
 }
 
 export interface ProfilePageData {

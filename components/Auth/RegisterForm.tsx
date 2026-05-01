@@ -10,6 +10,7 @@ export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [role, setRole] = useState<'USER' | 'DEVELOPER'>('USER');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -61,7 +62,7 @@ export default function RegisterForm() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: email.trim(), password, displayName: displayName.trim() }),
+        body: JSON.stringify({ email: email.trim(), password, displayName: displayName.trim(), role }),
       });
 
       const payload = await res.json().catch(() => ({}));
@@ -122,6 +123,20 @@ export default function RegisterForm() {
           className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[rgba(16,185,129,0.52)]"
         />
         <p id="register-email-hint" className="mt-1 text-xs text-muted">Use a reachable email for account recovery.</p>
+      </div>
+
+      <div>
+        <label htmlFor="register-role" className="block text-sm font-medium text-white">Account type</label>
+        <select
+          id="register-role"
+          value={role}
+          onChange={(e) => setRole(e.target.value as 'USER' | 'DEVELOPER')}
+          className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors focus:border-[rgba(16,185,129,0.52)]"
+        >
+          <option value="USER">User</option>
+          <option value="DEVELOPER">Developer</option>
+        </select>
+        <p className="mt-1 text-xs text-muted">Select developer if you plan to publish bots or integrations.</p>
       </div>
 
       <div>

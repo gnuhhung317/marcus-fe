@@ -335,6 +335,25 @@ export const contractRoutes: ContractRoute[] = [
     feature: 'Top volume and market pulse',
     status: 'gap',
   },
+  // ========== Phase 1: Decision Dashboard ==========
+  {
+    id: 'portfolio-overview',
+    method: 'GET',
+    path: '/dashboard/portfolio/overview',
+    operationId: 'getPortfolioOverview',
+    page: 'terminal/decision',
+    feature: 'Portfolio KPI cards',
+    status: 'available',
+  },
+  {
+    id: 'portfolio-decisions',
+    method: 'GET',
+    path: '/dashboard/portfolio/decisions',
+    operationId: 'getPortfolioDecisions',
+    page: 'terminal/decision',
+    feature: 'Subscription decision cards with reason tags',
+    status: 'available',
+  },
 ];
 
 export const availableContracts = contractRoutes.filter((route) => route.status === 'available');

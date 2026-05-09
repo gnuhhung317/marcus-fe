@@ -1,7 +1,9 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import brandLogo from '../../assets/images/marcustradingvn-Photoroom.png';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -24,8 +26,16 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
   return (
     <header className="sticky top-0 z-40 border-b border-[rgba(132,162,191,0.2)] bg-[rgba(4,7,13,0.78)] backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" aria-label="Marcus Trading home" className={`font-display text-lg tracking-tight text-white ${focusClass}`}>
-          Marcus Trading
+        <Link href="/" aria-label="Marcus Trading home" className={`inline-flex items-center gap-2 text-lg tracking-tight text-white ${focusClass}`}>
+          <Image
+            src={brandLogo}
+            alt="Marcus Trading logo"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-md object-contain"
+            priority
+          />
+          <span className="font-display">Marcus Trading</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex" aria-label="Primary navigation">
@@ -61,9 +71,9 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               <Link
                 href="/login?next=/terminal"
                 className={`rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200 ${focusClass}`}
-                aria-label="Launch terminal app"
+                aria-label="Sign in"
               >
-                Launch App
+                Sign In
               </Link>
             </>
           ) : (
@@ -119,8 +129,8 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
                   <Link href="/register" className={`rounded-lg px-3 py-2 text-sm text-white hover:bg-[rgba(148,163,184,0.08)] ${focusClass}`} aria-label="Open registration">
                     Sign Up
                   </Link>
-                  <Link href="/login?next=/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Launch terminal app">
-                    Launch App
+                  <Link href="/login?next=/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Sign in">
+                    Sign In
                   </Link>
                 </>
               ) : (

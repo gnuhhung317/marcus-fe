@@ -42,6 +42,18 @@ function readBrowserCookie(name: string): string | undefined {
   return decodeURIComponent(cookie.slice(prefix.length));
 }
 
+function readBrowserStorage(name: string): string | undefined {
+  if (typeof window === 'undefined') {
+    return undefined;
+  }
+
+  try {
+    return window.localStorage.getItem(name) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function readServerCookie(name: string): Promise<string | undefined> {
   if (typeof window !== 'undefined') {
     return undefined;
@@ -61,6 +73,11 @@ async function resolveAccessToken(): Promise<string | undefined> {
     return browserToken;
   }
 
+  const storageToken = readBrowserStorage(ACCESS_TOKEN_COOKIE);
+  if (storageToken) {
+    return storageToken;
+  }
+
   return readServerCookie(ACCESS_TOKEN_COOKIE);
 }
 
@@ -72,8 +89,20 @@ async function executeApiRequest(path: string, init?: RequestInit): Promise<Resp
     headers.set('Content-Type', 'application/json');
   }
 
+  // Ensure Authorization header is attached when an access token is available
+  try {
+    const accessToken = await resolveAccessToken();
+    if (accessToken && !headers.has('Authorization')) {
+      headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+  } catch {
+    // ignore resolution errors and proceed without token
+  }
+
   return fetch(`${getApiBaseUrl()}${normalizedPath}`, {
     cache: 'no-store',
+    // Include credentials (cookies) by default so cross-origin backend requests carry auth cookies
+    credentials: init?.credentials ?? 'include',
     ...init,
     headers,
   });

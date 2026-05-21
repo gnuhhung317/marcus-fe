@@ -116,14 +116,14 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
 
   const renderLink = (item: { href: string; label: string }) => {
     const active = pathname === item.href;
-    return (
+      return (
       <Link
         key={item.href}
         href={item.href}
         className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
           active
-            ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-            : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+            ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
+            : 'text-muted hover:bg-[var(--panel)] hover:text-white'
         }`}
       >
         <span className={active ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
@@ -135,12 +135,12 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(0,190,115,0.08),transparent_50%),var(--bg-0)] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-0)] text-white">
       <SiteHeader isAuthenticated role={role} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">
         <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4 flex flex-col gap-6">
           {/* Workspace Info Connection */}
-          <div className="flex items-center justify-between border-b border-[rgba(148,163,184,0.12)] pb-4">
+          <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-4">
             <div className="flex items-center gap-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -252,14 +252,14 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
                 </div>
               </div>
 
-              <div className="mt-3 pt-3 border-t border-[rgba(148,163,184,0.08)] flex items-center justify-between text-[11px]">
+              <div className="mt-3 pt-3 border-t border-[var(--panel-border)] flex items-center justify-between text-[11px]">
                 <span className="text-slate-500 font-mono">v1.4.2</span>
                 <span className="text-slate-400">Role: <span className="text-emerald-400 font-mono font-bold">{role}</span></span>
               </div>
             </div>
           </div>
         </aside>
-        <div className="glass-strong min-h-[84vh] rounded-2xl border border-[rgba(148,163,184,0.22)] p-5 md:p-7">{children}</div>
+        <div className="glass-strong min-h-[84vh] rounded-2xl border border-[var(--panel-border)] p-5 md:p-7">{children}</div>
       </div>
     </div>
   );

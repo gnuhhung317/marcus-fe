@@ -59,7 +59,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
         {result ? <LifecycleBadge status={result.status} /> : null}
       </div>
 
-      <label className="mt-4 flex items-start gap-2 rounded-xl border border-[rgba(245,158,11,0.32)] bg-[rgba(120,53,15,0.28)] p-3 text-sm text-[rgba(254,240,138,0.97)]">
+      <label className="mt-4 flex items-start gap-2 rounded-xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-3 text-sm text-warning">
         <input
           type="checkbox"
           checked={riskConfirmed}
@@ -84,7 +84,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
         type="button"
         onClick={handleUnsubscribe}
         disabled={isSubmitting || !result || result.status === 'UNSUBSCRIBED'}
-        className="ml-2 mt-5 rounded-xl border border-[rgba(148,163,184,0.3)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
+        className="ml-2 mt-5 rounded-xl border border-[var(--panel-border)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
       >
         Unsubscribe
       </button>
@@ -92,7 +92,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
       {error ? <p className="mt-3 text-sm text-negative">{error}</p> : null}
 
       {result ? (
-        <div className="mt-4 rounded-xl border border-[rgba(148,163,184,0.24)] bg-[rgba(15,23,42,0.72)] p-4">
+        <div className="mt-4 rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-4">
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Subscription Status</p>
           <p className="mt-2 text-sm text-white">{result.status}</p>
           <p className="mt-3 text-xs uppercase tracking-[0.16em] text-muted">Runtime wsToken</p>

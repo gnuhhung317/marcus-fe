@@ -136,12 +136,12 @@ func main() {
   };
 
   return (
-    <article className="glass-strong rounded-2xl shadow-[var(--shadow-soft)] border border-[rgba(255,255,255,0.06)] overflow-hidden flex flex-col relative group">
+    <article className="glass-strong rounded-2xl shadow-[var(--shadow-soft)] border border-[var(--panel-border)] overflow-hidden flex flex-col relative group">
       {/* Decorative colored glow in detail view */}
       <div className="absolute top-0 left-0 w-48 h-48 bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none" />
       
       {/* Bot Header Area */}
-      <div className="p-6 sm:p-8 pb-5 border-b border-[rgba(148,163,184,0.12)] bg-[rgba(6,10,18,0.2)]">
+      <div className="p-6 sm:p-8 pb-5 border-b border-[var(--panel-border)] bg-[var(--panel)]">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
@@ -196,21 +196,21 @@ func main() {
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuration Details</h3>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex flex-col justify-between">
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Trading Venue</span>
                   <span className="text-sm font-semibold text-white mt-1.5">{bot.exchange ?? 'N/A'}</span>
                 </div>
-                <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Execution Pair</span>
                   <span className="text-sm font-semibold text-white mt-1.5 font-mono">{bot.tradingPair ?? 'N/A'}</span>
                 </div>
-                <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Developer UUID</span>
                   <span className="text-sm font-mono text-slate-300 mt-1.5 truncate" title={bot.developerId ?? undefined}>
                     {bot.developerId ? `${bot.developerId.slice(0, 8)}...` : 'N/A'}
                   </span>
                 </div>
-                <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Created Date</span>
                   <span className="text-sm font-mono text-slate-300 mt-1.5">
                     {bot.createdAt ? new Date(bot.createdAt).toLocaleDateString() : 'N/A'}
@@ -220,7 +220,7 @@ func main() {
             </div>
 
             {/* Active Subscribers */}
-            <div className="space-y-4 border-t border-[rgba(148,163,184,0.12)] pt-6">
+            <div className="space-y-4 border-t border-[var(--panel-border)] pt-6">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Subscriber Feeds</h3>
                 <p className="text-xs text-slate-500 mt-1">
@@ -228,7 +228,7 @@ func main() {
                 </p>
               </div>
 
-              <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.25)] overflow-hidden">
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
                 {subscriptions.length === 0 ? (
                   <div className="p-8 text-center flex flex-col items-center">
                     <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">

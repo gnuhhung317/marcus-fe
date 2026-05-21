@@ -1,4 +1,4 @@
-import { DeveloperSubscriptionSummary } from '../../../lib/contracts/types';
+import { DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
 
 interface SubscriptionTableProps {

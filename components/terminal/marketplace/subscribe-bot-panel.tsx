@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { subscribeToBot, unsubscribeFromBot } from '../../../lib/contracts/client';
-import { SubscriptionResult } from '../../../lib/contracts/types';
+import { subscribeToBot, unsubscribeFromBot } from '@/lib/contracts/client';
+import { SubscriptionResult } from '@/lib/contracts/types';
 import { LifecycleBadge } from '../../shared/lifecycle-badge';
 
 interface SubscribeBotPanelProps {

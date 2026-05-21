@@ -1,4 +1,4 @@
-import { getBlogPageData } from '../../../lib/contracts/client';
+import { getBlogPageData } from '@/lib/contracts/client';
 
 export default async function BlogPage() {
   const { posts } = await getBlogPageData();

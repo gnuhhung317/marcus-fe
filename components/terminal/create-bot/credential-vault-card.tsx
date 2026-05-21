@@ -1,4 +1,4 @@
-import { BotProvisioningCredentials } from '../../../lib/contracts/types';
+import { BotProvisioningCredentials } from '@/lib/contracts/types';
 
 interface CredentialVaultCardProps {
   credentials: BotProvisioningCredentials | null;

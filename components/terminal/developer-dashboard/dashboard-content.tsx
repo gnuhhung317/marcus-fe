@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BotDetailCard } from './bot-detail-card';
 import { DeveloperBotList } from './developer-bot-list';
 import { RegisterBotModal } from './register-bot-modal';
-import { DeveloperBotSummary, DeveloperBotDetail, DeveloperSubscriptionSummary } from '../../../lib/contracts/types';
+import { DeveloperBotSummary, DeveloperBotDetail, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 
 interface DashboardContentProps {
   bots: DeveloperBotSummary[];

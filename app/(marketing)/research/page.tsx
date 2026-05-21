@@ -1,4 +1,4 @@
-import { getResearchPageData } from '../../../lib/contracts/client';
+import { getResearchPageData } from '@/lib/contracts/client';
 
 export default async function ResearchPage() {
   const { reports, library } = await getResearchPageData();

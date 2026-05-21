@@ -7,7 +7,7 @@ import {
   deleteCurrentUserApiKey,
   updateCurrentUserPreferences,
   updateCurrentUserProfile,
-} from '../../../lib/contracts/client';
+} from '@/lib/contracts/client';
 
 function toBool(value: FormDataEntryValue | null) {
   return value === 'on' || value === 'true' || value === '1';

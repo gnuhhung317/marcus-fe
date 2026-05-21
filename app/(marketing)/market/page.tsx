@@ -1,4 +1,4 @@
-import { getLeaderboardPageData } from '../../../lib/contracts/client';
+import { getLeaderboardPageData } from '@/lib/contracts/client';
 
 export default async function MarketPage() {
   const { rows } = await getLeaderboardPageData();

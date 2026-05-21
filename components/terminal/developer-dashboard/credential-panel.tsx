@@ -1,4 +1,4 @@
-import { DeveloperBotDetail } from '../../../lib/contracts/types';
+import { DeveloperBotDetail } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
 
 interface CredentialPanelProps {

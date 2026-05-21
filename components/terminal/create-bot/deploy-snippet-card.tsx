@@ -1,4 +1,4 @@
-import { BotProvisioningCredentials, RegisterBotInput } from '../../../lib/contracts/types';
+import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
 
 interface DeploySnippetCardProps {
   formValues: RegisterBotInput;

@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { getDeveloperConsolePageData } from '../../../lib/contracts/client';
+import { getDeveloperConsolePageData } from '@/lib/contracts/client';
 
 export default async function TerminalDeveloperConsolePage() {
   const cookieStore = cookies();

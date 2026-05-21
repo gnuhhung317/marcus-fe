@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getLeaderboardPageData } from '../../../lib/contracts/client';
-import { LeaderboardQueryParams, LeaderboardSortBy } from '../../../lib/contracts/types';
+import { getLeaderboardPageData } from '@/lib/contracts/client';
+import { LeaderboardQueryParams, LeaderboardSortBy } from '@/lib/contracts/types';
 
 interface LeaderboardSearchParams {
   timeframe?: string | string[];

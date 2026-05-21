@@ -1,4 +1,4 @@
-import { getProfilePageData } from '../../../lib/contracts/client';
+import { getProfilePageData } from '@/lib/contracts/client';
 import { createApiKeyAction, revokeApiKeyAction, updatePreferencesAction } from './actions';
 
 interface ProfilePageProps {

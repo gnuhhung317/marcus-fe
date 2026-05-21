@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { DeveloperBotSummary } from '../../../lib/contracts/types';
+import { DeveloperBotSummary } from '@/lib/contracts/types';
 
 const statusColors: Record<DeveloperBotSummary['status'], { bg: string; text: string; dot: string }> = {
   CREATED: {

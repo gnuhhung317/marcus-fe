@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getMarketplacePageData } from '../../../lib/contracts/client';
-import { MarketplaceQueryParams, MarketplaceSortBy } from '../../../lib/contracts/types';
+import { getMarketplacePageData } from '@/lib/contracts/client';
+import { MarketplaceQueryParams, MarketplaceSortBy } from '@/lib/contracts/types';
 
 interface MarketplaceSearchParams {
   search?: string | string[];

@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getStrategyPageData } from '../../../lib/contracts/client';
-import { TimeSeriesValue } from '../../../lib/contracts/types';
+import { getStrategyPageData } from '@/lib/contracts/client';
+import { TimeSeriesValue } from '@/lib/contracts/types';
 
 function buildSeriesPath(series: TimeSeriesValue[]) {
   if (series.length <= 1) {

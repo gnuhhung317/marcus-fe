@@ -1,4 +1,4 @@
-import { RegisterBotInput } from '../../../lib/contracts/types';
+import { RegisterBotInput } from '@/lib/contracts/types';
 
 interface RegisterBotFormCardProps {
   values: RegisterBotInput;

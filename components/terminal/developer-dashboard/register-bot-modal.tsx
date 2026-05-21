@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { registerBotProvisioning } from '../../../lib/contracts/client';
-import { BotProvisioningCredentials, RegisterBotInput } from '../../../lib/contracts/types';
+import { registerBotProvisioning } from '@/lib/contracts/client';
+import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
 
 interface RegisterBotModalProps {
   isOpen: boolean;

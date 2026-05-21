@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { registerBotProvisioning } from '../../../lib/contracts/client';
-import { BotProvisioningCredentials, RegisterBotInput } from '../../../lib/contracts/types';
+import { registerBotProvisioning } from '@/lib/contracts/client';
+import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
 import { CreateBotHeader } from './create-bot-header';
 import { CredentialVaultCard } from './credential-vault-card';
 import { DeploySnippetCard } from './deploy-snippet-card';

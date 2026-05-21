@@ -1,4 +1,4 @@
-import { getTrainingPageData } from '../../../lib/contracts/client';
+import { getTrainingPageData } from '@/lib/contracts/client';
 
 export default async function TrainingPage() {
   const { courses, metrics } = await getTrainingPageData();

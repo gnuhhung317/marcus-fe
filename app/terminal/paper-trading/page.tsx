@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '../../../components/shared/api-state';
-import { LifecycleBadge } from '../../../components/shared/lifecycle-badge';
+import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
+import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
 import {
   createPaperOrder,
   getPaperTradingPageData,
   pausePaperSession,
   resumePaperSession,
-} from '../../../lib/contracts/client';
-import { PaperOrderResult, PaperTradingPageData } from '../../../lib/contracts/types';
+} from '@/lib/contracts/client';
+import { PaperOrderResult, PaperTradingPageData } from '@/lib/contracts/types';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {

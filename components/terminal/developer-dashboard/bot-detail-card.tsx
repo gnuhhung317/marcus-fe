@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DeveloperBotDetail, DeveloperSubscriptionSummary } from '../../../lib/contracts/types';
+import { DeveloperBotDetail, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
 
 const statusStyles: Record<string, string> = {

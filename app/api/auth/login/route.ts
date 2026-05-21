@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getApiBaseUrl } from '../../../../lib/config/env';
+import { getApiBaseUrl } from '@/lib/config/env';
 
 const isProduction = process.env.NODE_ENV === 'production';
 

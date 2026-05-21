@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { SubscribeBotPanel } from '../../../../components/terminal/marketplace/subscribe-bot-panel';
-import { getMarketplaceBotDetail } from '../../../../lib/contracts/client';
+import { getMarketplaceBotDetail } from '@/lib/contracts/client';
 
 function formatPercent(value: number, alwaysSign = false) {
   const sign = alwaysSign && value >= 0 ? '+' : '';

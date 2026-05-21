@@ -10,16 +10,16 @@ interface KpiCardProps {
 }
 
 const trendPresentation: Record<KpiCardProps['trend'], { symbol: string; className: string }> = {
-  up: { symbol: '↑', className: 'text-positive bg-[rgba(0,190,115,0.1)]' },
-  down: { symbol: '↓', className: 'text-negative bg-[rgba(244,63,94,0.1)]' },
-  neutral: { symbol: '→', className: 'text-muted bg-[rgba(148,163,184,0.1)]' },
+  up: { symbol: '↑', className: 'text-positive bg-[var(--primary-soft)]' },
+  down: { symbol: '↓', className: 'text-negative bg-[var(--negative-soft)]' },
+  neutral: { symbol: '→', className: 'text-muted bg-[var(--panel-border)]' },
 };
 
 export function KpiCard({ label, value, delta, context, trend, data }: KpiCardProps) {
   const trendStyle = trendPresentation[trend];
 
   return (
-    <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] transition-all duration-300 hover:translate-y-[-2px] hover:border-[rgba(0,190,115,0.3)]">
+    <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] transition-all duration-300 hover:translate-y-[-2px] hover:border-[var(--primary-soft)]">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">{label}</p>

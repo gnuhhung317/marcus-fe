@@ -59,7 +59,7 @@ export function PerformanceChart({ data }: PerformanceChartProps) {
             y1={p * height}
             x2={width}
             y2={p * height}
-            stroke="rgba(255,255,255,0.05)"
+            stroke="var(--panel-border)"
             strokeWidth="1"
           />
         ))}

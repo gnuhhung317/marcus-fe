@@ -97,14 +97,14 @@ export default function RegisterForm() {
           ref={alertRef}
           role="alert"
           tabIndex={-1}
-          className="rounded-lg border border-[rgba(244,63,94,0.4)] bg-[rgba(127,29,29,0.35)] p-3 text-sm text-red-100"
+          className="rounded-lg border border-[var(--panel-border)] bg-[var(--negative-soft)] p-3 text-sm text-negative"
         >
           {error}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-lg border border-[rgba(16,185,129,0.36)] bg-[rgba(6,78,59,0.35)] p-3 text-sm text-[rgba(209,250,229,0.95)]">
+        <div className="rounded-lg border border-[var(--panel-border)] bg-[var(--primary-soft)] p-3 text-sm text-positive">
           {successMessage}
         </div>
       ) : null}
@@ -120,7 +120,7 @@ export default function RegisterForm() {
           required
           autoComplete="email"
           aria-describedby="register-email-hint"
-          className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[rgba(16,185,129,0.52)]"
+          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
         />
         <p id="register-email-hint" className="mt-1 text-xs text-muted">Use a reachable email for account recovery.</p>
       </div>
@@ -131,7 +131,7 @@ export default function RegisterForm() {
           id="register-role"
           value={role}
           onChange={(e) => setRole(e.target.value as 'USER' | 'DEVELOPER')}
-          className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors focus:border-[rgba(16,185,129,0.52)]"
+          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
         >
           <option value="USER">User</option>
           <option value="DEVELOPER">Developer</option>
@@ -149,7 +149,7 @@ export default function RegisterForm() {
           type="text"
           required
           autoComplete="name"
-          className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[rgba(16,185,129,0.52)]"
+          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
         />
       </div>
 
@@ -174,7 +174,7 @@ export default function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center rounded-md bg-emerald-500 px-4 py-2 text-white hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center rounded-md cta-primary px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {loading ? 'Creating account…' : 'Create account'}
         </button>

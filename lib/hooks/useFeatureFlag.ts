@@ -32,6 +32,11 @@ export function useFeatureFlag(flag: string): boolean {
  * Helper to toggle a feature flag in localStorage for dev/testing.
  */
 export function toggleFeatureFlag(flag: string, enabled?: boolean) {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    // No-op on server
+    return;
+  }
+
   const overrideKey = `ff_override_${flag}`;
   if (enabled === undefined) {
     // Toggle current value
@@ -42,5 +47,9 @@ export function toggleFeatureFlag(flag: string, enabled?: boolean) {
     localStorage.setItem(overrideKey, enabled ? 'true' : 'false');
   }
   // Trigger a page reload or state update
-  window.location.reload();
+  try {
+    window.location.reload();
+  } catch (e) {
+    // ignore in environments where reload is not available
+  }
 }

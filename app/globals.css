@@ -16,6 +16,11 @@
   --primary-soft: rgba(0, 190, 115, 0.12);
   --positive: #00be73;
   --negative: #f43f5e;
+  --negative-soft: rgba(127,29,29,0.36);
+  --warning: #f59e0b;
+  --warning-soft: rgba(245,158,11,0.12);
+  --info: #3eb7ff;
+  --info-soft: rgba(62,183,255,0.12);
   --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.5);
 }
 
@@ -104,6 +109,18 @@ a {
 
 .text-negative {
   color: var(--negative);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-info {
+  color: var(--info);
+}
+
+.text-cta-on-primary {
+  color: #022c22;
 }
 
 .noise::before {

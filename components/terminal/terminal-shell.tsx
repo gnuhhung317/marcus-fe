@@ -117,7 +117,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
   const renderLink = (item: { href: string; label: string }) => {
     const active = pathname === item.href;
       return (
-      <Link
+          <Link
         key={item.href}
         href={item.href}
         className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
@@ -169,8 +169,8 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
                   href="/terminal/decision"
                   className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
                     pathname === '/terminal/decision'
-                      ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                      : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                      ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
+                        : 'text-muted hover:bg-[var(--panel)] hover:text-white'
                   }`}
                 >
                   <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
@@ -186,8 +186,8 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
                   href="/terminal/monitoring"
                   className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
                     pathname === '/terminal/monitoring'
-                      ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                      : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                      ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
+                      : 'text-muted hover:bg-[var(--panel)] hover:text-white'
                   }`}
                 >
                   <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>

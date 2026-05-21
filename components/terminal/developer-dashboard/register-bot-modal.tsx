@@ -73,7 +73,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-strong)] p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-strong)] p-8 shadow-[var(--shadow-soft)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
         
         {/* Glow effect */}
         <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[var(--primary-soft)] blur-3xl pointer-events-none" />

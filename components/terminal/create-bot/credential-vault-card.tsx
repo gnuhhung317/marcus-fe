@@ -18,6 +18,10 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
     <article className="glass rounded-2xl p-6">
       <h2 className="font-display text-2xl text-white">Credential Vault (One-Time Display)</h2>
       <p className="mt-2 text-sm text-muted">After creation, backend returns BotRegistrationResponse payload.</p>
+  return (
+    <article className="glass rounded-2xl p-6">
+      <h2 className="font-display text-2xl text-white">Credential Vault (One-Time Display)</h2>
+      <p className="mt-2 text-sm text-muted">After creation, backend returns BotRegistrationResponse payload.</p>
 
       {credentials ? (
         <>
@@ -26,17 +30,16 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
             <VaultValue label="apiKey" value={credentials.apiKey} />
           </div>
 
-          <div className="mt-4 rounded-xl border border-[rgba(34,197,94,0.36)] bg-[rgba(34,197,94,0.1)] p-4">
+          <div className="mt-4 rounded-xl border border-[var(--primary-soft)] bg-[var(--primary-soft)] p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-positive">rawSecret</p>
             <p className="mt-2 break-all font-mono text-sm text-white">{credentials.rawSecret}</p>
             <p className="mt-2 text-xs text-muted">Store this immediately. It will not be shown again.</p>
           </div>
         </>
       ) : (
-        <div className="mt-5 rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] p-4 text-sm text-muted">
+        <div className="mt-5 rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-4 text-sm text-muted">
           Create a bot to generate one-time credentials.
         </div>
       )}
     </article>
   );
-}

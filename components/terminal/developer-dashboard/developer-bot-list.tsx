@@ -43,11 +43,11 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
   );
 
   return (
-    <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] border border-[rgba(255,255,255,0.06)] relative overflow-hidden group">
+    <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] border border-[var(--panel-border)] relative overflow-hidden group">
       {/* Visual background ambient glow */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/10 transition-all duration-500" />
+      <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--primary-soft)] rounded-full blur-2xl pointer-events-none group-hover:bg-[var(--primary-soft)] transition-all duration-500" />
       
-      <div className="flex items-center justify-between border-b border-[rgba(148,163,184,0.12)] pb-4 mb-4">
+      <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-4 mb-4">
         <div>
           <h2 className="text-sm font-bold text-white tracking-wide">Bot Registry</h2>
           <p className="text-[10px] uppercase tracking-[0.18em] text-muted mt-0.5 font-semibold">
@@ -56,7 +56,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
         </div>
         <Link
           href="/terminal/create-bot"
-          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-white/5 border border-white/8 hover:bg-emerald-500/15 hover:border-emerald-500/30 hover:text-white transition-all cursor-pointer text-muted"
+          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-[var(--panel)] border border-[var(--panel-border)] hover:bg-[var(--primary-soft)] hover:border-[var(--primary-soft)] hover:text-white transition-all cursor-pointer text-muted"
           title="Register New Bot"
         >
           <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -77,7 +77,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Filter registry..."
-          className="w-full bg-[rgba(6,10,18,0.4)] border border-[rgba(255,255,255,0.06)] rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 focus:bg-[rgba(6,10,18,0.6)] focus:shadow-[0_0_12px_rgba(16,185,129,0.05)] transition-all"
+          className="w-full bg-[var(--panel)] border border-[var(--panel-border)] rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 outline-none focus:border-emerald-500/50 focus:bg-[var(--panel)] focus:shadow-[0_0_12px_var(--primary-soft)] transition-all"
         />
         {searchQuery && (
           <button
@@ -94,7 +94,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
       {/* Bot List Container */}
       <div className="space-y-2.5 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800 scrollbar-track-transparent">
         {filteredBots.length === 0 ? (
-          <div className="py-8 text-center rounded-xl border border-dashed border-white/5 bg-[rgba(6,10,18,0.2)]">
+          <div className="py-8 text-center rounded-xl border border-dashed border-white/5 bg-[var(--panel)]">
             <p className="text-xs text-slate-500">No bots matching &quot;{searchQuery}&quot;</p>
           </div>
         ) : (
@@ -115,8 +115,8 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
                 <div
                   className={`group/item cursor-pointer rounded-xl border p-3.5 transition-all duration-300 ${
                     isActive
-                      ? 'border-emerald-500/35 bg-emerald-500/[0.04] shadow-[0_0_16px_rgba(16,185,129,0.06)]'
-                      : 'border-[rgba(255,255,255,0.05)] bg-[rgba(6,10,18,0.3)] hover:bg-[rgba(255,255,255,0.02)] hover:border-white/10 hover:translate-x-[1px]'
+                      ? 'border-[var(--primary-soft)] bg-[var(--primary-soft)] shadow-[0_0_16px_var(--primary-soft)]'
+                      : 'border-[var(--panel-border)] bg-[var(--panel)] hover:bg-[var(--panel-border)] hover:border-[var(--panel-border)] hover:translate-x-[1px]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2.5">
@@ -134,7 +134,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
                     </span>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-[rgba(255,255,255,0.04)] pt-2.5 text-[10px]">
+                  <div className="mt-3 flex items-center justify-between border-t border-[var(--panel-border)] pt-2.5 text-[10px]">
                     <div className="flex items-center gap-1.5 text-slate-500">
                       <span>Venue:</span>
                       <span className="text-slate-300 font-mono font-medium">{bot.exchange ?? 'N/A'}</span>

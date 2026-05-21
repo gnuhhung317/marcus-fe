@@ -30,7 +30,7 @@ Content-Type: application/json
       <h2 className="font-display text-2xl text-white">Deploy Integration Snippet</h2>
       <p className="mt-2 text-sm text-muted">Use bot credentials in your runtime process to call signal ingestion endpoint.</p>
 
-      <pre className="mt-4 overflow-auto rounded-xl border border-[rgba(148,163,184,0.28)] bg-[rgba(6,10,18,0.75)] p-4 text-xs text-white">
+      <pre className="mt-4 overflow-auto rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-4 text-xs text-white">
         {snippet}
       </pre>
     </article>

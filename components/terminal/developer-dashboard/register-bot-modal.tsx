@@ -73,14 +73,14 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0b0f19]/90 p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-strong)] p-8 shadow-[0_0_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
         
         {/* Glow effect */}
-        <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
-        <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
+        <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[var(--primary-soft)] blur-3xl pointer-events-none" />
+        <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-[var(--info-soft)] blur-3xl pointer-events-none" />
 
         {/* Header */}
-        <header className="relative flex items-center justify-between pb-5 border-b border-white/5">
+        <header className="relative flex items-center justify-between pb-5 border-b border-[var(--panel-border)]">
           <div>
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-400">Signal Gateway</span>
             <h3 className="text-xl font-bold text-white tracking-tight mt-1">
@@ -110,7 +110,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                   type="text"
                   required
                   placeholder="e.g. BTC_BREAKOUT_BOT"
-                  className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all font-mono"
+                  className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
                   value={formValues.botName}
                   onChange={(e) => handleFieldChange('botName', e.target.value)}
                 />
@@ -120,7 +120,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Exchange Venue</label>
                   <select
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all"
+                    className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all"
                     value={formValues.exchange}
                     onChange={(e) => handleFieldChange('exchange', e.target.value as RegisterBotInput['exchange'])}
                   >
@@ -136,7 +136,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                     type="text"
                     required
                     placeholder="BTC/USDT"
-                    className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 transition-all font-mono"
+                    className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
                     value={formValues.tradingPair}
                     onChange={(e) => handleFieldChange('tradingPair', e.target.value)}
                   />
@@ -144,12 +144,12 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
               </div>
 
               {submitError && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-xs text-red-400">
+                <div className="rounded-xl border border-[var(--negative-soft)] bg-[var(--negative-soft)] p-3 text-xs text-negative">
                   {submitError}
                 </div>
               )}
 
-              <div className="pt-4 border-t border-white/5 flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-[var(--panel-border)] flex items-center justify-end gap-3">
                 <button
                   type="button"
                   onClick={onClose}
@@ -160,7 +160,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-400 px-6 py-2.5 text-xs font-bold text-black hover:bg-emerald-300 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-6 py-2.5 text-xs font-bold text-cta-on-primary hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? (
                     <>
@@ -180,12 +180,12 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
             /* Success & Vault display view */
             <div className="space-y-6">
               {/* Warnings and Security */}
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex gap-3">
+              <div className="rounded-xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-4 flex gap-3">
                 <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Warning: One-Time Secret</h4>
+                  <h4 className="text-xs font-bold text-warning uppercase tracking-wider">Warning: One-Time Secret</h4>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
                     For security reasons, your **Signing Secret** will not be accessible once this window is closed. Please copy and store it securely immediately.
                   </p>
@@ -203,7 +203,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                     {copiedField === 'botId' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-white/5 bg-black/40 px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
                   {credentials.botId}
                 </div>
               </div>
@@ -219,7 +219,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                     {copiedField === 'apiKey' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-white/5 bg-black/40 px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
                   {credentials.apiKey}
                 </div>
               </div>
@@ -235,7 +235,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                     {copiedField === 'rawSecret' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3.5 text-xs font-mono text-emerald-300 select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-[var(--primary-soft)] bg-[var(--primary-soft)] px-4 py-3.5 text-xs font-mono text-positive select-all break-all pr-12">
                   {credentials.rawSecret}
                 </div>
               </div>

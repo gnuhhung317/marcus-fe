@@ -40,7 +40,7 @@ export const contractRoutes: ContractRoute[] = [
   {
     id: 'bot-register',
     method: 'POST',
-    path: '/bots',
+    path: '/bots/register',
     operationId: 'registerBot',
     page: 'terminal/create-bot',
     feature: 'Create bot and receive apiKey + rawSecret',
@@ -281,6 +281,15 @@ export const contractRoutes: ContractRoute[] = [
     status: 'available',
   },
   {
+    id: 'marketing-stats',
+    method: 'GET',
+    path: '/public/marketing/stats',
+    operationId: 'getMarketingStats',
+    page: 'home',
+    feature: 'Marketing trust indicators',
+    status: 'available',
+  },
+  {
     id: 'academy-courses',
     method: 'GET',
     path: '/academy/courses',
@@ -334,6 +343,34 @@ export const contractRoutes: ContractRoute[] = [
     page: 'home, market',
     feature: 'Top volume and market pulse',
     status: 'gap',
+  },
+  // ========== Developer Dashboard (MVP) ==========
+  {
+    id: 'developer-bots',
+    method: 'GET',
+    path: '/bots/my-bots',
+    operationId: 'listDeveloperBots',
+    page: 'terminal/developer-dashboard',
+    feature: 'Developer bot registry',
+    status: 'available',
+  },
+  {
+    id: 'developer-bot-detail',
+    method: 'GET',
+    path: '/bots/{botId}',
+    operationId: 'getBotDetail',
+    page: 'terminal/developer-dashboard',
+    feature: 'Developer bot detail',
+    status: 'available',
+  },
+  {
+    id: 'developer-bot-subscriptions',
+    method: 'GET',
+    path: '/subscriptions/{botId}/active',
+    operationId: 'listActiveSubscriptionsForBot',
+    page: 'terminal/developer-dashboard',
+    feature: 'Bot subscription list for developer',
+    status: 'available',
   },
   // ========== Phase 1: Decision Dashboard ==========
   {

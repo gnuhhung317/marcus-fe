@@ -1,4 +1,4 @@
-﻿const DEFAULT_API_BASE_URL = 'http://200.200.201.4:8081/api/v1';
+const DEFAULT_API_BASE_URL = 'http://171.244.195.150:8081/api/v1';
 // const DEFAULT_API_BASE_URL = 'http://localhost:8080/api/v1';
 
 export const ENV = {

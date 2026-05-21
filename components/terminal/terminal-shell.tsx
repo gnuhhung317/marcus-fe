@@ -12,7 +12,8 @@ const terminalNav = [
   { href: '/terminal/strategies', label: 'Strategies', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/create-bot', label: 'Create Bot', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/paper-trading', label: 'Paper Trading', roles: ['OPERATOR', 'ADMIN'] },
-  { href: '/terminal/profile', label: 'Profile', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+  { href: '/terminal/profile', label: 'Profile', roles: ['TRADER', 'DEVELOPER', 'OPERATOR', 'ADMIN'] },
+  { href: '/terminal/developer-dashboard', label: 'Developer Dashboard', roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },
   { href: '/terminal/developer-console', label: 'Developer Console', roles: ['OPERATOR', 'ADMIN'] },
 ] as const;
 
@@ -76,6 +77,12 @@ function getIcon(href: string) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
       );
+    case '/terminal/developer-dashboard':
+      return (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+        </svg>
+      );
     default:
       return (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -101,6 +108,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
     (item) =>
       item.href === '/terminal/create-bot' ||
       item.href === '/terminal/paper-trading' ||
+      item.href === '/terminal/developer-dashboard' ||
       item.href === '/terminal/developer-console'
   );
 
@@ -153,44 +161,46 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
           </div>
 
           {/* Dashboards Section */}
-          <div className="space-y-2">
-            <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Dashboards</p>
-            <nav className="space-y-1">
-              <Link
-                href="/terminal/decision"
-                className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  pathname === '/terminal/decision'
-                    ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                    : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
-                }`}
-              >
-                <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
-                  {getIcon('/terminal/decision')}
-                </span>
-                <span className="flex items-center gap-1.5 flex-1 justify-between">
-                  <span>Decision Dashboard</span>
-                  {dashboardV2Enabled && <span className="text-[9px] bg-positive/10 border border-positive/20 text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
-                </span>
-              </Link>
+          {isAllowedRole(role, ['TRADER', 'OPERATOR', 'ADMIN']) && (
+            <div className="space-y-2">
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Dashboards</p>
+              <nav className="space-y-1">
+                <Link
+                  href="/terminal/decision"
+                  className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    pathname === '/terminal/decision'
+                      ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
+                      : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                  }`}
+                >
+                  <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
+                    {getIcon('/terminal/decision')}
+                  </span>
+                  <span className="flex items-center gap-1.5 flex-1 justify-between">
+                    <span>Decision Dashboard</span>
+                    {dashboardV2Enabled && <span className="text-[9px] bg-positive/10 border border-positive/20 text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
+                  </span>
+                </Link>
 
-              <Link
-                href="/terminal/monitoring"
-                className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                  pathname === '/terminal/monitoring'
-                    ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                    : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
-                }`}
-              >
-                <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
-                  {getIcon('/terminal/monitoring')}
-                </span>
-                <span className="flex items-center gap-1.5 flex-1 justify-between">
-                  <span>Monitoring</span>
-                  <span className="text-[9px] bg-slate-800 border border-slate-700 text-slate-400 px-1 py-0.5 rounded font-bold font-mono">P2</span>
-                </span>
-              </Link>
-            </nav>
-          </div>
+                <Link
+                  href="/terminal/monitoring"
+                  className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                    pathname === '/terminal/monitoring'
+                      ? 'bg-[rgba(0,190,115,0.08)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
+                      : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                  }`}
+                >
+                  <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
+                    {getIcon('/terminal/monitoring')}
+                  </span>
+                  <span className="flex items-center gap-1.5 flex-1 justify-between">
+                    <span>Monitoring</span>
+                    <span className="text-[9px] bg-slate-800 border border-slate-700 text-slate-400 px-1 py-0.5 rounded font-bold font-mono">P2</span>
+                  </span>
+                </Link>
+              </nav>
+            </div>
+          )}
 
           {/* Trading Desk Section */}
           {tradingDeskNav.length > 0 && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { KpiCard } from '@/components/shared/kpi-card';
 import { PerformanceChart } from '@/components/shared/performance-chart';
@@ -60,7 +61,18 @@ function useMonitoringData() {
 }
 
 export default function MonitoringDashboardPage() {
+  const router = useRouter();
   const { data, isLoading, isRefreshing, error, refresh } = useMonitoringData();
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
+    const role = match ? decodeURIComponent(match[1]) : null;
+    if (role === 'DEVELOPER') {
+      router.replace('/terminal/developer-dashboard');
+    } else if (!role || (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN')) {
+      router.replace('/login');
+    }
+  }, [router]);
 
   const sparklineSeed = useMemo(() => {
     return data?.dashboard.performanceSeries.map((point) => point.value) ?? [];

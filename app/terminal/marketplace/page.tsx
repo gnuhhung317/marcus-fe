@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getMarketplacePageData } from '../../../lib/contracts/client';
 import { MarketplaceQueryParams, MarketplaceSortBy } from '../../../lib/contracts/types';
 
@@ -60,6 +62,13 @@ function sortLabel(sortBy: MarketplaceSortBy) {
 }
 
 export default async function TerminalMarketplacePage({ searchParams }: { searchParams?: MarketplaceSearchParams }) {
+  const cookieStore = cookies();
+  const role = cookieStore.get('marcus_role')?.value;
+
+  if (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN') {
+    redirect('/terminal');
+  }
+
   const query = parseMarketplaceSearchParams(searchParams);
   const marketplacePage = await getMarketplacePageData(query);
   const hasPrev = marketplacePage.page > 1;

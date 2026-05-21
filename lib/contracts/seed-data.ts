@@ -1,5 +1,8 @@
 import {
   BlogPost,
+  DeveloperBotDetail,
+  DeveloperBotSummary,
+  DeveloperSubscriptionSummary,
   LeaderboardRow,
   MarketplaceBot,
   MarketTicker,
@@ -227,5 +230,61 @@ export const profileApiKeys: ProfileApiKey[] = [
     label: 'ByBit_Futures_Main',
     maskedKey: 'mt_ak_************7e21',
     createdAt: '2024-10-02T06:40:00Z',
+  },
+];
+
+export const developerBots: DeveloperBotSummary[] = [
+  {
+    botId: 'bot_kinetic_001',
+    botName: 'Kinetic Alpha',
+    description: 'Momentum alpha strategy with volatility guardrails.',
+    status: 'ACTIVE',
+    tradingPair: 'BTC/USDT',
+    exchange: 'BINANCE',
+    apiKey: 'ak_60f1aa2b1f984c6b9e3b2c71',
+  },
+  {
+    botId: 'bot_vortex_042',
+    botName: 'Vortex Grid',
+    description: 'Market-neutral grid execution for range-bound assets.',
+    status: 'PAUSED',
+    tradingPair: 'ETH/USDT',
+    exchange: 'BYBIT',
+    apiKey: 'ak_1e3bf1c5e9a647ad9f2b22aa',
+  },
+  {
+    botId: 'bot_scout_007',
+    botName: 'Scout Breakout',
+    description: 'Volatility breakout scout with strict risk caps.',
+    status: 'ERROR',
+    tradingPair: 'SOL/USDT',
+    exchange: 'OKX',
+    apiKey: 'ak_5b04e87f0d9f4c5e9120a231',
+  },
+];
+
+export const developerActiveBot: DeveloperBotDetail = {
+  botId: 'bot_kinetic_001',
+  botName: 'Kinetic Alpha',
+  description: 'Momentum alpha strategy with volatility guardrails.',
+  status: 'ACTIVE',
+  tradingPair: 'BTC/USDT',
+  exchange: 'BINANCE',
+  apiKey: 'ak_60f1aa2b1f984c6b9e3b2c71',
+  developerId: 'dev_102',
+  createdAt: '2026-05-01T08:10:00Z',
+  updatedAt: '2026-05-18T08:55:00Z',
+};
+
+export const developerSubscriptions: DeveloperSubscriptionSummary[] = [
+  {
+    botId: 'bot_kinetic_001',
+    wsToken: 'ws_00f1b4f04d7f4f8c8e7d8123',
+    status: 'ACTIVE',
+  },
+  {
+    botId: 'bot_kinetic_001',
+    wsToken: 'ws_9e8c63a1b2c5444c9f1d2033',
+    status: 'PAUSED',
   },
 ];

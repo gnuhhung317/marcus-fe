@@ -1,34 +1,25 @@
-"use client";
-
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useFeatureFlag } from '@/lib/hooks/useFeatureFlag';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 /**
  * Terminal dashboard router.
- * Routes to Decision Dashboard (Phase 1) or Monitoring Dashboard (Phase 2)
+ * Routes to Developer Dashboard if role is DEVELOPER.
+ * Otherwise routes to Decision Dashboard (Phase 1) or Monitoring Dashboard (Phase 2)
  * based on feature flag.
  */
-export default function TerminalDashboardPage() {
-  const router = useRouter();
-  const dashboardV2Enabled = useFeatureFlag('dashboard-v2');
+export default async function TerminalDashboardPage() {
+  const cookieStore = cookies();
+  const role = cookieStore.get('marcus_role')?.value;
 
-  useEffect(() => {
-    // Route to appropriate dashboard based on feature flag
-    if (dashboardV2Enabled) {
-      router.replace('/terminal/decision');
-    } else {
-      router.replace('/terminal/monitoring');
-    }
-  }, [dashboardV2Enabled, router]);
+  if (role === 'DEVELOPER') {
+    redirect('/terminal/developer-dashboard');
+  }
 
-  // Show loading state while routing
-  return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <div className="text-center">
-        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4" />
-        <p className="text-slate-400">Loading dashboard...</p>
-      </div>
-    </div>
-  );
+  const dashboardV2Enabled = process.env.NEXT_PUBLIC_FEATURE_FLAG_DASHBOARD_V2 === 'true';
+
+  if (dashboardV2Enabled) {
+    redirect('/terminal/decision');
+  } else {
+    redirect('/terminal/monitoring');
+  }
 }

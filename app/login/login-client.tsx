@@ -52,8 +52,6 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
     setFormError(undefined);
 
     try {
-      console.info('[login] submitting', { identifier: trimmedIdentifier, nextPath: initialNextPath });
-
       const response = await fetch(LOGIN_ROUTE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -62,7 +60,6 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
       });
 
       const payload = await response.json().catch(() => ({}));
-      console.info('[login] response', { status: response.status, payload });
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -79,18 +76,8 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
         return;
       }
 
-      // Persist access token to localStorage so client can attach Authorization header
-      try {
-        if (typeof window !== 'undefined' && payload?.accessToken) {
-          localStorage.setItem('marcus_access_token', String(payload.accessToken));
-        }
-      } catch {
-        // ignore
-      }
-
       router.replace(initialNextPath);
     } catch (error) {
-      console.error('[login] request failed', error);
       setFormError('Login service is temporarily unavailable.');
     } finally {
       setIsSubmitting(false);

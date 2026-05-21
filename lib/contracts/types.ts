@@ -328,6 +328,36 @@ export interface DeveloperConsolePageData {
   executionLogs: ExecutionLogLine[];
 }
 
+export type DeveloperBotStatus = 'CREATED' | 'ACTIVE' | 'PAUSED' | 'ERROR';
+
+export interface DeveloperBotSummary {
+  botId: string;
+  botName: string;
+  description?: string | null;
+  status: DeveloperBotStatus;
+  tradingPair?: string | null;
+  exchange?: string | null;
+  apiKey?: string | null;
+}
+
+export interface DeveloperBotDetail extends DeveloperBotSummary {
+  developerId?: string | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface DeveloperSubscriptionSummary {
+  botId: string;
+  wsToken: string;
+  status: string;
+}
+
+export interface DeveloperDashboardPageData {
+  bots: DeveloperBotSummary[];
+  activeBot: DeveloperBotDetail;
+  subscriptions: DeveloperSubscriptionSummary[];
+}
+
 export interface LeaderboardPageData {
   rows: LeaderboardRow[];
   featured: LeaderboardRow[];

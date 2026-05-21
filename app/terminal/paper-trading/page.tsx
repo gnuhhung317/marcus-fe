@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '../../../components/shared/api-state';
 import { LifecycleBadge } from '../../../components/shared/lifecycle-badge';
 import {
@@ -20,9 +21,18 @@ function formatCurrency(value: number) {
 }
 
 export default function TerminalPaperTradingPage() {
+  const router = useRouter();
   const [paperData, setPaperData] = useState<PaperTradingPageData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [orderMessage, setOrderMessage] = useState<PaperOrderResult | null>(null);
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
+    const role = match ? decodeURIComponent(match[1]) : null;
+    if (role !== 'OPERATOR' && role !== 'ADMIN') {
+      router.replace('/terminal');
+    }
+  }, [router]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [assetPair, setAssetPair] = useState('BTC/USDT');

@@ -7,6 +7,9 @@ import {
 } from '../api/http';
 import {
   blogPosts,
+  developerActiveBot,
+  developerBots,
+  developerSubscriptions,
   leaderboardRows,
   marketplaceBots,
   marketTickers,
@@ -16,7 +19,7 @@ import {
   strategyTrades,
   terminalKpis,
   trainingCourses,
-} from './mock-data';
+} from './seed-data';
 import {
   AcademyMetricsData,
   AllocationSlice,
@@ -25,7 +28,11 @@ import {
   BlogPost,
   BotProvisioningCredentials,
   DashboardPageData,
+  DeveloperBotDetail,
+  DeveloperBotSummary,
   DeveloperConsolePageData,
+  DeveloperDashboardPageData,
+  DeveloperSubscriptionSummary,
   HomePageData,
   LeaderboardPageData,
   LeaderboardRow,
@@ -917,7 +924,7 @@ export async function getHomePageData(): Promise<HomePageData> {
       async () => undefined,
     ),
     withFallback(
-      () => requestJson<{ verifiedDevelopers: number; activeCloudExecutors: number; systemUptime: string; supportedExchanges: number; }>('/public/marketing/stats'),
+      () => requestContractJson<{ verifiedDevelopers: number; activeCloudExecutors: number; systemUptime: string; supportedExchanges: number; }>('marketing-stats'),
       async () => undefined,
     )
   ]);
@@ -1068,10 +1075,10 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
     .filter((point) => Number.isFinite(point.value));
 
   return {
-    terminalKpis: overview ? mapDashboardKpis(overview) : terminalKpis,
-    strategyTrades: mappedTrades.length ? mappedTrades : strategyTrades,
-    allocations: mappedAllocations.length ? mappedAllocations : defaultAllocations,
-    performanceSeries: performanceSeries.length ? performanceSeries : buildFallbackStrategySeries(),
+    terminalKpis: overview ? mapDashboardKpis(overview) : [],
+    strategyTrades: mappedTrades,
+    allocations: mappedAllocations,
+    performanceSeries,
   };
 }
 
@@ -1561,6 +1568,88 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
     connectivity,
     signalStream: signalStream.length ? signalStream : [],
     executionLogs: executionLogs.length ? executionLogs : defaultExecutionLogs,
+  };
+}
+
+interface DeveloperBotSummaryResponse {
+  botId?: string;
+  botName?: string;
+  description?: string;
+  status?: string;
+  tradingPair?: string;
+  exchange?: string;
+  apiKey?: string;
+}
+
+interface DeveloperBotDetailResponse extends DeveloperBotSummaryResponse {
+  developerId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+interface BotSubscriptionResultResponse {
+  botId?: string;
+  wsToken?: string;
+  status?: string;
+}
+
+export async function getDeveloperDashboardPageData(activeBotId?: string): Promise<DeveloperDashboardPageData> {
+  const botsResponse = await withFallback(
+    () => requestContractJson<DeveloperBotSummaryResponse[]>('developer-bots'),
+    async () => [],
+  );
+
+  const bots = botsResponse.map((item, index) => ({
+    botId: item.botId ?? `bot_${index + 1}`,
+    botName: item.botName ?? 'Unnamed Bot',
+    description: item.description ?? null,
+    status: (item.status ?? 'CREATED') as DeveloperBotSummary['status'],
+    tradingPair: item.tradingPair ?? null,
+    exchange: item.exchange ?? null,
+    apiKey: item.apiKey ?? null,
+  }));
+
+  const resolvedBots = bots;
+  const selectedBotId = activeBotId && resolvedBots.some(b => b.botId === activeBotId)
+    ? activeBotId
+    : (resolvedBots[0]?.botId ?? '');
+
+  const [detailResponse, subscriptionsResponse] = await Promise.all([
+    withFallback(
+      () => requestContractJson<DeveloperBotDetailResponse>('developer-bot-detail', { pathParams: { botId: selectedBotId } }),
+      async () => undefined,
+    ),
+    withFallback(
+      () => requestContractJson<BotSubscriptionResultResponse[]>('developer-bot-subscriptions', { pathParams: { botId: selectedBotId } }),
+      async () => [],
+    ),
+  ]);
+
+  const matchedSummary = resolvedBots.find(b => b.botId === selectedBotId);
+
+  const activeBot: DeveloperBotDetail = {
+    botId: detailResponse?.botId ?? selectedBotId,
+    botName: detailResponse?.botName ?? matchedSummary?.botName ?? 'Unnamed Bot',
+    description: detailResponse?.description ?? matchedSummary?.description ?? null,
+    status: (detailResponse?.status ?? matchedSummary?.status ?? 'CREATED') as DeveloperBotSummary['status'],
+    tradingPair: detailResponse?.tradingPair ?? matchedSummary?.tradingPair ?? null,
+    exchange: detailResponse?.exchange ?? matchedSummary?.exchange ?? null,
+    apiKey: detailResponse?.apiKey ?? matchedSummary?.apiKey ?? null,
+    developerId: detailResponse?.developerId ?? null,
+    createdAt: detailResponse?.createdAt ?? null,
+    updatedAt: detailResponse?.updatedAt ?? null,
+  };
+
+  const subscriptions: DeveloperSubscriptionSummary[] = subscriptionsResponse.map((item, index) => ({
+    botId: item.botId ?? selectedBotId,
+    wsToken: item.wsToken ?? `ws_${index + 1}`,
+    status: item.status ?? 'UNKNOWN',
+  }));
+
+  return {
+    bots: resolvedBots,
+    activeBot,
+    subscriptions,
   };
 }
 

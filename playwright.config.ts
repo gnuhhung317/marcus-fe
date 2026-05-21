@@ -22,7 +22,7 @@ const config: PlaywrightTestConfig = {
     timeout: 120_000,
     reuseExistingServer: false,
     env: {
-      NEXT_PUBLIC_API_BASE_URL: 'http://200.200.201.4:8081/api/v1',
+      NEXT_PUBLIC_API_BASE_URL: 'http://171.244.195.150:8081/api/v1',
       NODE_ENV: 'development',
     },
   },

@@ -45,8 +45,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // TRADER, OPERATOR, ADMIN can access terminal
-  if (role === 'TRADER' || role === 'OPERATOR' || role === 'ADMIN') {
+  // TRADER, DEVELOPER, OPERATOR, ADMIN can access terminal
+  if (role === 'TRADER' || role === 'DEVELOPER' || role === 'OPERATOR' || role === 'ADMIN') {
     // Redirect to terminal/marketplace if accessing root or marketing after login
     if (pathname === '/' || isMarketingRoute) {
       return NextResponse.redirect(new URL('/terminal/marketplace', request.url));

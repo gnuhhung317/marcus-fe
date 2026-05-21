@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getLeaderboardPageData } from '../../../lib/contracts/client';
 import { LeaderboardQueryParams, LeaderboardSortBy } from '../../../lib/contracts/types';
 
@@ -55,6 +57,13 @@ function sortLabel(sortBy: LeaderboardSortBy) {
 }
 
 export default async function TerminalLeaderboardPage({ searchParams }: { searchParams?: LeaderboardSearchParams }) {
+  const cookieStore = cookies();
+  const role = cookieStore.get('marcus_role')?.value;
+
+  if (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN') {
+    redirect('/terminal');
+  }
+
   const query = parseLeaderboardSearchParams(searchParams);
   const leaderboardPage = await getLeaderboardPageData(query);
   const hasPrev = leaderboardPage.page > 1;

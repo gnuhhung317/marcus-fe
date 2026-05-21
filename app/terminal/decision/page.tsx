@@ -1,6 +1,7 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getDecisionDashboardData } from '@/lib/contracts/client';
 import { PortfolioOverviewStats } from './portfolio-overview';
 import { SubscriptionCardsContainer } from './subscription-cards';
@@ -12,9 +13,20 @@ async function DecisionDashboardContent() {
 }
 
 function DecisionDashboardView({ initialData }: { initialData: Awaited<ReturnType<typeof getDecisionDashboardData>> }) {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'AT_RISK'>('ALL');
   const [data, setData] = useState(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
+    const role = match ? decodeURIComponent(match[1]) : null;
+    if (role === 'DEVELOPER') {
+      router.replace('/terminal/developer-dashboard');
+    } else if (!role || (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN')) {
+      router.replace('/login');
+    }
+  }, [router]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);

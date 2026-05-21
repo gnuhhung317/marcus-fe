@@ -1,3 +1,5 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { getStrategyPageData } from '../../../lib/contracts/client';
 import { TimeSeriesValue } from '../../../lib/contracts/types';
 
@@ -22,6 +24,13 @@ function buildSeriesPath(series: TimeSeriesValue[]) {
 }
 
 export default async function TerminalStrategiesPage() {
+  const cookieStore = cookies();
+  const role = cookieStore.get('marcus_role')?.value;
+
+  if (role !== 'OPERATOR' && role !== 'ADMIN') {
+    redirect('/terminal');
+  }
+
   const strategy = await getStrategyPageData();
   const chartPath = buildSeriesPath(strategy.performanceSeries);
 

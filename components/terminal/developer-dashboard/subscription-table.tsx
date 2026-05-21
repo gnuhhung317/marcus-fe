@@ -20,9 +20,9 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
         <p className="text-sm text-muted">{subscriptions.length} active</p>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-[rgba(148,163,184,0.2)]">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-[var(--panel-border)]">
         <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="bg-[rgba(148,163,184,0.08)] text-xs uppercase tracking-[0.12em] text-muted">
+          <thead className="bg-[var(--panel-border)] text-xs uppercase tracking-[0.12em] text-muted">
             <tr>
               <th className="px-4 py-3">Bot</th>
               <th className="px-4 py-3">WS Token</th>
@@ -33,7 +33,7 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
             {subscriptions.map((sub) => (
               <tr
                 key={`${sub.botId}-${sub.wsToken}`}
-                className="group border-t border-[rgba(148,163,184,0.18)] hover:bg-[rgba(148,163,184,0.04)] transition-colors"
+                className="group border-t border-[var(--panel-border)] hover:bg-[var(--panel-border)] transition-colors"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 max-w-[150px]">
@@ -54,8 +54,8 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                     sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
-                      ? 'bg-[rgba(16,185,129,0.12)] text-emerald-300 border border-[rgba(16,185,129,0.2)]'
-                      : 'bg-[rgba(148,163,184,0.12)] text-slate-300 border border-[rgba(148,163,184,0.2)]'
+                      ? 'bg-[var(--primary-soft)] text-emerald-300 border border-[var(--primary-soft)]'
+                      : 'bg-[var(--panel-border)] text-slate-300 border border-[var(--panel-border)]'
                   }`}>
                     {sub.status}
                   </span>

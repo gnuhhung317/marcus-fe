@@ -25,7 +25,7 @@ export function CopyButton({ value, className = '' }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className={`inline-flex items-center justify-center rounded p-1 text-slate-400 hover:bg-[rgba(148,163,184,0.12)] hover:text-white transition-all duration-150 focus:outline-none ${className}`}
+      className={`inline-flex items-center justify-center rounded p-1 text-slate-400 hover:bg-[var(--panel-border)] hover:text-white transition-all duration-150 focus:outline-none ${className}`}
       title="Copy to clipboard"
     >
       {copied ? (

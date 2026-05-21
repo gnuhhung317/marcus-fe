@@ -180,7 +180,7 @@ func main() {
               {tab === 'credentials' && 'API Credentials'}
               {tab === 'integration' && 'Integration Webhook'}
               {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full shadow-[0_0_8px_var(--primary-soft)]" />
               )}
             </button>
           ))}
@@ -244,7 +244,7 @@ func main() {
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-left text-xs border-collapse">
-                      <thead className="bg-[rgba(255,255,255,0.02)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
+                      <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
                         <tr>
                           <th className="px-4 py-3">Websocket Channel Token</th>
                           <th className="px-4 py-3 text-right">Status</th>
@@ -298,7 +298,7 @@ func main() {
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Bot ID</span>
                   <p className="text-xs font-mono text-white mt-1 select-all truncate" title={bot.botId}>{bot.botId}</p>
@@ -306,7 +306,7 @@ func main() {
                 <CopyButton value={bot.botId} className="flex-shrink-0" />
               </div>
 
-              <div className="rounded-xl border border-white/5 bg-[rgba(6,10,18,0.35)] p-4 flex items-center justify-between gap-4">
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Public API Key</span>
                   <p className="text-xs font-mono text-white mt-1 select-all truncate" title={apiKey}>{apiKey}</p>

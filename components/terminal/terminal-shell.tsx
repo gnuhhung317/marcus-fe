@@ -227,8 +227,8 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
           )}
 
           {/* System & Engine Status Card */}
-          <div className="mt-auto pt-4 border-t border-[rgba(148,163,184,0.12)] space-y-3">
-            <div className="rounded-xl border border-[rgba(148,163,184,0.12)] bg-[rgba(8,13,22,0.45)] p-3.5 shadow-sm backdrop-blur-md">
+          <div className="mt-auto pt-4 border-t border-[var(--panel-border)] space-y-3">
+            <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-3.5 shadow-sm backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">System Core</span>
                 <span className="flex h-2 w-2 items-center justify-center">

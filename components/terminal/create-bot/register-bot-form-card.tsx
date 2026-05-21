@@ -31,7 +31,7 @@ export function RegisterBotFormCard({
           <label className="text-sm text-muted">
             Bot Name
             <input
-              className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
+              className="mt-2 w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white"
               value={values.botName}
               onChange={(event) => onFieldChange('botName', event.target.value)}
             />
@@ -40,7 +40,7 @@ export function RegisterBotFormCard({
           <label className="text-sm text-muted">
             Exchange
             <select
-              className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
+              className="mt-2 w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white"
               value={values.exchange}
               onChange={(event) => onFieldChange('exchange', event.target.value as RegisterBotInput['exchange'])}
             >
@@ -53,7 +53,7 @@ export function RegisterBotFormCard({
           <label className="text-sm text-muted">
             Trading Pair
             <input
-              className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
+              className="mt-2 w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white"
               value={values.tradingPair}
               onChange={(event) => onFieldChange('tradingPair', event.target.value)}
             />

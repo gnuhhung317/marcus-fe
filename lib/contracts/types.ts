@@ -1,4 +1,4 @@
-export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
+export type ApiMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
 export type ContractStatus = 'available' | 'gap';
 
@@ -352,10 +352,45 @@ export interface DeveloperSubscriptionSummary {
   status: string;
 }
 
+export interface BotIntegrationDependency {
+  name: string;
+  status: string;
+  latencyMs: number;
+}
+
+export interface BotIntegrationHealth {
+  overallStatus: string;
+  lastCheckedAt: string;
+  dependencies: BotIntegrationDependency[];
+  lastSignalAt?: string | null;
+  message?: string | null;
+}
+
+export interface DeveloperSignalItem {
+  signalId: string;
+  botId: string;
+  exchangeSlug?: string | null;
+  symbol?: string | null;
+  action?: string | null;
+  price?: number | null;
+  status?: string | null;
+  generatedTimestamp?: string | null;
+  leverage?: number | null;
+  marketType?: string | null;
+  reduceOnly?: boolean | null;
+  size?: number | null;
+  tp?: number | null;
+  sl?: number | null;
+  metadata?: Record<string, unknown> | null;
+  rawPayload?: Record<string, unknown> | null;
+}
+
 export interface DeveloperDashboardPageData {
   bots: DeveloperBotSummary[];
-  activeBot: DeveloperBotDetail;
+  activeBot: DeveloperBotDetail | null;
   subscriptions: DeveloperSubscriptionSummary[];
+  integrationHealth?: BotIntegrationHealth | null;
+  signals?: DeveloperSignalItem[];
 }
 
 export interface LeaderboardPageData {

@@ -6,32 +6,20 @@ import {
   requestJson,
 } from '../api/http';
 import {
-  blogPosts,
-  developerActiveBot,
-  developerBots,
-  developerSubscriptions,
-  leaderboardRows,
-  marketplaceBots,
-  marketTickers,
-  principles,
-  profileApiKeys,
-  researchReports,
-  strategyTrades,
-  terminalKpis,
-  trainingCourses,
-} from './seed-data';
-import {
   AcademyMetricsData,
   AllocationSlice,
   BlogPageData,
   BotDetail,
   BlogPost,
   BotProvisioningCredentials,
+  BotIntegrationHealth,
   DashboardPageData,
   DeveloperBotDetail,
+  DeveloperBotStatus,
   DeveloperBotSummary,
   DeveloperConsolePageData,
   DeveloperDashboardPageData,
+  DeveloperSignalItem,
   DeveloperSubscriptionSummary,
   HomePageData,
   LeaderboardPageData,
@@ -77,9 +65,9 @@ const defaultAllocations: AllocationSlice[] = [
 ];
 
 const defaultProfile: UserProfile = {
-  userId: 'user_terminal_fallback',
-  username: 'Marcus Vane',
-  email: 'marcus.vane@marcus.trade',
+  userId: '',
+  username: '',
+  email: '',
   role: 'TRADER',
 };
 
@@ -90,64 +78,24 @@ const defaultProfilePreferences: ProfilePreferences = {
   sessionTimeoutMinutes: 30,
 };
 
-const defaultLoginActivities: ProfileLoginActivity[] = [
-  {
-    id: 'login-1',
-    device: 'MacBook Pro · Chrome',
-    location: 'Singapore',
-    ipMasked: '192.168.**.24',
-    createdAt: '2026-04-10T19:22:00Z',
-    status: 'SUCCESS',
-  },
-  {
-    id: 'login-2',
-    device: 'iPhone · Safari',
-    location: 'Ho Chi Minh City',
-    ipMasked: '10.8.**.13',
-    createdAt: '2026-04-09T06:40:00Z',
-    status: 'SUCCESS',
-  },
-];
+const defaultLoginActivities: ProfileLoginActivity[] = [];
 
 const defaultConnectivity = {
-  overallStatus: 'UP',
+  overallStatus: 'UNKNOWN',
   checkedAt: new Date().toISOString(),
-  dependencies: [
-    { name: 'Signal Router', status: 'UP', latencyMs: 8 },
-    { name: 'Price Feed', status: 'UP', latencyMs: 12 },
-    { name: 'Order Executor', status: 'DEGRADED', latencyMs: 38 },
-  ],
+  dependencies: [],
 };
 
 const defaultAcademyMetrics: AcademyMetricsData = {
-  activeStudents: 1240,
-  strategiesDeployed: 368,
-  averagePerformancePercent: 12.4,
-  academyRating: 4.8,
+  activeStudents: 0,
+  strategiesDeployed: 0,
+  averagePerformancePercent: 0,
+  academyRating: 0,
 };
 
-const defaultTopVolume24h = 245_000_000;
+const defaultTopVolume24h = 0;
 
-const defaultExecutionLogs = [
-  {
-    timestamp: '2026-04-07T08:30:10Z',
-    level: 'INFO',
-    source: 'routing-engine',
-    message: 'Signal dispatched to active subscribers',
-  },
-  {
-    timestamp: '2026-04-07T08:29:42Z',
-    level: 'WARN',
-    source: 'schema-validator',
-    message: 'Optional metadata field missing',
-  },
-  {
-    timestamp: '2026-04-07T08:28:15Z',
-    level: 'INFO',
-    source: 'execution-core',
-    message: 'Paper order executed in simulation mode',
-  },
-];
+const defaultExecutionLogs: { timestamp: string; level: string; source: string; message: string }[] = [];
 
 interface DashboardOverviewResponse {
   totalEquity?: number;
@@ -295,6 +243,17 @@ interface LoginActivityResponse {
   ipAddress?: string;
   createdAt?: string;
   status?: string;
+}
+
+interface LoginActivityPageResponse {
+  items?: LoginActivityResponse[];
+  meta?: {
+    page?: number;
+    size?: number;
+    totalElements?: number;
+    totalPages?: number;
+    hasNext?: boolean;
+  };
 }
 
 interface ApiKeySummaryResponse {
@@ -520,11 +479,18 @@ function toQuery(params: Record<string, string | number | boolean | undefined>) 
   return query ? `?${query}` : '';
 }
 
-async function withFallback<T>(work: () => Promise<T>, fallback: () => Promise<T> | T): Promise<T> {
+async function withFallback<T>(work: () => Promise<T>, fallback?: () => Promise<T> | T): Promise<T> {
   try {
     return await work();
-  } catch {
-    return await fallback();
+  } catch (error) {
+    console.warn('Contract request failed, using fallback:', error);
+    if (fallback !== undefined) {
+      if (typeof fallback === 'function') {
+        return await (fallback as () => Promise<T> | T)();
+      }
+      return fallback;
+    }
+    throw error;
   }
 }
 
@@ -626,20 +592,18 @@ function toDateOnly(value: string | undefined, fallback: string): string {
 }
 
 function mapMarketTickerItem(item: MarketTickerResponse, index: number): MarketTicker {
-  const fallback = marketTickers[index];
-  const symbol = item.symbol ?? fallback?.symbol ?? `ASSET-${index + 1}`;
+  const symbol = item.symbol ?? `ASSET-${index + 1}`;
   const price = toNumber(item.price, NaN);
 
   return {
     symbol,
-    asset: item.asset ?? fallback?.asset ?? symbol,
-    price: Number.isFinite(price) ? formatCurrency(price) : fallback?.price ?? '$0.00',
-    change: toNumber(item.change24h, fallback?.change ?? 0),
+    asset: item.asset ?? symbol,
+    price: Number.isFinite(price) ? formatCurrency(price) : '$0.00',
+    change: toNumber(item.change24h, 0),
   };
 }
 
 function mapAcademyCourse(item: AcademyCourseSummaryResponse, index: number): TrainingCourse {
-  const fallback = trainingCourses[index];
   const modules = Math.max(0, Math.round(toNumber(item.modules)));
   const durationHours = Math.max(0, toNumber(item.durationHours));
   const generatedSummary = modules > 0 || durationHours > 0
@@ -647,39 +611,35 @@ function mapAcademyCourse(item: AcademyCourseSummaryResponse, index: number): Tr
     : 'Practical algorithmic modules with execution-focused labs.';
 
   return {
-    id: item.courseId ?? fallback?.id ?? `course-${index + 1}`,
-    title: item.title ?? fallback?.title ?? `Academy Course ${index + 1}`,
-    level: normalizeCourseLevel(item.level ?? fallback?.level),
-    progress: clamp(Math.round(toNumber(item.progress, fallback?.progress ?? 0)), 0, 100),
-    summary: item.courseId || item.title || item.modules || item.durationHours
-      ? generatedSummary
-      : fallback?.summary ?? generatedSummary,
+    id: item.courseId ?? `course-${index + 1}`,
+    title: item.title ?? `Academy Course ${index + 1}`,
+    level: normalizeCourseLevel(item.level),
+    progress: clamp(Math.round(toNumber(item.progress, 0)), 0, 100),
+    summary: generatedSummary,
   };
 }
 
 function mapBlogPost(item: BlogPostSummaryResponse, index: number): BlogPost {
-  const fallback = blogPosts[index];
   const readTimeMinutes = Math.max(1, Math.round(toNumber(item.readTimeMinutes, NaN)));
 
   return {
-    id: item.postId ?? fallback?.id ?? `post-${index + 1}`,
-    title: item.title ?? fallback?.title ?? `Market Insight ${index + 1}`,
-    category: item.category ?? fallback?.category ?? 'Insights',
-    excerpt: item.excerpt ?? fallback?.excerpt ?? 'No excerpt available yet.',
-    readTime: Number.isFinite(readTimeMinutes) ? `${readTimeMinutes} min` : fallback?.readTime ?? '5 min',
+    id: item.postId ?? `post-${index + 1}`,
+    title: item.title ?? `Market Insight ${index + 1}`,
+    category: item.category ?? 'Insights',
+    excerpt: item.excerpt ?? 'No excerpt available yet.',
+    readTime: Number.isFinite(readTimeMinutes) ? `${readTimeMinutes} min` : '5 min',
   };
 }
 
 function mapResearchReport(item: ResearchReportSummaryResponse, index: number): ResearchReport {
-  const fallback = researchReports[index];
   const readTimeMinutes = Math.max(1, Math.round(toNumber(item.readTimeMinutes, NaN)));
 
   return {
-    id: item.reportId ?? fallback?.id ?? `report-${index + 1}`,
-    title: item.title ?? fallback?.title ?? `Research Report ${index + 1}`,
-    category: item.category ?? fallback?.category ?? 'Research',
-    readTime: Number.isFinite(readTimeMinutes) ? `${readTimeMinutes} min` : fallback?.readTime ?? '8 min',
-    publishedAt: toDateOnly(item.publishedAt, fallback?.publishedAt ?? '2026-01-01'),
+    id: item.reportId ?? `report-${index + 1}`,
+    title: item.title ?? `Research Report ${index + 1}`,
+    category: item.category ?? 'Research',
+    readTime: Number.isFinite(readTimeMinutes) ? `${readTimeMinutes} min` : '8 min',
+    publishedAt: toDateOnly(item.publishedAt, '2026-01-01'),
   };
 }
 
@@ -747,15 +707,13 @@ function mapTradeLogItem(item: TradeLogItemResponse): StrategyTrade | null {
 }
 
 function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
-  const fallback = marketplaceBots.find((item) => item.botId === bot.botId || item.name === bot.botName);
-
   return {
-    botId: bot.botId ?? fallback?.botId ?? randomToken('bot'),
-    name: bot.botName ?? fallback?.name ?? 'Unnamed Bot',
-    tags: [bot.exchange ?? fallback?.tags[0] ?? 'UNKNOWN', bot.status ?? fallback?.tags[1] ?? 'ACTIVE'],
-    pnl30d: fallback?.pnl30d ?? 0,
-    winRate: fallback?.winRate ?? 0,
-    drawdown: fallback?.drawdown ?? 0,
+    botId: bot.botId ?? randomToken('bot'),
+    name: bot.botName ?? 'Unnamed Bot',
+    tags: [bot.exchange ?? 'UNKNOWN', bot.status ?? 'ACTIVE'],
+    pnl30d: 0,
+    winRate: 0,
+    drawdown: 0,
   };
 }
 
@@ -827,7 +785,7 @@ function applyLeaderboardFilters(rows: LeaderboardRow[], query: LeaderboardQuery
   };
 }
 
-function mapBotDetail(bot: BotDetailResponse, fallbackBot?: MarketplaceBot): BotDetail {
+function mapBotDetail(bot: BotDetailResponse): BotDetail {
   const performance = bot.performance
     ? {
         annualReturn: toNumber(bot.performance.annualReturn),
@@ -840,8 +798,8 @@ function mapBotDetail(bot: BotDetailResponse, fallbackBot?: MarketplaceBot): Bot
     : undefined;
 
   return {
-    botId: bot.botId ?? fallbackBot?.botId ?? randomToken('bot'),
-    name: bot.botName ?? fallbackBot?.name ?? 'Unnamed Bot',
+    botId: bot.botId ?? randomToken('bot'),
+    name: bot.botName ?? 'Unnamed Bot',
     description: bot.description ?? 'No description available.',
     status: bot.status ?? 'ACTIVE',
     tradingPair: bot.tradingPair ?? 'BTC/USDT',
@@ -887,17 +845,15 @@ function mapLoginActivity(item: LoginActivityResponse, index: number): ProfileLo
 }
 
 function mapLeaderboardRow(item: LeaderboardStrategyItemResponse, index: number): LeaderboardRow {
-  const fallback = leaderboardRows[index];
-
   return {
-    rank: Math.max(1, Math.round(toNumber(item.rank, fallback?.rank ?? index + 1))),
-    strategyId: item.strategyId ?? fallback?.strategyId ?? `strategy-${index + 1}`,
-    strategyName: item.strategyName ?? fallback?.strategyName ?? `Strategy ${index + 1}`,
-    category: item.creatorName ?? fallback?.category ?? 'System',
-    return24h: toNumber(item.cagr, fallback?.return24h ?? 0),
-    drawdown: toNumber(item.maxDrawdown, fallback?.drawdown ?? 0),
-    sharpe: toNumber(item.sharpe, fallback?.sharpe ?? 0),
-    status: fallback?.status ?? 'ACTIVE',
+    rank: Math.max(1, Math.round(toNumber(item.rank, index + 1))),
+    strategyId: item.strategyId ?? `strategy-${index + 1}`,
+    strategyName: item.strategyName ?? `Strategy ${index + 1}`,
+    category: item.creatorName ?? 'System',
+    return24h: toNumber(item.cagr, 0),
+    drawdown: toNumber(item.maxDrawdown, 0),
+    sharpe: toNumber(item.sharpe, 0),
+    status: 'ACTIVE',
   };
 }
 
@@ -934,10 +890,10 @@ export async function getHomePageData(): Promise<HomePageData> {
   return {
     marketOverview: {
       topVolume24h: toNumber(response?.topVolume24h, defaultTopVolume24h),
-      activeStrategies: Math.max(0, Math.round(toNumber(response?.activeStrategies, leaderboardRows.length))),
-      liveTickers: liveTickers.length ? liveTickers : marketTickers,
+      activeStrategies: Math.max(0, Math.round(toNumber(response?.activeStrategies, 0))),
+      liveTickers,
     },
-    principles,
+    principles: [],
     marketingStats,
   };
 }
@@ -962,7 +918,7 @@ export async function getTrainingPageData(): Promise<TrainingPageData> {
   };
 
   return {
-    courses: courses.length ? courses : trainingCourses,
+    courses,
     metrics,
   };
 }
@@ -978,7 +934,7 @@ export async function getBlogPageData(): Promise<BlogPageData> {
   const posts = (response.items ?? []).map((item, index) => mapBlogPost(item, index));
 
   return {
-    posts: posts.length ? posts : blogPosts,
+    posts,
   };
 }
 
@@ -999,19 +955,12 @@ export async function getResearchPageData(): Promise<ResearchPageData> {
   ]);
 
   const reports = (reportsResponse.items ?? []).map((item, index) => mapResearchReport(item, index));
-  const resolvedReports = reports.length ? reports : researchReports;
+  const resolvedReports = reports;
   const library = libraryResponse.map((item, index) => mapResearchLibraryFile(item, index));
 
   return {
     reports: resolvedReports,
-    library: library.length
-      ? library
-      : resolvedReports.slice(0, 5).map((report, index) => ({
-          fileId: `fallback-file-${index + 1}`,
-          title: report.title,
-          format: 'PDF',
-          sizeMb: 1.6 + index * 0.2,
-        })),
+    library,
   };
 }
 
@@ -1090,7 +1039,7 @@ async function fetchMarketplaceBots(query: MarketplaceQueryParams = {}): Promise
 
   const items = response.items ?? [];
   const mapped = items.map((bot) => mapBotSummary(bot));
-  return mapped.length ? mapped : marketplaceBots;
+  return mapped;
 }
 
 export async function getMarketplacePageData(query: MarketplaceQueryParams = {}): Promise<MarketplacePageData> {
@@ -1114,7 +1063,6 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
 }
 
 export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
-  const fallbackBot = marketplaceBots.find((bot) => bot.botId === botId);
   const response = await withFallback(
     () => requestContractJson<BotDetailResponse>('bot-detail', {
       pathParams: { botId },
@@ -1125,23 +1073,23 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
   if (!response) {
     return {
       botId,
-      name: fallbackBot?.name ?? 'Unknown Bot',
-      description: 'Bot detail endpoint is not reachable. Showing fallback metadata.',
-      status: 'ACTIVE',
-      tradingPair: 'BTC/USDT',
-      exchange: fallbackBot?.tags[0] ?? 'BINANCE',
+      name: 'Unknown Bot',
+      description: 'Bot detail endpoint is not reachable.',
+      status: 'UNKNOWN',
+      tradingPair: '',
+      exchange: '',
       performance: {
-        annualReturn: fallbackBot?.pnl30d ?? 0,
-        maxDrawdown: fallbackBot?.drawdown ?? 0,
+        annualReturn: 0,
+        maxDrawdown: 0,
         sharpe: 0,
-        winRate: fallbackBot?.winRate ?? 0,
+        winRate: 0,
         avgTradeReturn: 0,
         tradesPerDay: 0,
       },
     };
   }
 
-  return mapBotDetail(response, fallbackBot);
+  return mapBotDetail(response);
 }
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {
@@ -1196,7 +1144,7 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
   ]);
 
   const rows = (strategiesPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
-  const resolvedRows = rows.length ? rows : leaderboardRows;
+  const resolvedRows = rows;
   const pagedRows = applyLeaderboardFilters(resolvedRows, { ...query, page, pageSize });
 
   const featured = (featuredResponse.items ?? [])
@@ -1222,7 +1170,7 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
 
   return {
     rows: pagedRows.rows,
-    featured: featured.length ? featured : resolvedRows.slice(0, 3),
+    featured: featured.length ? featured : [],
     page: pagedRows.page,
     pageSize: pagedRows.pageSize,
     total: pagedRows.total,
@@ -1260,19 +1208,9 @@ export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
     }))
     .slice(0, 8);
 
-  const fallbackSignals = strategyTrades.slice(0, 4).map((trade, index) => ({
-    signalId: `fallback-${index + 1}`,
-    botId: 'fallback-bot',
-    assetPair: trade.pair,
-    side: trade.side,
-    confidence: 0.7,
-    status: 'EXECUTED',
-    generatedAt: trade.timestamp,
-  }));
-
   return {
     session,
-    signals: signals.length ? signals : fallbackSignals,
+    signals,
   };
 }
 
@@ -1348,7 +1286,7 @@ export async function getProfilePageData(): Promise<ProfilePageData> {
     withFallback(() => requestContractJson<UserProfileResponse>('profile-me'), async () => undefined),
     withFallback(() => requestContractJson<UserPreferencesResponse>('profile-preferences'), async () => undefined),
     withFallback(() => requestContractJson<ApiKeySummaryResponse[]>('profile-api-keys'), async () => []),
-    withFallback(() => requestContractJson<LoginActivityResponse[]>('profile-login-activities'), async () => []),
+    withFallback(() => requestContractJson<LoginActivityPageResponse>('profile-login-activities'), async () => ({ items: [] })),
   ]);
 
   const profile: UserProfile = {
@@ -1364,13 +1302,13 @@ export async function getProfilePageData(): Promise<ProfilePageData> {
     .map((key) => mapApiKeySummary(key))
     .filter((key): key is ProfileApiKey => key !== null);
 
-  const loginActivities = (loginActivityResponse ?? []).map((activity, index) => mapLoginActivity(activity, index));
+  const loginActivities = (loginActivityResponse?.items ?? []).map((activity, index) => mapLoginActivity(activity, index));
 
   return {
     profile,
     preferences,
-    apiKeys: mappedApiKeys.length ? mappedApiKeys : profileApiKeys,
-    loginActivities: loginActivities.length ? loginActivities : defaultLoginActivities,
+    apiKeys: mappedApiKeys,
+    loginActivities,
   };
 }
 
@@ -1449,10 +1387,10 @@ export async function deleteCurrentUserApiKey(apiKeyId: string) {
 }
 
 export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActivity[]> {
-  const response = await withFallback(() => requestContractJson<LoginActivityResponse[]>('profile-login-activities'), async () => []);
-  const activities = response.map((activity, index) => mapLoginActivity(activity, index));
+  const response = await withFallback(() => requestContractJson<LoginActivityPageResponse>('profile-login-activities'), async () => ({ items: [] }));
+  const activities = (response.items ?? []).map((activity, index) => mapLoginActivity(activity, index));
 
-  return activities.length ? activities : defaultLoginActivities;
+  return activities;
 }
 
 export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_ID): Promise<StrategyPageData> {
@@ -1515,8 +1453,8 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
     market: detailResponse?.market ?? 'CRYPTO',
     status: detailResponse?.status ?? 'ACTIVE',
     metrics,
-    performanceSeries: performanceSeries.length ? performanceSeries : buildFallbackStrategySeries(),
-    trades: trades.length ? trades : strategyTrades,
+    performanceSeries,
+    trades,
   };
 }
 
@@ -1567,7 +1505,7 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
   return {
     connectivity,
     signalStream: signalStream.length ? signalStream : [],
-    executionLogs: executionLogs.length ? executionLogs : defaultExecutionLogs,
+    executionLogs,
   };
 }
 
@@ -1593,6 +1531,33 @@ interface BotSubscriptionResultResponse {
   status?: string;
 }
 
+interface BotIntegrationHealthResponse {
+  overallStatus?: string;
+  lastCheckedAt?: string;
+  dependencies?: { name?: string; status?: string; latencyMs?: number }[];
+  lastSignalAt?: string;
+  message?: string;
+}
+
+interface SignalItemResponse {
+  signalId?: string;
+  botId?: string;
+  exchangeSlug?: string;
+  symbol?: string;
+  action?: string;
+  price?: number;
+  status?: string;
+  generatedTimestamp?: string;
+  leverage?: number;
+  marketType?: string;
+  reduceOnly?: boolean;
+  size?: number;
+  tp?: number;
+  sl?: number;
+  metadata?: Record<string, unknown>;
+  rawPayload?: Record<string, unknown>;
+}
+
 export async function getDeveloperDashboardPageData(activeBotId?: string): Promise<DeveloperDashboardPageData> {
   const botsResponse = await withFallback(
     () => requestContractJson<DeveloperBotSummaryResponse[]>('developer-bots'),
@@ -1614,13 +1579,31 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     ? activeBotId
     : (resolvedBots[0]?.botId ?? '');
 
-  const [detailResponse, subscriptionsResponse] = await Promise.all([
+  if (!selectedBotId) {
+    return {
+      bots: resolvedBots,
+      activeBot: null,
+      subscriptions: [],
+      integrationHealth: null,
+      signals: [],
+    };
+  }
+
+  const [detailResponse, subscriptionsResponse, integrationHealthResponse, signalsResponse] = await Promise.all([
     withFallback(
       () => requestContractJson<DeveloperBotDetailResponse>('developer-bot-detail', { pathParams: { botId: selectedBotId } }),
       async () => undefined,
     ),
     withFallback(
       () => requestContractJson<BotSubscriptionResultResponse[]>('developer-bot-subscriptions', { pathParams: { botId: selectedBotId } }),
+      async () => [],
+    ),
+    withFallback(
+      () => requestContractJson<BotIntegrationHealthResponse>('developer-bot-integration-health', { pathParams: { botId: selectedBotId } }),
+      async () => undefined,
+    ),
+    withFallback(
+      () => requestContractJson<SignalItemResponse[]>('system-signals', { queryParams: { botId: selectedBotId, limit: 50 } }),
       async () => [],
     ),
   ]);
@@ -1646,10 +1629,45 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     status: item.status ?? 'UNKNOWN',
   }));
 
+  const integrationHealth: BotIntegrationHealth | null = integrationHealthResponse
+    ? {
+        overallStatus: integrationHealthResponse.overallStatus ?? 'UNKNOWN',
+        lastCheckedAt: integrationHealthResponse.lastCheckedAt ?? new Date().toISOString(),
+        dependencies: (integrationHealthResponse.dependencies ?? []).map((dep) => ({
+          name: dep.name ?? 'Unknown',
+          status: dep.status ?? 'UNKNOWN',
+          latencyMs: dep.latencyMs ?? 0,
+        })),
+        lastSignalAt: integrationHealthResponse.lastSignalAt ?? null,
+        message: integrationHealthResponse.message ?? null,
+      }
+    : null;
+
+  const signals: DeveloperSignalItem[] = (signalsResponse ?? []).map((item, index) => ({
+    signalId: item.signalId ?? `sig_${index + 1}`,
+    botId: item.botId ?? selectedBotId,
+    exchangeSlug: item.exchangeSlug ?? null,
+    symbol: item.symbol ?? null,
+    action: item.action ?? null,
+    price: item.price ?? null,
+    status: item.status ?? null,
+    generatedTimestamp: item.generatedTimestamp ?? null,
+    leverage: item.leverage ?? null,
+    marketType: item.marketType ?? null,
+    reduceOnly: item.reduceOnly ?? null,
+    size: item.size ?? null,
+    tp: item.tp ?? null,
+    sl: item.sl ?? null,
+    metadata: item.metadata ?? null,
+    rawPayload: item.rawPayload ?? null,
+  }));
+
   return {
     bots: resolvedBots,
     activeBot,
     subscriptions,
+    integrationHealth,
+    signals,
   };
 }
 
@@ -1845,4 +1863,67 @@ export async function registerBotProvisioning(payload: RegisterBotInput): Promis
     apiKey: response.apiKey ?? randomToken('mk_live'),
     rawSecret: response.rawSecret ?? randomToken('ms_live'),
   };
+}
+
+export async function updateBotStatus(
+  botId: string,
+  status: DeveloperBotStatus,
+): Promise<DeveloperBotDetail> {
+  const response = await requestContractJson<DeveloperBotDetailResponse>('developer-bot-update-status', {
+    pathParams: { botId },
+    init: {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    },
+  });
+
+  return {
+    botId: response.botId ?? botId,
+    botName: response.botName ?? 'Unnamed Bot',
+    description: response.description ?? null,
+    status: (response.status ?? status) as DeveloperBotStatus,
+    tradingPair: response.tradingPair ?? null,
+    exchange: response.exchange ?? null,
+    apiKey: response.apiKey ?? null,
+    developerId: response.developerId ?? null,
+    createdAt: response.createdAt ?? null,
+    updatedAt: response.updatedAt ?? null,
+  };
+}
+
+export async function updateBotMetadata(
+  botId: string,
+  payload: { botName: string; exchange: 'BINANCE' | 'BYBIT' | 'OKX'; tradingPair: string; description: string },
+): Promise<DeveloperBotDetail> {
+  const response = await requestContractJson<DeveloperBotDetailResponse>('developer-bot-update-metadata', {
+    pathParams: { botId },
+    init: {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  });
+
+  return {
+    botId: response.botId ?? botId,
+    botName: response.botName ?? payload.botName,
+    description: response.description ?? payload.description,
+    status: (response.status ?? 'CREATED') as DeveloperBotStatus,
+    tradingPair: response.tradingPair ?? payload.tradingPair,
+    exchange: response.exchange ?? payload.exchange,
+    apiKey: response.apiKey ?? null,
+    developerId: response.developerId ?? null,
+    createdAt: response.createdAt ?? null,
+    updatedAt: response.updatedAt ?? null,
+  };
+}
+
+export async function deleteBot(botId: string): Promise<void> {
+  await requestContractJson<void>('developer-bot-delete', {
+    pathParams: { botId },
+    init: {
+      method: 'DELETE',
+    },
+  });
 }

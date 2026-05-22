@@ -4,35 +4,33 @@ import { useState } from 'react';
 import { BotDetailCard } from './bot-detail-card';
 import { DeveloperBotList } from './developer-bot-list';
 import { RegisterBotModal } from './register-bot-modal';
-import { DeveloperBotSummary, DeveloperBotDetail, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
+import { BotIntegrationHealth, DeveloperBotSummary, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 
 interface DashboardContentProps {
   bots: DeveloperBotSummary[];
   activeBot: DeveloperBotDetail | null;
   subscriptions: DeveloperSubscriptionSummary[];
+  integrationHealth: BotIntegrationHealth | null;
+  signals: DeveloperSignalItem[];
 }
 
-export function DashboardContent({ bots, activeBot, subscriptions }: DashboardContentProps) {
+export function DashboardContent({ bots, activeBot, subscriptions, integrationHealth, signals }: DashboardContentProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const hasBots = bots && bots.length > 0;
 
   return (
     <div className="relative space-y-8 min-h-screen">
-      {/* Ambient background glows */}
-      <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-[var(--primary-soft)] rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[20%] left-[-10%] w-[500px] h-[500px] bg-[var(--info-soft)] rounded-full blur-3xl pointer-events-none" />
-
       {/* Header */}
       <header className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--panel-border)] pb-6">
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">Developer Console</p>
           <h1 className="mt-2 text-3xl font-extrabold text-white tracking-tight">Developer Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-400">Manage your API integrations, provision webhook bots, and monitor signal channels in real-time.</p>
+          <p className="mt-1 text-sm text-slate-400">Provision bots, validate webhooks, and monitor delivery health.</p>
         </div>
           {hasBots && (
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex-shrink-0 inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-5 py-2.5 text-sm font-bold text-cta-on-primary hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="flex-shrink-0 inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-5 py-2.5 text-sm font-bold text-cta-on-primary transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -46,8 +44,6 @@ export function DashboardContent({ bots, activeBot, subscriptions }: DashboardCo
       {!hasBots ? (
         /* Empty State / Onboarding Workspace */
           <div className="glass-strong rounded-2xl p-8 sm:p-12 shadow-[var(--shadow-soft)] relative overflow-hidden flex flex-col items-center justify-center text-center max-w-4xl mx-auto my-6 border border-[var(--panel-border)]">
-          {/* Decorative glowing background */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-82 h-82 bg-[var(--primary-soft)] rounded-full blur-3xl pointer-events-none" />
 
           {/* Centered Graphic Icon */}
           <div className="w-20 h-20 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 flex items-center justify-center shadow-[var(--shadow-soft)] relative mb-8">
@@ -56,7 +52,7 @@ export function DashboardContent({ bots, activeBot, subscriptions }: DashboardCo
             </svg>
           </div>
 
-          <h2 className="text-2xl font-bold text-white tracking-tight mb-3">No Webhook Bots Registered</h2>
+          <h2 className="text-2xl font-bold text-white tracking-tight mb-3">No Bots Provisioned</h2>
           <p className="text-slate-400 max-w-lg mb-8 text-sm leading-relaxed">
             Connect your automated trading system, scripts, or TradingView Pine Script alerts to the Marcus Trading signal router. Provision a new bot to receive your API credentials.
           </p>
@@ -94,7 +90,7 @@ export function DashboardContent({ bots, activeBot, subscriptions }: DashboardCo
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-6 py-3 text-sm font-bold text-cta-on-primary hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-6 py-3 text-sm font-bold text-cta-on-primary transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -110,7 +106,12 @@ export function DashboardContent({ bots, activeBot, subscriptions }: DashboardCo
           </aside>
           <main className="w-full min-w-0">
             {activeBot && (
-              <BotDetailCard bot={activeBot} subscriptions={subscriptions} />
+              <BotDetailCard
+                bot={activeBot}
+                subscriptions={subscriptions}
+                integrationHealth={integrationHealth}
+                signals={signals}
+              />
             )}
           </main>
         </div>

@@ -1,15 +1,7 @@
 import { DeveloperSubscriptionSummary } from '@/lib/contracts/types';
-import { CopyButton } from './copy-button';
 
 interface SubscriptionTableProps {
   subscriptions: DeveloperSubscriptionSummary[];
-}
-
-function maskToken(token: string) {
-  if (token.length <= 8) {
-    return token;
-  }
-  return `${token.slice(0, 4)}...${token.slice(-4)}`;
 }
 
 export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
@@ -25,14 +17,14 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
           <thead className="bg-[var(--panel-border)] text-xs uppercase tracking-[0.12em] text-muted">
             <tr>
               <th className="px-4 py-3">Bot</th>
-              <th className="px-4 py-3">WS Token</th>
+              <th className="px-4 py-3">Subscriber</th>
               <th className="px-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody>
-            {subscriptions.map((sub) => (
+            {subscriptions.map((sub, index) => (
               <tr
-                key={`${sub.botId}-${sub.wsToken}`}
+                key={`${sub.botId}-${index}`}
                 className="group border-t border-[var(--panel-border)] hover:bg-[var(--panel-border)] transition-colors"
               >
                 <td className="px-4 py-3">
@@ -40,16 +32,10 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
                     <span className="text-white font-mono text-xs truncate" title={sub.botId}>
                       {sub.botId}
                     </span>
-                    <CopyButton value={sub.botId} className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2 max-w-[200px]">
-                    <span className="text-muted font-mono text-xs truncate" title={sub.wsToken}>
-                      {maskToken(sub.wsToken)}
-                    </span>
-                    <CopyButton value={sub.wsToken} className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
+                  <span className="text-muted font-mono text-xs">Subscriber #{index + 1}</span>
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${

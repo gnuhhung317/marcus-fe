@@ -44,9 +44,6 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
 
   return (
     <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] border border-[var(--panel-border)] relative overflow-hidden group">
-      {/* Visual background ambient glow */}
-      <div className="absolute top-0 right-0 w-24 h-24 bg-[var(--primary-soft)] rounded-full blur-2xl pointer-events-none group-hover:bg-[var(--primary-soft)] transition-all duration-500" />
-      
       <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-4 mb-4">
         <div>
           <h2 className="text-sm font-bold text-white tracking-wide">Bot Registry</h2>
@@ -56,7 +53,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
         </div>
         <Link
           href="/terminal/create-bot"
-          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-[var(--panel)] border border-[var(--panel-border)] hover:bg-[var(--primary-soft)] hover:border-[var(--primary-soft)] hover:text-white transition-all cursor-pointer text-muted"
+          className="inline-flex items-center justify-center p-1.5 rounded-lg bg-[var(--panel)] border border-[var(--panel-border)] hover:bg-[var(--panel-border)] hover:border-[var(--panel-border)] hover:text-white transition-colors cursor-pointer text-muted"
           title="Register New Bot"
         >
           <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -115,8 +112,8 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
                 <div
                   className={`group/item cursor-pointer rounded-xl border p-3.5 transition-all duration-300 ${
                     isActive
-                      ? 'border-[var(--primary-soft)] bg-[var(--primary-soft)] shadow-[0_0_16px_var(--primary-soft)]'
-                      : 'border-[var(--panel-border)] bg-[var(--panel)] hover:bg-[var(--panel-border)] hover:border-[var(--panel-border)] hover:translate-x-[1px]'
+                      ? 'border-emerald-500/30 bg-emerald-500/10'
+                      : 'border-[var(--panel-border)] bg-[var(--panel)] hover:bg-[var(--panel-border)] hover:border-[var(--panel-border)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2.5">

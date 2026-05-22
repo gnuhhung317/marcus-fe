@@ -1,8 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { DeveloperBotDetail, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { updateBotStatus } from '@/lib/contracts/client';
+import { BotIntegrationHealth, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary, DeveloperBotStatus } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
+import { EditBotModal } from './edit-bot-modal';
+import { DeleteBotModal } from './delete-bot-modal';
+import { IntegrationHealthWidget } from './integration-health-widget';
+import { SignalStreamTable } from './signal-stream-table';
+import { SignalDetailDrawer } from './signal-detail-drawer';
 
 const statusStyles: Record<string, string> = {
   ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
@@ -14,20 +22,35 @@ const statusStyles: Record<string, string> = {
 interface BotDetailCardProps {
   bot: DeveloperBotDetail;
   subscriptions: DeveloperSubscriptionSummary[];
+  integrationHealth: BotIntegrationHealth | null;
+  signals: DeveloperSignalItem[];
 }
 
-function maskToken(token: string) {
-  if (!token) return 'N/A';
-  if (token.length <= 12) return token;
-  return `${token.slice(0, 6)}...${token.slice(-6)}`;
-}
-
-export function BotDetailCard({ bot, subscriptions }: BotDetailCardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'credentials' | 'integration'>('overview');
+export function BotDetailCard({ bot, subscriptions, integrationHealth, signals }: BotDetailCardProps) {
+  const [activeTab, setActiveTab] = useState<'overview' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
   const [selectedLanguage, setSelectedLanguage] = useState<'curl' | 'node' | 'python' | 'go'>('curl');
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedSignal, setSelectedSignal] = useState<DeveloperSignalItem | null>(null);
+
+  const router = useRouter();
+
+  const statusMutation = useMutation({
+    mutationFn: async (nextStatus: DeveloperBotStatus) => {
+      return updateBotStatus(bot.botId, nextStatus);
+    },
+    onSuccess: () => {
+      router.refresh();
+      setIsStatusDropdownOpen(false);
+    },
+  });
   
   const statusClass = statusStyles[bot.status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
   const apiKey = bot.apiKey ?? 'Not available';
+  const subscriberCount = subscriptions.length;
+  const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
+  const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
 
   // API Signal Snippets
   const timestamp = new Date().toISOString();
@@ -142,13 +165,45 @@ func main() {
       
       {/* Bot Header Area */}
       <div className="p-6 sm:p-8 pb-5 border-b border-[var(--panel-border)] bg-[var(--panel)]">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${statusClass}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${bot.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : bot.status === 'ERROR' ? 'bg-rose-400' : 'bg-slate-400'}`} />
-                {bot.status}
-              </span>
+              {/* Interactive Status Badge with Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider hover:bg-white/5 transition-all outline-none cursor-pointer ${statusClass}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${bot.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : bot.status === 'ERROR' ? 'bg-rose-400' : 'bg-slate-400'}`} />
+                  {bot.status}
+                  <svg className="w-3 h-3 opacity-60 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isStatusDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setIsStatusDropdownOpen(false)}
+                    />
+                    <div className="absolute left-0 mt-1.5 w-32 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
+                      {(['ACTIVE', 'PAUSED', 'CREATED'] as const).map((statusOption) => (
+                        <button
+                          key={statusOption}
+                          disabled={statusMutation.isPending}
+                          onClick={() => {
+                            statusMutation.mutate(statusOption);
+                          }}
+                          className="w-full flex items-center gap-2 text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg hover:bg-white/5 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full ${statusOption === 'ACTIVE' ? 'bg-emerald-400' : statusOption === 'PAUSED' ? 'bg-amber-400' : 'bg-blue-400'}`} />
+                          {statusOption}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <span className="text-xs font-mono text-slate-500 bg-white/5 border border-white/5 rounded-md px-2 py-0.5">
                 ID: {bot.botId}
               </span>
@@ -162,11 +217,33 @@ func main() {
               </p>
             )}
           </div>
+
+          {/* Action buttons (Edit & Delete) */}
+          <div className="flex-shrink-0 flex items-center gap-3">
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Edit Bot
+            </button>
+            <button
+              onClick={() => setIsDeleteModalOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 transition-all cursor-pointer"
+            >
+              <svg className="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
+          </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 mt-6 border-b border-white/5 pb-0">
-          {(['overview', 'credentials', 'integration'] as const).map((tab) => (
+        <div className="flex flex-wrap gap-2 mt-6 border-b border-white/5 pb-0">
+          {(['overview', 'credentials', 'integration', 'signals', 'subscribers'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -178,7 +255,9 @@ func main() {
             >
               {tab === 'overview' && 'Overview'}
               {tab === 'credentials' && 'API Credentials'}
-              {tab === 'integration' && 'Integration Webhook'}
+              {tab === 'integration' && 'Integration Health'}
+              {tab === 'signals' && 'Signals'}
+              {tab === 'subscribers' && 'Subscribers'}
               {activeTab === tab && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full shadow-[0_0_8px_var(--primary-soft)]" />
               )}
@@ -192,11 +271,10 @@ func main() {
         {/* OVERVIEW TAB */}
         {activeTab === 'overview' && (
           <div className="space-y-8 animate-fade-in">
-            {/* Metadata Grid */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuration Details</h3>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Trading Venue</span>
                   <span className="text-sm font-semibold text-white mt-1.5">{bot.exchange ?? 'N/A'}</span>
                 </div>
@@ -219,64 +297,24 @@ func main() {
               </div>
             </div>
 
-            {/* Active Subscribers */}
-            <div className="space-y-4 border-t border-[var(--panel-border)] pt-6">
-              <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Active Subscriber Feeds</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Active connection endpoints receiving signature-verified execution signals.
-                </p>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
+                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Bot Status</p>
+                <p className="mt-2 text-sm font-semibold text-white">{bot.status}</p>
               </div>
-
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
-                {subscriptions.length === 0 ? (
-                  <div className="p-8 text-center flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                    </div>
-                    <p className="text-xs font-medium text-slate-400">No active subscriber sessions found</p>
-                    <p className="text-[11px] text-slate-500 mt-1 max-w-xs leading-relaxed">
-                      Publish a signal from your code to activate listener sessions in real-time.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-xs border-collapse">
-                      <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
-                        <tr>
-                          <th className="px-4 py-3">Websocket Channel Token</th>
-                          <th className="px-4 py-3 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {subscriptions.map((sub) => (
-                          <tr key={sub.wsToken} className="group hover:bg-white/[0.01] transition-colors">
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="font-mono text-slate-300 truncate" title={sub.wsToken}>
-                                  {maskToken(sub.wsToken)}
-                                </span>
-                                <CopyButton value={sub.wsToken} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                                sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                  : 'bg-white/5 text-slate-400 border-white/5'
-                              }`}>
-                                <span className={`w-1.2 h-1.2 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
-                                {sub.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
+                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Subscribers</p>
+                <p className="mt-2 text-sm font-semibold text-white">{subscriberCount}</p>
+              </div>
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
+                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Connected</p>
+                <p className="mt-2 text-sm font-semibold text-emerald-300">{connectedCount}</p>
+              </div>
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
+                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Last Updated</p>
+                <p className="mt-2 text-sm font-semibold text-slate-200">
+                  {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}
+                </p>
               </div>
             </div>
           </div>
@@ -330,6 +368,7 @@ func main() {
         {/* INTEGRATION GUIDE TAB */}
         {activeTab === 'integration' && (
           <div className="space-y-6 animate-fade-in">
+            <IntegrationHealthWidget health={integrationHealth} />
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Webhook Signal Gateway</h3>
@@ -471,7 +510,105 @@ func main() {
             </div>
           </div>
         )}
+
+        {/* SIGNALS TAB */}
+        {activeTab === 'signals' && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Signal Stream</h3>
+              <p className="text-xs text-slate-500 mt-1">Signals received for this bot. Click a row to inspect full payload.</p>
+            </div>
+            <SignalStreamTable signals={signals} onSelect={setSelectedSignal} />
+          </div>
+        )}
+
+        {/* SUBSCRIBERS TAB */}
+        {activeTab === 'subscribers' && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Subscriber Sessions</h3>
+              <p className="text-xs text-slate-500 mt-1">Active subscriptions and connection health. No trader runtime tokens are exposed here.</p>
+            </div>
+
+            <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
+              {subscriptions.length === 0 ? (
+                <div className="p-8 text-center flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  </div>
+                  <p className="text-xs font-medium text-slate-400">No active subscriber sessions found</p>
+                  <p className="text-[11px] text-slate-500 mt-1 max-w-xs leading-relaxed">
+                    Publish a signal from your code to activate listener sessions in real-time.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 p-4">
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Total Subscribers</p>
+                      <p className="mt-1 text-lg font-semibold text-white">{subscriberCount}</p>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Connected</p>
+                      <p className="mt-1 text-lg font-semibold text-emerald-300">{connectedCount}</p>
+                    </div>
+                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Active</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-200">{activeCount}</p>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-left text-xs border-collapse">
+                      <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
+                        <tr>
+                          <th className="px-4 py-3">Subscriber</th>
+                          <th className="px-4 py-3 text-right">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {subscriptions.map((sub, index) => (
+                          <tr key={`${sub.botId}-${index}`} className="hover:bg-white/[0.01] transition-colors">
+                            <td className="px-4 py-3">
+                              <span className="font-mono text-slate-300">Subscriber #{index + 1}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
+                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                  : 'bg-white/5 text-slate-400 border-white/5'
+                              }`}>
+                                <span className={`w-1.2 h-1.2 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+                                {sub.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      <SignalDetailDrawer signal={selectedSignal} onClose={() => setSelectedSignal(null)} />
+      {/* Modals */}
+      <EditBotModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        bot={bot}
+      />
+      <DeleteBotModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        bot={bot}
+        activeSubscribersCount={subscriptions.filter(s => s.status === 'ACTIVE' || s.status === 'CONNECTED').length}
+      />
     </article>
   );
 }

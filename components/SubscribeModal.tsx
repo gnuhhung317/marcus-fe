@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { requestJson } from "../lib/api/http";
+import { requestJson } from "@/lib/api/http";
 
 async function callSubscribe(botId:string, planId:string, tierName:string){
   return requestJson(`/bots/${botId}/subscribe`, {
@@ -15,8 +15,15 @@ export default function SubscribeModal({ botId, plan, onClose, onSubscribed }: a
   const [revealed, setRevealed] = useState(false);
   const qc = useQueryClient();
 
-  const m = useMutation(({planId,tierName}:{planId:string,tierName:string})=>callSubscribe(botId, planId, tierName),{
-    onSuccess(data){ qc.invalidateQueries(["subscriptions", botId]); onSubscribed(data); },
+  const mutationFn = async ({ planId, tierName }: { planId: string; tierName: string }) =>
+    callSubscribe(botId, planId, tierName);
+
+  const m = useMutation({
+    mutationFn,
+    onSuccess(data: unknown) {
+      qc.invalidateQueries({ queryKey: ["subscriptions", botId] });
+      onSubscribed(data);
+    },
   });
 
   function onSubmit(){ m.mutate({planId:plan.id, tierName: tier}); }
@@ -33,27 +40,27 @@ export default function SubscribeModal({ botId, plan, onClose, onSubscribed }: a
         </div>
 
         <div className="mt-4 flex gap-2">
-          <button className="rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-[#04120d] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70" onClick={onSubmit} disabled={m.isLoading}>{m.isLoading ? 'Subscribing...' : 'Subscribe'}</button>
+          <button className="rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-[#04120d] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-70" onClick={onSubmit} disabled={(m as any).isLoading}>{(m as any).isLoading ? 'Subscribing...' : 'Subscribe'}</button>
           <button className="rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white transition-colors hover:border-white/20 hover:bg-white/5" onClick={onClose}>Close</button>
         </div>
 
-        {m.data && (
+        {(m as any).data && (
           <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-sm text-muted">Subscription created</div>
-                <div className="mt-1 font-mono text-sm text-white">{revealed ? m.data.wsToken : (m.data.wsToken ? `${m.data.wsToken.slice(0, 6)}•••` : '—')}</div>
+                <div className="mt-1 font-mono text-sm text-white">{revealed ? (m as any).data.wsToken : ((m as any).data.wsToken ? `${(m as any).data.wsToken.slice(0, 6)}•••` : '—')}</div>
               </div>
               <div className="flex gap-2">
                 <button className="text-sm text-emerald-400 transition-colors hover:text-emerald-300" onClick={() => setRevealed((s)=>!s)}>{revealed? 'Hide' : 'Reveal'}</button>
-                <button className="text-sm text-white/80 transition-colors hover:text-white" onClick={() => navigator.clipboard.writeText(m.data.wsToken || '')}>Copy</button>
+                <button className="text-sm text-white/80 transition-colors hover:text-white" onClick={() => navigator.clipboard.writeText((m as any).data.wsToken || '')}>Copy</button>
               </div>
             </div>
           </div>
         )}
 
-        {m.isError && (
-          <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">Error: {(m.error as Error).message}</div>
+        {(m as any).isError && (
+          <div className="mt-4 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">Error: {((m as any).error as Error).message}</div>
         )}
       </div>
     </div>

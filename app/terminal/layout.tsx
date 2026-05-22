@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { TerminalShell } from '../../components/terminal/terminal-shell';
+import { TerminalShell } from '@/components/terminal/terminal-shell';
 
 export default async function TerminalLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = cookies();

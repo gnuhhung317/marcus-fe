@@ -22,7 +22,7 @@
 | app/terminal/leaderboard/page.tsx | Terminal leaderboard page | Render top strategy cards and actions |
 | lib/contracts/types.ts | Contract type model | Define reusable contract and view-model types |
 | lib/contracts/endpoints.ts | API endpoint registry | Map page features to OpenAPI operationId and track gaps |
-| lib/contracts/mock-data.ts | Mock payload source | Provide contract-shaped data for UI-first build |
+| lib/contracts/mock-data.ts | Legacy reference | Historical mock payload source (no runtime fallback in current client) |
 | lib/contracts/client.ts | Contract data accessor | Centralize async mock data getters |
 | app/page.tsx | Legacy starter page | Remove old starter route replaced by marketing route group |
 
@@ -39,7 +39,7 @@
 | app/terminal/marketplace/page.tsx | Uses marketplaceBots from mock contract layer |
 | app/terminal/strategies/page.tsx | Uses strategyTrades from mock contract layer |
 | app/terminal/profile/page.tsx | Uses profileApiKeys from mock contract layer |
-| lib/contracts/client.ts | Depends on endpoint registry and mock-data exports |
+| lib/contracts/client.ts | Depends on endpoint registry and API HTTP client |
 
 ### Test Files
 | Test | Coverage |

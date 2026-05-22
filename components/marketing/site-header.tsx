@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import brandLogo from '../../assets/images/marcustradingvn-Photoroom.png';
+import brandLogo from '@/assets/images/marcustradingvn-Photoroom.png';
 
 const navItems = [
   { href: '/', label: 'Home' },

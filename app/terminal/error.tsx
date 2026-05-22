@@ -1,6 +1,6 @@
 'use client';
 
-import { ErrorStateCard } from '../../components/shared/api-state';
+import { ErrorStateCard } from '@/components/shared/api-state';
 
 export default function TerminalError({ reset }: { reset: () => void }) {
   return (

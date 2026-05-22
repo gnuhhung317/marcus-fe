@@ -5,27 +5,43 @@ import { useRouter } from 'next/navigation';
 import { getDecisionDashboardData } from '@/lib/contracts/client';
 import { PortfolioOverviewStats } from './portfolio-overview';
 import { SubscriptionCardsContainer } from './subscription-cards';
+import { LoadingStateCard, ErrorStateCard } from '@/components/shared/api-state';
 
-async function DecisionDashboardContent() {
-  const data = await getDecisionDashboardData('ALL');
-
-  return <DecisionDashboardView initialData={data} />;
-}
-
-function DecisionDashboardView({ initialData }: { initialData: Awaited<ReturnType<typeof getDecisionDashboardData>> }) {
+function DecisionDashboardContent() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'AT_RISK'>('ALL');
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState<Awaited<ReturnType<typeof getDecisionDashboardData>> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Auth check
     const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
     const role = match ? decodeURIComponent(match[1]) : null;
+    
     if (role === 'DEVELOPER') {
       router.replace('/terminal/developer-dashboard');
+      return;
     } else if (!role || (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN')) {
       router.replace('/login');
+      return;
     }
+
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const initialData = await getDecisionDashboardData('ALL');
+        setData(initialData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load decision dashboard data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialData();
   }, [router]);
 
   const handleRefresh = async () => {
@@ -52,6 +68,25 @@ function DecisionDashboardView({ initialData }: { initialData: Awaited<ReturnTyp
       setIsRefreshing(false);
     }
   };
+
+  if (isLoading) {
+    return <DecisionDashboardSkeleton />;
+  }
+
+  if (error) {
+    return (
+      <div className="p-8">
+        <ErrorStateCard 
+          title="Dashboard Error" 
+          message={error} 
+          onAction={() => window.location.reload()}
+          actionLabel="Retry"
+        />
+      </div>
+    );
+  }
+
+  if (!data) return null;
 
   return (
     <div className="space-y-8">

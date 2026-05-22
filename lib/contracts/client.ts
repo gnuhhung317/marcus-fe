@@ -1523,6 +1523,7 @@ interface DeveloperBotDetailResponse extends DeveloperBotSummaryResponse {
   developerId?: string;
   createdAt?: string;
   updatedAt?: string;
+  performance?: BotPerformanceResponse;
 }
 
 interface BotSubscriptionResultResponse {
@@ -1621,6 +1622,16 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     developerId: detailResponse?.developerId ?? null,
     createdAt: detailResponse?.createdAt ?? null,
     updatedAt: detailResponse?.updatedAt ?? null,
+    performance: detailResponse?.performance
+      ? {
+          annualReturn: toNumber(detailResponse.performance.annualReturn),
+          maxDrawdown: toNumber(detailResponse.performance.maxDrawdown),
+          sharpe: toNumber(detailResponse.performance.sharpe),
+          winRate: toNumber(detailResponse.performance.winRate),
+          avgTradeReturn: toNumber(detailResponse.performance.avgTradeReturn),
+          tradesPerDay: toNumber(detailResponse.performance.tradesPerDay),
+        }
+      : null,
   };
 
   const subscriptions: DeveloperSubscriptionSummary[] = subscriptionsResponse.map((item, index) => ({

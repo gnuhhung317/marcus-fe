@@ -39,3 +39,4 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
       )}
     </article>
   );
+}

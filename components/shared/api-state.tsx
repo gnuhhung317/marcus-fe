@@ -56,3 +56,25 @@ export function EmptyStateCard({ title, message, actionLabel, actionHref }: Omit
     </article>
   );
 }
+
+interface DashboardSkeletonCardProps {
+  title?: string;
+  lines?: number;
+}
+
+export function DashboardSkeletonCard({ title = 'Loading dashboard block', lines = 4 }: DashboardSkeletonCardProps) {
+  return (
+    <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+      <p className="text-xs uppercase tracking-[0.16em] text-muted">Loading</p>
+      <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
+      <div className="mt-4 space-y-2">
+        {Array.from({ length: lines }).map((_, index) => (
+          <div
+            key={`${title}-${index}`}
+            className={`h-3 animate-pulse rounded-full bg-[var(--panel-border)] ${index === lines - 1 ? 'w-2/3' : 'w-full'}`}
+          />
+        ))}
+      </div>
+    </article>
+  );
+}

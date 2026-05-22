@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import { QueryProvider } from '../components/providers/query-provider';
+import { QueryProvider } from '@/components/providers/query-provider';
 
 export const metadata: Metadata = {
   title: 'Marcus Trading | Trader Workspace',

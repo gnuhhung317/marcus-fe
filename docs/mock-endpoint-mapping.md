@@ -1,26 +1,16 @@
-# Mock Data and Real Endpoint Mapping
+# Endpoint Mapping (API-Only)
 
 ## Overview
-This report documents the current relationship between `lib/contracts/mock-data.ts` and the real backend API endpoints used by the frontend.
+This report documents the current relationship between the real backend API endpoints and frontend contract client mappings.
 
-The frontend currently uses a hybrid model:
-- Real API endpoints when available through `requestJson()` / `executeApiRequest()`.
-- Mock fallback data from `lib/contracts/mock-data.ts` when the endpoint fails or returns no usable payload.
+The frontend now follows an API-only model:
+- Real API endpoints through `requestJson()` / `requestContractJson()`.
+- No runtime mock fallback payloads when endpoints fail.
 
 The endpoint registry is defined in `lib/contracts/endpoints.ts`.
 
-## Mock data sources
-`lib/contracts/mock-data.ts` exports contract-shaped UI data for fallback and marketing content:
-- `marketTickers`
-- `principles`
-- `trainingCourses`
-- `marketplaceBots`
-- `leaderboardRows`
-- `blogPosts`
-- `researchReports`
-- `terminalKpis`
-- `strategyTrades`
-- `profileApiKeys`
+## Runtime data policy
+Runtime UI data is sourced from API responses only. On endpoint failure, the contract layer now surfaces errors or empty collections rather than injecting mock payloads.
 
 ## Endpoint registry
 `lib/contracts/endpoints.ts` defines the canonical frontend API contract list.
@@ -46,8 +36,8 @@ The following routes are marked `status: 'available'`:
 - `GET /leaderboard/strategies`
 - `GET /leaderboard/featured`
 
-### Gap routes (mock fallback expected)
-The following routes are marked `status: 'gap'` and appear to be still using mock content:
+### Gap routes (no runtime fallback)
+The following routes are marked `status: 'gap'` and require backend availability for data:
 - `GET /academy/courses`
 - `GET /academy/metrics`
 - `GET /content/blog/posts`
@@ -135,15 +125,13 @@ Auth routing has been updated to use internal proxy routes:
 These routes call the real backend auth endpoints and set cookies, so auth is now separate from mock fallback content.
 
 ## Recommendation
-1. Prioritize replacing marketing-gap pages with real endpoints once the backend is available.
-2. Keep the current fallback model for terminal flows during the transition, but mark pages using mock fallback clearly in docs.
+1. Prioritize replacing remaining `gap` endpoints with available backend implementations.
+2. Keep contract error/empty-state UX consistent for endpoint outages.
 3. Update `lib/contracts/endpoints.ts` status from `gap` to `available` once each API is validated.
-4. Add smoke tests for both mock-driven marketing routes and real endpoint terminal flows to catch contract drift.
+4. Add smoke tests for all contract routes to catch drift early.
 
 ## Conclusion
-The repo is already using a hybrid mock/real model:
-- real endpoints for core terminal app data and auth
-- mock fallback for marketing and some research/training content
+The frontend contract layer now operates in API-only mode:
+- real endpoints for terminal, marketing, and auth paths
+- no runtime mock fallback payload injection
 - explicit gap tracking in `lib/contracts/endpoints.ts`
-
-This file is the current map between the mock payloads and the backend API surface.

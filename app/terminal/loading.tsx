@@ -1,4 +1,4 @@
-import { LoadingStateCard } from '../../components/shared/api-state';
+import { LoadingStateCard } from '@/components/shared/api-state';
 
 export default function TerminalLoading() {
   return (

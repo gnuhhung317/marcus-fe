@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { cookies } from 'next/headers';
 import {
   createCurrentUserApiKey,
   deleteCurrentUserApiKey,
@@ -80,6 +81,14 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   try {
+    // Debug: check for server cookie presence when action runs
+    try {
+      const cookieStore = cookies();
+      const accessToken = cookieStore.get('marcus_access_token')?.value;
+      console.log('[debug] updateProfileAction - access token present:', !!accessToken);
+    } catch (err) {
+      console.log('[debug] updateProfileAction - failed to read cookies', err);
+    }
     await updateCurrentUserProfile({
       ...(username && { username }),
       ...(email && { email }),

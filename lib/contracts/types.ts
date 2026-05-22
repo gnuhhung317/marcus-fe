@@ -344,6 +344,7 @@ export interface DeveloperBotDetail extends DeveloperBotSummary {
   developerId?: string | null;
   createdAt?: string | null;
   updatedAt?: string | null;
+  performance?: BotPerformance | null;
 }
 
 export interface DeveloperSubscriptionSummary {

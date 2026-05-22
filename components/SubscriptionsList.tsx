@@ -1,23 +1,48 @@
 "use client";
 import React, { useState } from "react";
-import { useSubscriptions } from "../hooks/useSubscriptions";
-import SubscriptionEditor from "./SubscriptionEditor";
-import SubscribeModal from "./SubscribeModal";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
+import SubscriptionEditor from "@/components/SubscriptionEditor";
+import SubscribeModal from "@/components/SubscribeModal";
+import { DashboardSkeletonCard, EmptyStateCard, ErrorStateCard } from "@/components/shared/api-state";
 
 export default function SubscriptionsList({ botId, role }: { botId: string; role: string }) {
   const { data: plans, isLoading, error, refetch } = useSubscriptions(botId);
+  const items = (plans as any) || [];
   const [editing, setEditing] = useState<any | null>(null);
   const [subscribePlan, setSubscribePlan] = useState<any | null>(null);
 
-  if (isLoading) return <div className="rounded-3xl border border-white/10 bg-[rgba(8,13,22,0.72)] p-6 text-sm text-muted">Loading plans...</div>;
-  if (error) return <div className="rounded-3xl border border-red-500/30 bg-red-500/10 p-6 text-sm text-red-200">Error loading plans</div>;
+  if (isLoading) {
+    return <DashboardSkeletonCard title="Loading subscription plans" lines={5} />;
+  }
+
+  if (error) {
+    return (
+      <ErrorStateCard
+        title="Subscription plans unavailable"
+        message="Could not load plans right now."
+        actionLabel="Retry"
+        onAction={() => refetch()}
+      />
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <EmptyStateCard
+        title="No plans configured"
+        message="Create your first plan to enable marketplace subscriptions."
+        actionLabel={role === "DEVELOPER" ? "Open Developer Console" : undefined}
+        actionHref={role === "DEVELOPER" ? "/terminal/developer-console" : undefined}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-[rgba(8,13,22,0.72)] p-4 backdrop-blur-xl">
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Plans</p>
-          <p className="text-sm text-white/90">{plans?.length ?? 0} configured plan{(plans?.length ?? 0) === 1 ? '' : 's'}</p>
+          <p className="text-sm text-white/90">{items.length ?? 0} configured plan{(items.length ?? 0) === 1 ? '' : 's'}</p>
         </div>
         {role === "DEVELOPER" && (
           <button className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-[#04120d] transition-all hover:brightness-105" onClick={() => setEditing({})}>Create plan</button>
@@ -25,7 +50,7 @@ export default function SubscriptionsList({ botId, role }: { botId: string; role
       </div>
 
       <div className="grid gap-4">
-        {plans?.map((p: any) => (
+        {items.map((p: any) => (
           <div key={p.id} className="rounded-3xl border border-white/10 bg-[rgba(8,13,22,0.78)] p-5 shadow-[0_24px_50px_rgba(0,0,0,0.22)] backdrop-blur-xl">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>

@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
-import { useFeatureFlag } from '../../lib/hooks/useFeatureFlag';
-import { SiteHeader } from '../marketing/site-header';
+import { useFeatureFlag } from '@/lib/hooks/useFeatureFlag';
+import { SiteHeader } from '@/components/marketing/site-header';
 
 const terminalNav = [
   { href: '/terminal/marketplace', label: 'Marketplace', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },

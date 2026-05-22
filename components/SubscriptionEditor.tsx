@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { requestJson } from "../lib/api/http";
+import { requestJson } from "@/lib/api/http";
 
 async function createPlan(botId: string, plan: any) {
   return requestJson(`/bots/${botId}/subscriptions`, {
@@ -14,8 +14,11 @@ export default function SubscriptionEditor({ botId, plan, onClose }: { botId: st
   const initial = { ...(plan || {}), tiers: plan?.tiers || (plan?.tiersJson ? JSON.parse(plan.tiersJson) : []) };
   const [state, setState] = useState<any>(initial);
   const qc = useQueryClient();
-  const m = useMutation((p: any) => createPlan(botId, p), {
-    onSuccess: () => qc.invalidateQueries(["subscriptions", botId]),
+  const mutationFn = async (p: any) => createPlan(botId, p);
+
+  const m = useMutation({
+    mutationFn,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["subscriptions", botId] }),
   });
 
   function addTier(){

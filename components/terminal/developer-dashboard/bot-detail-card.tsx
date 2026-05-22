@@ -19,6 +19,24 @@ const statusStyles: Record<string, string> = {
   CREATED: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
+const formatMetricPercent = (val: number | null | undefined, alwaysSign = false) => {
+  if (val === undefined || val === null) return 'N/A';
+  const value = val * 100;
+  const prefix = alwaysSign && value >= 0 ? '+' : '';
+  return `${prefix}${value.toFixed(2)}%`;
+};
+
+const formatDrawdownPercent = (val: number | null | undefined) => {
+  if (val === undefined || val === null) return 'N/A';
+  const value = Math.abs(val) * 100;
+  return `-${value.toFixed(2)}%`;
+};
+
+const formatMetricNumber = (val: number | null | undefined, decimals = 2) => {
+  if (val === undefined || val === null) return 'N/A';
+  return val.toFixed(decimals);
+};
+
 interface BotDetailCardProps {
   bot: DeveloperBotDetail;
   subscriptions: DeveloperSubscriptionSummary[];
@@ -316,6 +334,58 @@ func main() {
                   {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}
                 </p>
               </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Performance Snapshot</h3>
+              {bot.performance ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Annualized Return</span>
+                    <span className={`text-lg font-semibold mt-1.5 ${
+                      (bot.performance.annualReturn ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {formatMetricPercent(bot.performance.annualReturn, true)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Max Drawdown</span>
+                    <span className="text-lg font-semibold text-rose-400 mt-1.5">
+                      {formatDrawdownPercent(bot.performance.maxDrawdown)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Sharpe Ratio</span>
+                    <span className="text-lg font-semibold text-white mt-1.5">
+                      {formatMetricNumber(bot.performance.sharpe)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Win Rate</span>
+                    <span className="text-lg font-semibold text-slate-200 mt-1.5">
+                      {formatMetricPercent(bot.performance.winRate)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Avg Trade Return</span>
+                    <span className={`text-lg font-semibold mt-1.5 ${
+                      (bot.performance.avgTradeReturn ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {formatMetricPercent(bot.performance.avgTradeReturn, true)}
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
+                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Trades Per Day</span>
+                    <span className="text-lg font-semibold text-slate-200 mt-1.5">
+                      {formatMetricNumber(bot.performance.tradesPerDay, 2)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-6 text-center text-sm text-slate-400">
+                  No performance metrics computed yet. Send signal executions to calculate metrics.
+                </div>
+              )}
             </div>
           </div>
         )}

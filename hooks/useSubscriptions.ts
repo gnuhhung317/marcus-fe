@@ -7,5 +7,5 @@ async function fetchPlans(botId: string) {
 }
 
 export function useSubscriptions(botId: string) {
-  return useQuery(["subscriptions", botId], () => fetchPlans(botId), { staleTime: 30_000 });
+  return useQuery({ queryKey: ["subscriptions", botId], queryFn: () => fetchPlans(botId), staleTime: 30_000 });
 }

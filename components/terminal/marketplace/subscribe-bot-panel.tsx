@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { subscribeToBot, unsubscribeFromBot } from '@/lib/contracts/client';
 import { SubscriptionResult } from '@/lib/contracts/types';
-import { LifecycleBadge } from '../../shared/lifecycle-badge';
+import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
+import { useToast } from '@/components/providers/toast-provider';
 
 interface SubscribeBotPanelProps {
   botId: string;
@@ -15,6 +16,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [riskConfirmed, setRiskConfirmed] = useState(false);
+  const { pushToast } = useToast();
 
   const handleSubscribe = async () => {
     if (!riskConfirmed) {
@@ -24,26 +26,41 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
 
     setIsSubmitting(true);
     setError(null);
+    const previousResult = result;
+    setResult({ botId, wsToken: 'pending...', status: 'SUBSCRIBING' });
 
     try {
       const response = await subscribeToBot(botId);
       setResult(response);
+      pushToast({ title: 'Subscription requested', message: 'Runtime token is now available.', tone: 'success' });
     } catch {
+      setResult(previousResult);
       setError('Unable to subscribe right now. Please retry.');
+      pushToast({ title: 'Subscription failed', message: 'Please retry in a few seconds.', tone: 'error' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleUnsubscribe = async () => {
+    const confirmed = window.confirm('Unsubscribe this bot now? You can subscribe again later.');
+    if (!confirmed) {
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
+    const previousResult = result;
+    setResult((prev) => (prev ? { ...prev, status: 'UNSUBSCRIBING' } : { botId, wsToken: '', status: 'UNSUBSCRIBING' }));
 
     try {
       const response = await unsubscribeFromBot(botId);
       setResult(response);
+      pushToast({ title: 'Unsubscribed', message: 'The bot subscription has been stopped.', tone: 'success' });
     } catch {
+      setResult(previousResult);
       setError('Unable to unsubscribe right now. Please retry.');
+      pushToast({ title: 'Unsubscribe failed', message: 'Your current subscription remains unchanged.', tone: 'error' });
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +100,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
       <button
         type="button"
         onClick={handleUnsubscribe}
-        disabled={isSubmitting || !result || result.status === 'UNSUBSCRIBED'}
+        disabled={isSubmitting || !result || result.status === 'UNSUBSCRIBED' || result.status === 'UNSUBSCRIBING'}
         className="ml-2 mt-5 rounded-xl border border-[var(--panel-border)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
       >
         Unsubscribe

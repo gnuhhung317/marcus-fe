@@ -1,5 +1,5 @@
-import { MarketingShell } from '../../components/marketing/marketing-shell'
-import RegisterForm from '../../components/Auth/RegisterForm'
+import { MarketingShell } from '@/components/marketing/marketing-shell'
+import RegisterForm from '@/components/Auth/RegisterForm'
 
 export const metadata = {
   title: 'Create account — Marcus Trading',

@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
-import { SiteHeader } from '../../components/marketing/site-header';
-import { SiteFooter } from '../../components/marketing/site-footer';
+import { SiteHeader } from '@/components/marketing/site-header';
+import { SiteFooter } from '@/components/marketing/site-footer';
 
 function getErrorMessage(error?: string) {
   if (error === 'missing_credentials') {

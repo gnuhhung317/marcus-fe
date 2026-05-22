@@ -35,6 +35,15 @@ The following routes are marked `status: 'available'`:
 - `GET /signals`
 - `GET /leaderboard/strategies`
 - `GET /leaderboard/featured`
+- `GET /bots/my-bots`
+- `GET /bots/{botId}`
+- `GET /bots/{botId}/integration-health`
+- `GET /subscriptions/{botId}/active`
+- `PATCH /bots/{botId}/status`
+- `PATCH /bots/{botId}/metadata`
+- `DELETE /bots/{botId}`
+- `GET /system/connectivity`
+- `GET /system/execution-logs`
 
 ### Gap routes (no runtime fallback)
 The following routes are marked `status: 'gap'` and require backend availability for data:
@@ -116,6 +125,20 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `GET /system/execution-logs`
 - Mock fallback:
   - when these endpoints fail, stubbed operational state is rendered instead
+
+#### Developer dashboard
+- Real endpoints:
+  - `GET /bots/my-bots`
+  - `GET /bots/{botId}`
+  - `GET /bots/{botId}/integration-health`
+  - `GET /subscriptions/{botId}/active`
+  - `GET /signals?botId={botId}`
+  - `PATCH /bots/{botId}/status`
+  - `PATCH /bots/{botId}/metadata`
+  - `DELETE /bots/{botId}`
+- Simulation support:
+  - Signals with `metadata.simulation=true` are flagged `isSimulated` in response
+  - Simulated signals bypass Kafka/WebSocket routing; visible only in developer views
 
 ## Notes on auth
 Auth routing has been updated to use internal proxy routes:

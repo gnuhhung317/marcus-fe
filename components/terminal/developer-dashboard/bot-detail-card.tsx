@@ -66,11 +66,13 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
     },
   });
   
-  const statusClass = statusStyles[bot.status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-  const apiKey = bot.apiKey ?? 'Not available';
   const subscriberCount = subscriptions.length;
   const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
+
+  const statusClass = statusStyles[bot.status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+  const apiKey = bot.apiKey ?? 'Not available';
+
 
   // API Signal Snippets
   const timestamp = new Date().toISOString();
@@ -216,6 +218,24 @@ func main() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
+                {integrationHealth && (
+                  <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
+                    integrationHealth.overallStatus === 'UP' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                      : integrationHealth.overallStatus === 'DEGRADED'
+                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      integrationHealth.overallStatus === 'UP' 
+                        ? 'bg-emerald-400 animate-pulse' 
+                        : integrationHealth.overallStatus === 'DEGRADED'
+                        ? 'bg-amber-400'
+                        : 'bg-rose-400 animate-pulse'
+                    }`} />
+                    Connection: {integrationHealth.overallStatus}
+                  </div>
+                )}
                 {isStatusDropdownOpen && (
                   <>
                     <div 

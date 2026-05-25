@@ -284,7 +284,7 @@ export interface RegisterUserInput {
   email: string;
   password: string;
   displayName?: string;
-  role?: 'USER' | 'DEVELOPER';
+  role?: 'TRADER' | 'DEVELOPER';
 }
 
 export interface ProfilePageData {

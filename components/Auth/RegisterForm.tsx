@@ -10,7 +10,7 @@ export default function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [role, setRole] = useState<'USER' | 'DEVELOPER'>('USER');
+  const [role, setRole] = useState<'TRADER' | 'DEVELOPER'>('TRADER');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -130,10 +130,10 @@ export default function RegisterForm() {
         <select
           id="register-role"
           value={role}
-          onChange={(e) => setRole(e.target.value as 'USER' | 'DEVELOPER')}
+          onChange={(e) => setRole(e.target.value as 'TRADER' | 'DEVELOPER')}
           className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
         >
-          <option value="USER">User</option>
+          <option value="TRADER">Trader</option>
           <option value="DEVELOPER">Developer</option>
         </select>
         <p className="mt-1 text-xs text-muted">Select developer if you plan to publish bots or integrations.</p>

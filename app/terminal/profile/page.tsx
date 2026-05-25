@@ -1,6 +1,19 @@
 import { getCurrentUserProfile } from '@/lib/contracts/client';
 import { updateProfileAction } from './actions';
 
+const roleLabels: Record<string, string> = {
+  TRADER: 'Trader',
+  USER: 'Trader',
+  DEVELOPER: 'Developer',
+  OPERATOR: 'Operator',
+  ADMIN: 'Admin',
+  GUEST: 'Guest',
+};
+
+function formatRoleLabel(role: string) {
+  return roleLabels[role] ?? role;
+}
+
 interface ProfilePageProps {
   searchParams?: {
     status?: string;
@@ -46,7 +59,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
             <p className="mt-2 text-sm text-muted">View and update the core identity fields for this account.</p>
           </div>
           <span className="rounded-full border border-[rgba(148,163,184,0.22)] px-3 py-1 text-xs text-muted">
-            Role: {profile.role}
+            Role: {formatRoleLabel(profile.role)}
           </span>
         </div>
 
@@ -93,7 +106,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Identity</p>
           <h1 className="mt-3 text-4xl font-semibold text-white">{profile.username}</h1>
           <p className="mt-2 text-sm text-muted">UID: {profile.userId}</p>
-          <p className="mt-1 text-sm text-muted">{profile.email} · Role {profile.role}</p>
+          <p className="mt-1 text-sm text-muted">{profile.email} · Role {formatRoleLabel(profile.role)}</p>
         </div>
       </header>
     </div>

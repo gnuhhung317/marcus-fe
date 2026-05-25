@@ -95,7 +95,8 @@ function getIcon(href: string) {
 export function TerminalShell({ children, role }: { children: ReactNode; role: string }) {
   const pathname = usePathname();
   const dashboardV2Enabled = useFeatureFlag('dashboard-v2');
-  const visibleNav = terminalNav.filter((item) => isAllowedRole(role, item.roles));
+  const normalizedRole = role === 'USER' ? 'TRADER' : role;
+  const visibleNav = terminalNav.filter((item) => isAllowedRole(normalizedRole, item.roles));
 
   const tradingDeskNav = visibleNav.filter(
     (item) =>
@@ -136,7 +137,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-0)] text-white">
-      <SiteHeader isAuthenticated role={role} />
+      <SiteHeader isAuthenticated role={normalizedRole} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">
         <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4 flex flex-col gap-6">
           {/* Workspace Info Connection */}
@@ -161,7 +162,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
           </div>
 
           {/* Dashboards Section */}
-          {isAllowedRole(role, ['TRADER', 'OPERATOR', 'ADMIN']) && (
+          {isAllowedRole(normalizedRole, ['TRADER', 'OPERATOR', 'ADMIN']) && (
             <div className="space-y-2">
               <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Dashboards</p>
               <nav className="space-y-1">
@@ -225,39 +226,6 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
               <nav className="space-y-1">{accountNav.map(renderLink)}</nav>
             </div>
           )}
-
-          {/* System & Engine Status Card */}
-          <div className="mt-auto pt-4 border-t border-[var(--panel-border)] space-y-3">
-            <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-3.5 shadow-sm backdrop-blur-md">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">System Core</span>
-                <span className="flex h-2 w-2 items-center justify-center">
-                  <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                </span>
-              </div>
-
-              <div className="mt-3 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Trading Core:</span>
-                  <span className="font-mono text-emerald-400 font-semibold">Active</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Node Latency:</span>
-                  <span className="font-mono text-emerald-400">18ms</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium">Active Node:</span>
-                  <span className="font-mono text-slate-300">SG-CORE-02</span>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-[var(--panel-border)] flex items-center justify-between text-[11px]">
-                <span className="text-slate-500 font-mono">v1.4.2</span>
-                <span className="text-slate-400">Role: <span className="text-emerald-400 font-mono font-bold">{role}</span></span>
-              </div>
-            </div>
-          </div>
         </aside>
         <div className="glass-strong min-h-[84vh] rounded-2xl border border-[var(--panel-border)] p-5 md:p-7">{children}</div>
       </div>

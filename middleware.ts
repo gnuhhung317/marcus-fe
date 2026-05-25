@@ -12,6 +12,7 @@ export function middleware(request: NextRequest) {
   // Extract auth tokens from cookies
   const accessToken = request.cookies.get('marcus_access_token')?.value;
   const role = request.cookies.get('marcus_role')?.value;
+  const normalizedRole = role === 'USER' ? 'TRADER' : role;
 
   // Public routes (no auth required)
   const publicRoutes = ['/', '/login', '/register', '/logout'];
@@ -26,7 +27,7 @@ export function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
 
   // Case 1: User is NOT authenticated
-  if (!accessToken || !role) {
+  if (!accessToken || !normalizedRole) {
     // Allow access to public routes and marketing
     if (isPublicRoute || isMarketingRoute) {
       return NextResponse.next();
@@ -43,7 +44,7 @@ export function middleware(request: NextRequest) {
 
   // Case 2: User IS authenticated
   // GUEST role can only access marketing and login
-  if (role === 'GUEST') {
+  if (normalizedRole === 'GUEST') {
     if (isProtectedRoute) {
       return NextResponse.redirect(new URL('/', baseUrl));
     }
@@ -51,7 +52,7 @@ export function middleware(request: NextRequest) {
   }
 
   // TRADER, DEVELOPER, OPERATOR, ADMIN can access terminal
-  if (role === 'TRADER' || role === 'DEVELOPER' || role === 'OPERATOR' || role === 'ADMIN') {
+  if (normalizedRole === 'TRADER' || normalizedRole === 'DEVELOPER' || normalizedRole === 'OPERATOR' || normalizedRole === 'ADMIN') {
     // Redirect to terminal/marketplace if accessing root or marketing after login
     if (pathname === '/' || isMarketingRoute) {
       return NextResponse.redirect(new URL('/terminal/marketplace', baseUrl));

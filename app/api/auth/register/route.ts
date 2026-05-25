@@ -35,6 +35,8 @@ export async function POST(request: Request) {
     const nextResponse = NextResponse.json(responsePayload, { status: response.status });
 
     if (response.ok && body?.accessToken && body?.refreshToken) {
+      const responseRole = body?.role === 'USER' ? 'TRADER' : String(body?.role ?? 'TRADER');
+
       nextResponse.cookies.set('marcus_access_token', String(body.accessToken), {
         httpOnly: false,
         sameSite: 'lax',
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
         path: '/',
       });
 
-      nextResponse.cookies.set('marcus_role', String(body?.role ?? 'TRADER'), {
+      nextResponse.cookies.set('marcus_role', responseRole, {
         httpOnly: false,
         sameSite: 'lax',
         secure: isSecure,

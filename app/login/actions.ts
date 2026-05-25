@@ -60,7 +60,9 @@ export async function loginAction(formData: FormData) {
       path: '/',
     });
 
-    cookieStore.set('marcus_role', session.role || 'TRADER', {
+    const sessionRole = session.role ?? 'TRADER';
+
+    cookieStore.set('marcus_role', sessionRole, {
       httpOnly: false,
       sameSite: 'lax',
       secure: isSecure,

@@ -10,6 +10,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Invalid request payload.' }, { status: 400 });
   }
 
+  const xForwardedProto = request.headers.get('x-forwarded-proto');
+  const isSecure = request.url.startsWith('https://') || xForwardedProto === 'https';
+
   try {
     const apiBaseUrl = getApiBaseUrl();
     const response = await fetch(`${apiBaseUrl}/auth/register`, {
@@ -33,8 +36,9 @@ export async function POST(request: Request) {
 
     if (response.ok && body?.accessToken && body?.refreshToken) {
       nextResponse.cookies.set('marcus_access_token', String(body.accessToken), {
+        httpOnly: false,
         sameSite: 'lax',
-        secure: isProduction,
+        secure: isSecure,
         maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
         path: '/',
       });
@@ -42,21 +46,23 @@ export async function POST(request: Request) {
       nextResponse.cookies.set('marcus_refresh_token', String(body.refreshToken), {
         httpOnly: true,
         sameSite: 'lax',
-        secure: isProduction,
+        secure: isSecure,
         maxAge: Number(body?.refreshTokenExpiresInSeconds ?? 604800),
         path: '/',
       });
 
       nextResponse.cookies.set('marcus_role', String(body?.role ?? 'TRADER'), {
+        httpOnly: false,
         sameSite: 'lax',
-        secure: isProduction,
+        secure: isSecure,
         maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
         path: '/',
       });
 
       nextResponse.cookies.set('marcus_username', String(body?.username ?? body?.displayName ?? payload?.displayName ?? 'Trader'), {
+        httpOnly: false,
         sameSite: 'lax',
-        secure: isProduction,
+        secure: isSecure,
         maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
         path: '/',
       });

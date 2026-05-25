@@ -42,9 +42,10 @@ interface BotDetailCardProps {
   subscriptions: DeveloperSubscriptionSummary[];
   integrationHealth: BotIntegrationHealth | null;
   signals: DeveloperSignalItem[];
+  isSwitching?: boolean;
 }
 
-export function BotDetailCard({ bot, subscriptions, integrationHealth, signals }: BotDetailCardProps) {
+export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false }: BotDetailCardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
   const [selectedLanguage, setSelectedLanguage] = useState<'curl' | 'node' | 'python' | 'go'>('curl');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
@@ -58,9 +59,10 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals }
     mutationFn: async (nextStatus: DeveloperBotStatus) => {
       return updateBotStatus(bot.botId, nextStatus);
     },
-    onSuccess: () => {
-      router.refresh();
+    onSuccess: (updated) => {
+      bot.status = updated.status;
       setIsStatusDropdownOpen(false);
+      router.refresh();
     },
   });
   
@@ -181,8 +183,24 @@ func main() {
       {/* Decorative colored glow in detail view */}
       <div className="absolute top-0 left-0 w-48 h-48 bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none" />
       
+      {/* Slim Switching Loading Bar */}
+      {isSwitching && (
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20 animate-pulse z-30" />
+      )}
+
       {/* Bot Header Area */}
       <div className="p-6 sm:p-8 pb-5 border-b border-[var(--panel-border)] bg-[var(--panel)]">
+        <div className="mb-4">
+          <button
+            onClick={() => router.push('/terminal/developer-dashboard')}
+            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors outline-none cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Fleet Overview
+          </button>
+        </div>
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
@@ -438,8 +456,16 @@ func main() {
         {/* INTEGRATION GUIDE TAB */}
         {activeTab === 'integration' && (
           <div className="space-y-6 animate-fade-in">
-            <IntegrationHealthWidget health={integrationHealth} />
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            {isSwitching ? (
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-6 space-y-4 animate-pulse">
+                <div className="h-4 bg-white/10 rounded w-1/3" />
+                <div className="h-3 bg-white/5 rounded w-2/3" />
+                <div className="h-24 bg-white/5 rounded w-full" />
+              </div>
+            ) : (
+              <>
+                <IntegrationHealthWidget health={integrationHealth} />
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Webhook Signal Gateway</h3>
                 <p className="text-xs text-slate-500 mt-0.5">Stream execution payloads to our public API signal bridge.</p>
@@ -578,8 +604,10 @@ func main() {
                 </code>
               </pre>
             </div>
-          </div>
-        )}
+          </>)
+        }
+      </div>
+    )}
 
         {/* SIGNALS TAB */}
         {activeTab === 'signals' && (
@@ -588,7 +616,15 @@ func main() {
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Signal Stream</h3>
               <p className="text-xs text-slate-500 mt-1">Signals received for this bot. Click a row to inspect full payload.</p>
             </div>
-            <SignalStreamTable signals={signals} onSelect={setSelectedSignal} />
+            {isSwitching ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-10 bg-white/5 rounded-xl w-full" />
+                <div className="h-10 bg-white/5 rounded-xl w-full" />
+                <div className="h-10 bg-white/5 rounded-xl w-full" />
+              </div>
+            ) : (
+              <SignalStreamTable signals={signals} onSelect={setSelectedSignal} />
+            )}
           </div>
         )}
 
@@ -600,68 +636,75 @@ func main() {
               <p className="text-xs text-slate-500 mt-1">Active subscriptions and connection health. No trader runtime tokens are exposed here.</p>
             </div>
 
-            <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
-              {subscriptions.length === 0 ? (
-                <div className="p-8 text-center flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+            {isSwitching ? (
+              <div className="space-y-3 animate-pulse">
+                <div className="h-20 bg-white/5 rounded-xl w-full" />
+                <div className="h-12 bg-white/5 rounded-xl w-full" />
+              </div>
+            ) : (
+              <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
+                {subscriptions.length === 0 ? (
+                  <div className="p-8 text-center flex flex-col items-center">
+                    <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                    <p className="text-xs font-medium text-slate-400">No active subscriber sessions found</p>
+                    <p className="text-[11px] text-slate-500 mt-1 max-w-xs leading-relaxed">
+                      Publish a signal from your code to activate listener sessions in real-time.
+                    </p>
                   </div>
-                  <p className="text-xs font-medium text-slate-400">No active subscriber sessions found</p>
-                  <p className="text-[11px] text-slate-500 mt-1 max-w-xs leading-relaxed">
-                    Publish a signal from your code to activate listener sessions in real-time.
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3 p-4">
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Total Subscribers</p>
-                      <p className="mt-1 text-lg font-semibold text-white">{subscriberCount}</p>
+                ) : (
+                  <div className="space-y-3 p-4">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Total Subscribers</p>
+                        <p className="mt-1 text-lg font-semibold text-white">{subscriberCount}</p>
+                      </div>
+                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Connected</p>
+                        <p className="mt-1 text-lg font-semibold text-emerald-300">{connectedCount}</p>
+                      </div>
+                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Active</p>
+                        <p className="mt-1 text-lg font-semibold text-slate-200">{activeCount}</p>
+                      </div>
                     </div>
-                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Connected</p>
-                      <p className="mt-1 text-lg font-semibold text-emerald-300">{connectedCount}</p>
-                    </div>
-                    <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-slate-500">Active</p>
-                      <p className="mt-1 text-lg font-semibold text-slate-200">{activeCount}</p>
-                    </div>
-                  </div>
 
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full text-left text-xs border-collapse">
-                      <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
-                        <tr>
-                          <th className="px-4 py-3">Subscriber</th>
-                          <th className="px-4 py-3 text-right">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {subscriptions.map((sub, index) => (
-                          <tr key={`${sub.botId}-${index}`} className="hover:bg-white/[0.01] transition-colors">
-                            <td className="px-4 py-3">
-                              <span className="font-mono text-slate-300">Subscriber #{index + 1}</span>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                                sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
-                                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                  : 'bg-white/5 text-slate-400 border-white/5'
-                              }`}>
-                                <span className={`w-1.2 h-1.2 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
-                                {sub.status}
-                              </span>
-                            </td>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-left text-xs border-collapse">
+                        <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
+                          <tr>
+                            <th className="px-4 py-3">Subscriber</th>
+                            <th className="px-4 py-3 text-right">Status</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {subscriptions.map((sub, index) => (
+                            <tr key={`${sub.botId}-${index}`} className="hover:bg-white/[0.01] transition-colors">
+                              <td className="px-4 py-3">
+                                <span className="font-mono text-slate-300">Subscriber #{index + 1}</span>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
+                                  sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
+                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                    : 'bg-white/5 text-slate-400 border-white/5'
+                                }`}>
+                                  <span className={`w-1.2 h-1.2 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+                                  {sub.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>

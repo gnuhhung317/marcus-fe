@@ -83,7 +83,6 @@ const defaultLoginActivities: ProfileLoginActivity[] = [];
 const defaultConnectivity = {
   overallStatus: 'UNKNOWN',
   checkedAt: new Date().toISOString(),
-  dependencies: [],
 };
 
 const defaultAcademyMetrics: AcademyMetricsData = {
@@ -1478,12 +1477,6 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
   const connectivity = {
     overallStatus: connectivityResponse?.overallStatus ?? defaultConnectivity.overallStatus,
     checkedAt: connectivityResponse?.checkedAt ?? defaultConnectivity.checkedAt,
-    dependencies:
-      connectivityResponse?.dependencies?.map((dependency) => ({
-        name: dependency.name ?? 'Unknown dependency',
-        status: dependency.status ?? 'UP',
-        latencyMs: Math.max(0, Math.round(toNumber(dependency.latencyMs))),
-      })) ?? defaultConnectivity.dependencies,
   };
 
   const signalStream = signalResponse.map((signal, index) => ({
@@ -1578,7 +1571,7 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
   const resolvedBots = bots;
   const selectedBotId = activeBotId && resolvedBots.some(b => b.botId === activeBotId)
     ? activeBotId
-    : (resolvedBots[0]?.botId ?? '');
+    : '';
 
   if (!selectedBotId) {
     return {
@@ -1644,11 +1637,6 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     ? {
         overallStatus: integrationHealthResponse.overallStatus ?? 'UNKNOWN',
         lastCheckedAt: integrationHealthResponse.lastCheckedAt ?? new Date().toISOString(),
-        dependencies: (integrationHealthResponse.dependencies ?? []).map((dep) => ({
-          name: dep.name ?? 'Unknown',
-          status: dep.status ?? 'UNKNOWN',
-          latencyMs: dep.latencyMs ?? 0,
-        })),
         lastSignalAt: integrationHealthResponse.lastSignalAt ?? null,
         message: integrationHealthResponse.message ?? null,
       }

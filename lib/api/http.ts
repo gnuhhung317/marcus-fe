@@ -1,4 +1,4 @@
-﻿import { getApiBaseUrl } from '../config/env';
+import { getApiBaseUrl } from '../config/env';
 
 const ACCESS_TOKEN_COOKIE = 'marcus_access_token';
 const REFRESH_TOKEN_COOKIE = 'marcus_refresh_token';
@@ -199,7 +199,16 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
   }
 
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${normalizedPath}`);
+    let errorMessage = `API request failed: ${response.status} ${normalizedPath}`;
+    try {
+      const errorJson = await response.json();
+      if (errorJson && errorJson.message) {
+        errorMessage = errorJson.message;
+      }
+    } catch (e) {
+      // Ignore if body is not JSON or parsing fails
+    }
+    throw new Error(errorMessage);
   }
 
   if (response.status === 204) {

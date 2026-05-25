@@ -1,6 +1,6 @@
 'use server';
 
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { loginWithCredentials } from '../../lib/contracts/client';
 
@@ -39,10 +39,15 @@ export async function loginAction(formData: FormData) {
     }
 
     const cookieStore = cookies();
+    const headersList = headers();
+    const xForwardedProto = headersList.get('x-forwarded-proto');
+    const referer = headersList.get('referer');
+    const isSecure = xForwardedProto === 'https' || (referer ? referer.startsWith('https://') : false);
 
     cookieStore.set('marcus_access_token', session.accessToken, {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
@@ -50,21 +55,23 @@ export async function loginAction(formData: FormData) {
     cookieStore.set('marcus_refresh_token', session.refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.refreshTokenExpiresInSeconds,
       path: '/',
     });
 
     cookieStore.set('marcus_role', session.role || 'TRADER', {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
 
     cookieStore.set('marcus_username', session.username || username, {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });

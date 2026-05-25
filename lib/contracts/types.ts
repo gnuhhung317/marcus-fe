@@ -294,16 +294,9 @@ export interface ProfilePageData {
   loginActivities: ProfileLoginActivity[];
 }
 
-export interface ConnectivityDependency {
-  name: string;
-  status: string;
-  latencyMs: number;
-}
-
 export interface ConnectivityHealth {
   overallStatus: string;
   checkedAt: string;
-  dependencies: ConnectivityDependency[];
 }
 
 export interface SignalLogLine {
@@ -353,16 +346,9 @@ export interface DeveloperSubscriptionSummary {
   status: string;
 }
 
-export interface BotIntegrationDependency {
-  name: string;
-  status: string;
-  latencyMs: number;
-}
-
 export interface BotIntegrationHealth {
   overallStatus: string;
   lastCheckedAt: string;
-  dependencies: BotIntegrationDependency[];
   lastSignalAt?: string | null;
   message?: string | null;
 }

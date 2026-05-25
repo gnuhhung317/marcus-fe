@@ -4,13 +4,16 @@ import { refreshWithToken } from '@/lib/api/http';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-export async function POST() {
+export async function POST(request: Request) {
   const cookieStore = cookies();
   const refreshToken = cookieStore.get('marcus_refresh_token')?.value;
 
   if (!refreshToken) {
     return NextResponse.json({ error: 'missing_refresh_token' }, { status: 401 });
   }
+
+  const xForwardedProto = request.headers.get('x-forwarded-proto');
+  const isSecure = request.url.startsWith('https://') || xForwardedProto === 'https';
 
   try {
     const session = await refreshWithToken({ refreshToken });
@@ -29,8 +32,9 @@ export async function POST() {
     );
 
     nextResponse.cookies.set('marcus_access_token', session.accessToken, {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
@@ -38,21 +42,23 @@ export async function POST() {
     nextResponse.cookies.set('marcus_refresh_token', session.refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.refreshTokenExpiresInSeconds,
       path: '/',
     });
 
     nextResponse.cookies.set('marcus_role', session.role || 'TRADER', {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });
 
     nextResponse.cookies.set('marcus_username', session.username || 'trader', {
+      httpOnly: false,
       sameSite: 'lax',
-      secure: isProduction,
+      secure: isSecure,
       maxAge: session.accessTokenExpiresInSeconds,
       path: '/',
     });

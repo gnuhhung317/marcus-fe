@@ -30,17 +30,6 @@ export default async function TerminalDeveloperConsolePage() {
               {connectivity.overallStatus}
             </p>
             <p className="mt-1 text-xs text-muted">Checked at {new Date(connectivity.checkedAt).toLocaleString()}</p>
-
-            <div className="mt-4 space-y-2">
-              {connectivity.dependencies.map((dependency) => (
-                <div key={dependency.name} className="flex items-center justify-between rounded-lg bg-[rgba(15,23,42,0.8)] px-3 py-2 text-xs">
-                  <span className="text-muted">{dependency.name}</span>
-                  <span className="text-white">
-                    {dependency.status} · {dependency.latencyMs}ms
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </article>
 

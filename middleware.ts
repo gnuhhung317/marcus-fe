@@ -4,6 +4,11 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Construct base URL from headers to respect dynamic hostnames/IPs
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+  const proto = request.headers.get('x-forwarded-proto') || 'http';
+  const baseUrl = `${proto}://${host}`;
+
   // Extract auth tokens from cookies
   const accessToken = request.cookies.get('marcus_access_token')?.value;
   const role = request.cookies.get('marcus_role')?.value;
@@ -29,7 +34,7 @@ export function middleware(request: NextRequest) {
 
     // Redirect to login if trying to access protected route
     if (isProtectedRoute) {
-      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(pathname)}`, request.url));
+      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(pathname)}`, baseUrl));
     }
 
     // For root "/" or marketing paths, continue
@@ -40,7 +45,7 @@ export function middleware(request: NextRequest) {
   // GUEST role can only access marketing and login
   if (role === 'GUEST') {
     if (isProtectedRoute) {
-      return NextResponse.redirect(new URL('/', request.url));
+      return NextResponse.redirect(new URL('/', baseUrl));
     }
     return NextResponse.next();
   }
@@ -49,7 +54,7 @@ export function middleware(request: NextRequest) {
   if (role === 'TRADER' || role === 'DEVELOPER' || role === 'OPERATOR' || role === 'ADMIN') {
     // Redirect to terminal/marketplace if accessing root or marketing after login
     if (pathname === '/' || isMarketingRoute) {
-      return NextResponse.redirect(new URL('/terminal/marketplace', request.url));
+      return NextResponse.redirect(new URL('/terminal/marketplace', baseUrl));
     }
 
     // Allow access to terminal routes

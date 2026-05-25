@@ -9,5 +9,9 @@ export async function GET(request: Request) {
   cookieStore.delete('marcus_role');
   cookieStore.delete('marcus_username');
 
-  return NextResponse.redirect(new URL('/login', request.url));
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
+  const proto = request.headers.get('x-forwarded-proto') || 'http';
+  const baseUrl = `${proto}://${host}`;
+
+  return NextResponse.redirect(new URL('/login', baseUrl));
 }

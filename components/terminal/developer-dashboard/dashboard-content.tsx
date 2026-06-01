@@ -5,7 +5,7 @@ import { BotDetailCard } from './bot-detail-card';
 import { DeveloperBotList } from './developer-bot-list';
 import { RegisterBotModal } from './register-bot-modal';
 import { BotGridCard } from './bot-grid-card';
-import { BotIntegrationHealth, DeveloperBotSummary, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
+import { BotIntegrationHealth, DeveloperBotStatus, DeveloperBotSummary, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 
 interface DashboardContentProps {
   bots: DeveloperBotSummary[];
@@ -14,9 +14,10 @@ interface DashboardContentProps {
   integrationHealth: BotIntegrationHealth | null;
   signals: DeveloperSignalItem[];
   isSwitching?: boolean;
+  onBotStatusChange?: (botId: string, status: DeveloperBotStatus) => void;
 }
 
-export function DashboardContent({ bots, activeBot, subscriptions, integrationHealth, signals, isSwitching = false }: DashboardContentProps) {
+export function DashboardContent({ bots, activeBot, subscriptions, integrationHealth, signals, isSwitching = false, onBotStatusChange }: DashboardContentProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const hasBots = bots && bots.length > 0;
 
@@ -29,7 +30,7 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
   const totalBotsCount = bots.length;
   const activeBotsCount = bots.filter((b) => b.status === 'ACTIVE').length;
   const pausedBotsCount = bots.filter((b) => b.status === 'PAUSED').length;
-  const errorBotsCount = bots.filter((b) => b.status === 'ERROR').length;
+  const downBotsCount = bots.filter((b) => b.status === 'DOWN').length;
 
   // Dynamically extract unique exchanges from provisioned bots
   const uniqueExchanges = Array.from(new Set(bots.map((b) => b.exchange).filter(Boolean))) as string[];
@@ -194,21 +195,21 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
 
             {/* Card 4: System Faults */}
             <div className={`group relative rounded-2xl border p-5 shadow-[var(--shadow-soft)] transition-all duration-300 ${
-              errorBotsCount > 0 
+              downBotsCount > 0 
                 ? 'border-rose-500/30 bg-gradient-to-br from-[var(--panel)] to-rose-950/10' 
                 : 'border-[var(--panel-border)] bg-[var(--panel)] hover:border-rose-500/20'
             }`}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className={`text-[10px] font-bold uppercase tracking-wider ${errorBotsCount > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
-                    System Faults
+                  <p className={`text-[10px] font-bold uppercase tracking-wider ${downBotsCount > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
+                    Down Bots
                   </p>
-                  <p className={`mt-2.5 text-3xl font-black tracking-tight ${errorBotsCount > 0 ? 'text-rose-400' : 'text-white'}`}>
-                    {errorBotsCount}
+                  <p className={`mt-2.5 text-3xl font-black tracking-tight ${downBotsCount > 0 ? 'text-rose-400' : 'text-white'}`}>
+                    {downBotsCount}
                   </p>
                 </div>
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                  errorBotsCount > 0
+                  downBotsCount > 0
                     ? 'bg-rose-500/10 border border-rose-500/20 text-rose-400 animate-bounce'
                     : 'bg-slate-500/5 border border-slate-500/10 text-slate-400 group-hover:text-rose-400'
                 }`}>
@@ -217,9 +218,9 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
                   </svg>
                 </div>
               </div>
-              <p className={`text-[10px] mt-3 font-semibold flex items-center gap-1.5 ${errorBotsCount > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${errorBotsCount > 0 ? 'bg-rose-400 animate-ping' : 'bg-slate-500'}`} />
-                {errorBotsCount > 0 ? 'Urgent attention required' : 'All systems operational'}
+              <p className={`text-[10px] mt-3 font-semibold flex items-center gap-1.5 ${downBotsCount > 0 ? 'text-rose-400' : 'text-slate-500'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${downBotsCount > 0 ? 'bg-rose-400 animate-ping' : 'bg-slate-500'}`} />
+                {downBotsCount > 0 ? 'Technical outage detected' : 'No bots marked down'}
               </p>
             </div>
           </div>
@@ -255,8 +256,8 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
                   <option value="ALL" className="bg-slate-950">All Statuses</option>
                   <option value="ACTIVE" className="bg-slate-950">Active Only</option>
                   <option value="PAUSED" className="bg-slate-950">Paused Only</option>
-                  <option value="ERROR" className="bg-slate-950">Errors Only</option>
-                  <option value="CREATED" className="bg-slate-950">Created Only</option>
+                  <option value="DOWN" className="bg-slate-950">Down Only</option>
+                  <option value="DELETED" className="bg-slate-950">Deleted Only</option>
                 </select>
               </div>
 
@@ -320,7 +321,7 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
             ) : (
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {filteredBots.map((bot) => (
-                  <BotGridCard key={bot.botId} bot={bot} />
+                  <BotGridCard key={bot.botId} bot={bot} onStatusChange={onBotStatusChange} />
                 ))}
               </div>
             )}
@@ -335,6 +336,7 @@ export function DashboardContent({ bots, activeBot, subscriptions, integrationHe
             integrationHealth={integrationHealth}
             signals={signals}
             isSwitching={isSwitching}
+            onStatusChange={onBotStatusChange}
           />
         </main>
       )}

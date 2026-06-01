@@ -1,19 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { updateBotStatus } from '@/lib/contracts/client';
 import { DeveloperBotSummary, DeveloperBotStatus } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
+import Link from 'next/link';
 
 const statusStyles: Record<DeveloperBotStatus, { bg: string; text: string; dot: string; glow: string }> = {
-  CREATED: {
-    bg: 'bg-blue-500/10 border-blue-500/20',
-    text: 'text-blue-400',
-    dot: 'bg-blue-400',
-    glow: 'shadow-[0_0_12px_rgba(59,130,246,0.2)]',
-  },
   ACTIVE: {
     bg: 'bg-emerald-500/10 border-emerald-500/20',
     text: 'text-emerald-400',
@@ -26,48 +20,67 @@ const statusStyles: Record<DeveloperBotStatus, { bg: string; text: string; dot: 
     dot: 'bg-amber-400',
     glow: 'shadow-[0_0_12px_rgba(245,158,11,0.2)]',
   },
-  ERROR: {
+  DOWN: {
     bg: 'bg-rose-500/10 border-rose-500/20',
     text: 'text-rose-400',
     dot: 'bg-rose-400 animate-ping',
     glow: 'shadow-[0_0_12px_rgba(244,63,94,0.3)]',
   },
+  DELETED: {
+    bg: 'bg-slate-500/10 border-slate-500/20',
+    text: 'text-slate-400',
+    dot: 'bg-slate-500',
+    glow: '',
+  },
 };
 
 interface BotGridCardProps {
   bot: DeveloperBotSummary;
+  onStatusChange?: (botId: string, newStatus: DeveloperBotStatus) => void;
 }
 
-export function BotGridCard({ bot }: BotGridCardProps) {
-  const router = useRouter();
+export function BotGridCard({ bot, onStatusChange }: BotGridCardProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
+  // Optimistic local status — avoids router.refresh() which causes redirect loop
+  const [localStatus, setLocalStatus] = useState<DeveloperBotStatus>(bot.status);
+
+  useEffect(() => {
+    setLocalStatus(bot.status);
+    setStatusError(null);
+  }, [bot.botId, bot.status]);
 
   const statusMutation = useMutation({
     mutationFn: async (nextStatus: DeveloperBotStatus) => {
       return updateBotStatus(bot.botId, nextStatus);
     },
-    onSuccess: () => {
-      router.refresh();
+    onSuccess: (updated) => {
+      const newStatus = updated.status ?? localStatus;
+      setLocalStatus(newStatus);
       setIsDropdownOpen(false);
+      setStatusError(null);
+      onStatusChange?.(bot.botId, newStatus);
+    },
+    onError: (error) => {
+      setStatusError(error instanceof Error ? error.message : 'Unable to update bot status.');
     },
   });
 
-  const style = statusStyles[bot.status] ?? {
+  const style = statusStyles[localStatus] ?? {
     bg: 'bg-slate-500/10 border-slate-500/20',
     text: 'text-slate-400',
     dot: 'bg-slate-400',
     glow: '',
   };
 
-  const handleCardClick = () => {
-    router.push(`/terminal/developer-dashboard?botId=${bot.botId}`);
-  };
-
   const apiKey = bot.apiKey ?? 'Not available';
+  const nextLifecycleStatus: DeveloperBotStatus | null =
+    localStatus === 'ACTIVE' ? 'PAUSED' : localStatus === 'PAUSED' || localStatus === 'DOWN' ? 'ACTIVE' : null;
+  const lifecycleLabel = nextLifecycleStatus === 'PAUSED' ? 'Stop Bot' : nextLifecycleStatus === 'ACTIVE' ? 'Resume Bot' : 'Status Locked';
 
   return (
-    <div
-      onClick={handleCardClick}
+    <Link
+      href={`/terminal/developer-dashboard?botId=${bot.botId}`}
       className={`group relative flex flex-col justify-between rounded-2xl border border-[var(--panel-border)] bg-[var(--panel)] p-5 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/30 hover:bg-[var(--panel-strong)] cursor-pointer ${style.glow}`}
     >
       {/* Glow Effect on Hover */}
@@ -85,14 +98,14 @@ export function BotGridCard({ bot }: BotGridCardProps) {
             </p>
           </div>
 
-          {/* Interactive Status Selector */}
-          <div className="relative" onClick={(e) => e.stopPropagation()}>
+          {/* Stop/resume lifecycle control */}
+          <div className="relative" onClick={(e) => e.preventDefault()}>
             <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              onClick={(e) => { e.preventDefault(); setIsDropdownOpen(!isDropdownOpen); }}
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[9px] font-bold tracking-wider hover:bg-white/5 transition-all outline-none cursor-pointer ${style.bg} ${style.text}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
-              {bot.status}
+              {localStatus}
               <svg className="w-2.5 h-2.5 opacity-60 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
@@ -101,22 +114,26 @@ export function BotGridCard({ bot }: BotGridCardProps) {
               <>
                 <div 
                   className="fixed inset-0 z-10" 
-                  onClick={() => setIsDropdownOpen(false)}
+                  onClick={(e) => { e.preventDefault(); setIsDropdownOpen(false); }}
                 />
-                <div className="absolute right-0 mt-1.5 w-32 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
-                  {(['ACTIVE', 'PAUSED', 'CREATED'] as const).map((statusOption) => (
+                <div className="absolute right-0 mt-1.5 w-40 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
+                  {nextLifecycleStatus ? (
                     <button
-                      key={statusOption}
                       disabled={statusMutation.isPending}
-                      onClick={() => {
-                        statusMutation.mutate(statusOption);
+                      onClick={(e) => {
+                        e.preventDefault();
+                        statusMutation.mutate(nextLifecycleStatus);
                       }}
                       className="w-full flex items-center gap-2 text-left px-3 py-2 text-[9px] font-bold uppercase rounded-lg hover:bg-white/5 text-slate-300 hover:text-white transition-colors cursor-pointer"
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${statusOption === 'ACTIVE' ? 'bg-emerald-400' : statusOption === 'PAUSED' ? 'bg-amber-400' : 'bg-blue-400'}`} />
-                      {statusOption}
+                      <span className={`w-1.5 h-1.5 rounded-full ${nextLifecycleStatus === 'ACTIVE' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                      {statusMutation.isPending ? 'Updating...' : lifecycleLabel}
                     </button>
-                  ))}
+                  ) : (
+                    <div className="px-3 py-2 text-[9px] font-bold uppercase text-slate-500">
+                      No status action
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -146,7 +163,7 @@ export function BotGridCard({ bot }: BotGridCardProps) {
       {/* API Key Credential Block */}
       <div className="mt-5 space-y-3 pt-3 border-t border-[var(--panel-border)]">
         <div 
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => e.preventDefault()}
           className="flex items-center justify-between gap-2 rounded-xl bg-slate-950/40 border border-white/5 px-3 py-2"
         >
           <div className="min-w-0 flex-1">
@@ -158,20 +175,20 @@ export function BotGridCard({ bot }: BotGridCardProps) {
           <CopyButton value={apiKey} className="h-6 w-6 flex-shrink-0" />
         </div>
 
+        {statusError && (
+          <p className="rounded-lg border border-rose-500/20 bg-rose-500/10 px-3 py-2 text-[10px] font-semibold text-rose-300">
+            {statusError}
+          </p>
+        )}
+
         {/* Action Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleCardClick();
-          }}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/5 bg-[var(--panel)] py-2.5 text-xs font-bold text-slate-200 hover:bg-emerald-500 hover:text-black hover:border-emerald-500 transition-all duration-200 cursor-pointer"
-        >
+        <div className="w-full flex items-center justify-center gap-2 rounded-xl border border-white/5 bg-[var(--panel)] py-2.5 text-xs font-bold text-slate-200 group-hover:bg-emerald-500 group-hover:text-black group-hover:border-emerald-500 transition-all duration-200">
           <span>Inspect Console</span>
           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
-        </button>
+        </div>
       </div>
-    </div>
+    </Link>
   );
 }

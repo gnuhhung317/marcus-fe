@@ -321,7 +321,7 @@ export interface DeveloperConsolePageData {
   executionLogs: ExecutionLogLine[];
 }
 
-export type DeveloperBotStatus = 'CREATED' | 'ACTIVE' | 'PAUSED' | 'ERROR';
+export type DeveloperBotStatus = 'ACTIVE' | 'PAUSED' | 'DELETED' | 'DOWN';
 
 export interface DeveloperBotSummary {
   botId: string;

@@ -256,7 +256,7 @@ export const developerBots: DeveloperBotSummary[] = [
     botId: 'bot_scout_007',
     botName: 'Scout Breakout',
     description: 'Volatility breakout scout with strict risk caps.',
-    status: 'ERROR',
+    status: 'DOWN',
     tradingPair: 'SOL/USDT',
     exchange: 'OKX',
     apiKey: 'ak_5b04e87f0d9f4c5e9120a231',

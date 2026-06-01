@@ -1504,6 +1504,7 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
 
 interface DeveloperBotSummaryResponse {
   botId?: string;
+  name?: string;
   botName?: string;
   description?: string;
   status?: string;
@@ -1552,6 +1553,16 @@ interface SignalItemResponse {
   rawPayload?: Record<string, unknown>;
 }
 
+function normalizeDeveloperBotStatus(status?: string): DeveloperBotStatus {
+  const normalized = (status ?? 'ACTIVE').toUpperCase();
+
+  if (normalized === 'PAUSED' || normalized === 'DELETED' || normalized === 'DOWN') {
+    return normalized;
+  }
+
+  return 'ACTIVE';
+}
+
 export async function getDeveloperDashboardPageData(activeBotId?: string): Promise<DeveloperDashboardPageData> {
   const botsResponse = await withFallback(
     () => requestContractJson<DeveloperBotSummaryResponse[]>('developer-bots'),
@@ -1560,9 +1571,9 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
 
   const bots = botsResponse.map((item, index) => ({
     botId: item.botId ?? `bot_${index + 1}`,
-    botName: item.botName ?? 'Unnamed Bot',
+    botName: item.botName ?? item.name ?? 'Unnamed Bot',
     description: item.description ?? null,
-    status: (item.status ?? 'CREATED') as DeveloperBotSummary['status'],
+    status: normalizeDeveloperBotStatus(item.status),
     tradingPair: item.tradingPair ?? null,
     exchange: item.exchange ?? null,
     apiKey: item.apiKey ?? null,
@@ -1606,9 +1617,9 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
 
   const activeBot: DeveloperBotDetail = {
     botId: detailResponse?.botId ?? selectedBotId,
-    botName: detailResponse?.botName ?? matchedSummary?.botName ?? 'Unnamed Bot',
+    botName: detailResponse?.botName ?? detailResponse?.name ?? matchedSummary?.botName ?? 'Unnamed Bot',
     description: detailResponse?.description ?? matchedSummary?.description ?? null,
-    status: (detailResponse?.status ?? matchedSummary?.status ?? 'CREATED') as DeveloperBotSummary['status'],
+    status: normalizeDeveloperBotStatus(detailResponse?.status ?? matchedSummary?.status),
     tradingPair: detailResponse?.tradingPair ?? matchedSummary?.tradingPair ?? null,
     exchange: detailResponse?.exchange ?? matchedSummary?.exchange ?? null,
     apiKey: detailResponse?.apiKey ?? matchedSummary?.apiKey ?? null,
@@ -1879,9 +1890,9 @@ export async function updateBotStatus(
 
   return {
     botId: response.botId ?? botId,
-    botName: response.botName ?? 'Unnamed Bot',
+    botName: response.botName ?? response.name ?? 'Unnamed Bot',
     description: response.description ?? null,
-    status: (response.status ?? status) as DeveloperBotStatus,
+    status: normalizeDeveloperBotStatus(response.status ?? status),
     tradingPair: response.tradingPair ?? null,
     exchange: response.exchange ?? null,
     apiKey: response.apiKey ?? null,
@@ -1900,15 +1911,20 @@ export async function updateBotMetadata(
     init: {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        name: payload.botName,
+        description: payload.description,
+        tradingPair: payload.tradingPair,
+        exchangeId: payload.exchange,
+      }),
     },
   });
 
   return {
     botId: response.botId ?? botId,
-    botName: response.botName ?? payload.botName,
+    botName: response.botName ?? response.name ?? payload.botName,
     description: response.description ?? payload.description,
-    status: (response.status ?? 'CREATED') as DeveloperBotStatus,
+    status: normalizeDeveloperBotStatus(response.status),
     tradingPair: response.tradingPair ?? payload.tradingPair,
     exchange: response.exchange ?? payload.exchange,
     apiKey: response.apiKey ?? null,

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DashboardContent } from '@/components/terminal/developer-dashboard/dashboard-content';
 import { getDeveloperDashboardPageData } from '@/lib/contracts/client';
-import type { DeveloperDashboardPageData } from '@/lib/contracts/types';
+import type { DeveloperBotStatus, DeveloperDashboardPageData } from '@/lib/contracts/types';
 import { LoadingStateCard, ErrorStateCard } from '@/components/shared/api-state';
 
 function DeveloperDashboardContent() {
@@ -17,18 +17,27 @@ function DeveloperDashboardContent() {
   const [isSwitching, setIsSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const handleBotStatusChange = (botId: string, status: DeveloperBotStatus) => {
+    setData((prev) => prev ? {
+      ...prev,
+      bots: prev.bots.map((bot) => bot.botId === botId ? { ...bot, status } : bot),
+      activeBot: prev.activeBot?.botId === botId ? { ...prev.activeBot, status } : prev.activeBot,
+    } : prev);
+  };
+
+  // Auth check — run once on mount only, NOT on every botId change
   useEffect(() => {
-    // Auth check
     const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
     const role = match ? decodeURIComponent(match[1]) : null;
-    
     if (!role || (role !== 'DEVELOPER' && role !== 'OPERATOR' && role !== 'ADMIN')) {
       router.replace('/terminal');
-      return;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  useEffect(() => {
     // Optimistic transition to switch layout instantly
-    if (data) {
+    if (data && data.activeBot?.botId !== activeBotId) {
       if (!activeBotId) {
         setData(prev => prev ? {
           ...prev,
@@ -60,6 +69,11 @@ function DeveloperDashboardContent() {
     let active = true;
 
     const loadData = async () => {
+      // Only fetch if bot selection actually changed or data is not loaded yet
+      if (data && data.activeBot?.botId === activeBotId) {
+        return;
+      }
+
       if (!data) {
         setIsInitialLoading(true);
       } else {
@@ -89,7 +103,7 @@ function DeveloperDashboardContent() {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router, activeBotId]);
+  }, [activeBotId]);
 
   if (isInitialLoading) {
     return (
@@ -125,6 +139,7 @@ function DeveloperDashboardContent() {
       integrationHealth={data.integrationHealth ?? null}
       signals={data.signals ?? []}
       isSwitching={isSwitching}
+      onBotStatusChange={handleBotStatusChange}
     />
   );
 }

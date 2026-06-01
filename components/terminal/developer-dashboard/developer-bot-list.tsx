@@ -5,11 +5,6 @@ import Link from 'next/link';
 import { DeveloperBotSummary } from '@/lib/contracts/types';
 
 const statusColors: Record<DeveloperBotSummary['status'], { bg: string; text: string; dot: string }> = {
-  CREATED: {
-    bg: 'bg-blue-500/10 border-blue-500/20',
-    text: 'text-blue-400',
-    dot: 'bg-blue-400',
-  },
   ACTIVE: {
     bg: 'bg-emerald-500/10 border-emerald-500/20',
     text: 'text-emerald-400',
@@ -20,10 +15,15 @@ const statusColors: Record<DeveloperBotSummary['status'], { bg: string; text: st
     text: 'text-amber-400',
     dot: 'bg-amber-400',
   },
-  ERROR: {
+  DOWN: {
     bg: 'bg-rose-500/10 border-rose-500/20',
     text: 'text-rose-400',
     dot: 'bg-rose-400 animate-ping',
+  },
+  DELETED: {
+    bg: 'bg-slate-500/10 border-slate-500/20',
+    text: 'text-slate-400',
+    dot: 'bg-slate-500',
   },
 };
 

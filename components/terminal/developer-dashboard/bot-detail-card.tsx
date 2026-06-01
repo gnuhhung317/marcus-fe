@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { updateBotStatus } from '@/lib/contracts/client';
@@ -15,8 +15,8 @@ import { SignalDetailDrawer } from './signal-detail-drawer';
 const statusStyles: Record<string, string> = {
   ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   PAUSED: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  ERROR: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  CREATED: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  DOWN: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  DELETED: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
 };
 
 const formatMetricPercent = (val: number | null | undefined, alwaysSign = false) => {
@@ -43,26 +43,41 @@ interface BotDetailCardProps {
   integrationHealth: BotIntegrationHealth | null;
   signals: DeveloperSignalItem[];
   isSwitching?: boolean;
+  onStatusChange?: (botId: string, status: DeveloperBotStatus) => void;
 }
 
-export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false }: BotDetailCardProps) {
+export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false, onStatusChange }: BotDetailCardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
   const [selectedLanguage, setSelectedLanguage] = useState<'curl' | 'node' | 'python' | 'go'>('curl');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<DeveloperSignalItem | null>(null);
 
   const router = useRouter();
 
+  // Optimistic local status — avoids router.refresh() which causes redirect loop
+  const [localStatus, setLocalStatus] = useState<DeveloperBotStatus>(bot.status);
+
+  useEffect(() => {
+    setLocalStatus(bot.status);
+    setStatusError(null);
+  }, [bot.botId, bot.status]);
+
   const statusMutation = useMutation({
     mutationFn: async (nextStatus: DeveloperBotStatus) => {
       return updateBotStatus(bot.botId, nextStatus);
     },
     onSuccess: (updated) => {
-      bot.status = updated.status;
+      const newStatus = updated.status ?? localStatus;
+      setLocalStatus(newStatus);
       setIsStatusDropdownOpen(false);
-      router.refresh();
+      setStatusError(null);
+      onStatusChange?.(bot.botId, newStatus);
+    },
+    onError: (error) => {
+      setStatusError(error instanceof Error ? error.message : 'Unable to update bot status.');
     },
   });
   
@@ -70,7 +85,10 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
   const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
 
-  const statusClass = statusStyles[bot.status] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+  const statusClass = statusStyles[localStatus] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+  const nextLifecycleStatus: DeveloperBotStatus | null =
+    localStatus === 'ACTIVE' ? 'PAUSED' : localStatus === 'PAUSED' || localStatus === 'DOWN' ? 'ACTIVE' : null;
+  const lifecycleLabel = nextLifecycleStatus === 'PAUSED' ? 'Stop Bot' : nextLifecycleStatus === 'ACTIVE' ? 'Resume Bot' : 'Status Locked';
   const apiKey = bot.apiKey ?? 'Not available';
 
 
@@ -206,14 +224,14 @@ func main() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Interactive Status Badge with Dropdown */}
+              {/* Stop/resume lifecycle control */}
               <div className="relative">
                 <button
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                   className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider hover:bg-white/5 transition-all outline-none cursor-pointer ${statusClass}`}
                 >
-                  <span className={`w-1.5 h-1.5 rounded-full ${bot.status === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : bot.status === 'ERROR' ? 'bg-rose-400' : 'bg-slate-400'}`} />
-                  {bot.status}
+                  <span className={`w-1.5 h-1.5 rounded-full ${localStatus === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : localStatus === 'DOWN' ? 'bg-rose-400' : 'bg-slate-400'}`} />
+                  {localStatus}
                   <svg className="w-3 h-3 opacity-60 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                   </svg>
@@ -242,20 +260,23 @@ func main() {
                       className="fixed inset-0 z-10" 
                       onClick={() => setIsStatusDropdownOpen(false)}
                     />
-                    <div className="absolute left-0 mt-1.5 w-32 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
-                      {(['ACTIVE', 'PAUSED', 'CREATED'] as const).map((statusOption) => (
+                    <div className="absolute left-0 mt-1.5 w-40 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
+                      {nextLifecycleStatus ? (
                         <button
-                          key={statusOption}
                           disabled={statusMutation.isPending}
                           onClick={() => {
-                            statusMutation.mutate(statusOption);
+                            statusMutation.mutate(nextLifecycleStatus);
                           }}
                           className="w-full flex items-center gap-2 text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg hover:bg-white/5 text-slate-300 hover:text-white transition-colors cursor-pointer"
                         >
-                          <span className={`w-1.5 h-1.5 rounded-full ${statusOption === 'ACTIVE' ? 'bg-emerald-400' : statusOption === 'PAUSED' ? 'bg-amber-400' : 'bg-blue-400'}`} />
-                          {statusOption}
+                          <span className={`w-1.5 h-1.5 rounded-full ${nextLifecycleStatus === 'ACTIVE' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                          {statusMutation.isPending ? 'Updating...' : lifecycleLabel}
                         </button>
-                      ))}
+                      ) : (
+                        <div className="px-3 py-2 text-[10px] font-bold uppercase text-slate-500">
+                          No status action
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -296,6 +317,19 @@ func main() {
             </button>
           </div>
         </div>
+
+        {/* Tab Navigation */}
+        {statusError && (
+          <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-xs font-semibold text-rose-300">
+            {statusError}
+          </div>
+        )}
+
+        {localStatus === 'PAUSED' && (
+          <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-200">
+            This bot is stopped. Existing subscriptions remain active, but new trading signals are rejected until it is resumed.
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 mt-6 border-b border-white/5 pb-0">
@@ -356,7 +390,7 @@ func main() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
                 <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Bot Status</p>
-                <p className="mt-2 text-sm font-semibold text-white">{bot.status}</p>
+                <p className="mt-2 text-sm font-semibold text-white">{localStatus}</p>
               </div>
               <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
                 <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Subscribers</p>

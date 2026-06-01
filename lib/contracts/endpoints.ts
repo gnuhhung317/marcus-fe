@@ -387,7 +387,7 @@ export const contractRoutes: ContractRoute[] = [
     path: '/bots/{botId}/status',
     operationId: 'updateBotStatus',
     page: 'terminal/developer-dashboard',
-    feature: 'Update bot status (Active, Paused, Draft)',
+    feature: 'Update bot status (Active, Paused, Down, Deleted)',
     status: 'available',
   },
   {

@@ -77,7 +77,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
         {/* Content body */}
         <form onSubmit={handleSubmit} className="relative mt-6 space-y-5 flex-1">
           <p className="text-xs text-slate-400 leading-relaxed">
-            Are you sure you want to permanently delete <span className="text-white font-semibold font-mono">{bot.botName}</span>? This action is irreversible. All provisioned credentials and integration webhook paths will stop functioning immediately.
+            Are you sure you want to permanently delete <span className="text-white font-semibold font-mono">{bot.botName}</span>? This action is irreversible. The bot will no longer be available once deletion succeeds.
           </p>
 
           {activeSubscribersCount > 0 && (
@@ -88,7 +88,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
               <div>
                 <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider">Warning: Active Subscribers</h4>
                 <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
-                  This bot has **{activeSubscribersCount} active subscriber connection(s)**. Deleting it will disconnect those terminals instantly.
+                  This bot has **{activeSubscribersCount} active subscriber connection(s)**. The backend rejects deletion while active subscriptions remain.
                 </p>
               </div>
             </div>

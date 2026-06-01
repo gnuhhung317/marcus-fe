@@ -3,7 +3,6 @@ import { updateProfileAction } from './actions';
 
 const roleLabels: Record<string, string> = {
   TRADER: 'Trader',
-  USER: 'Trader',
   DEVELOPER: 'Developer',
   OPERATOR: 'Operator',
   ADMIN: 'Admin',

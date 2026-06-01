@@ -30,13 +30,11 @@ export default async function HomePage() {
               Engine Online · {marketOverview.activeStrategies} Active Strategies
             </div>
             <h1 className="mt-8 font-display text-5xl leading-[1.08] text-white md:text-7xl">
-              Algorithmic Edge <br />
-              <span className="text-muted">In Real-Time.</span>
+              High-Frequency <br />
+              <span className="text-muted">Algorithmic Trading.</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted sm:text-xl">
-              Design, backtest, and deploy high-frequency strategies to the cloud. 
-              Marcus provides institutional-grade telemetry and ultra-low latency execution 
-              for retail and prop traders.
+              Design, backtest, and deploy high-frequency strategies with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/login?next=/terminal" className="cta-primary rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-wide transition-transform hover:scale-105">
@@ -83,11 +81,11 @@ export default async function HomePage() {
           <div className="glass noise grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[var(--line)] sm:grid-cols-4">
             <div className="bg-[var(--bg-0)]/60 p-6 text-center sm:p-8">
               <p className="font-display text-4xl font-bold text-white sm:text-5xl">{marketingStats.verifiedDevelopers}+</p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Verified Devs</p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Developers</p>
             </div>
             <div className="bg-[var(--bg-0)]/60 p-6 text-center sm:p-8">
               <p className="font-display text-4xl font-bold text-white sm:text-5xl">{marketingStats.activeCloudExecutors}</p>
-              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Cloud Executors</p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Executors</p>
             </div>
             <div className="bg-[var(--bg-0)]/60 p-6 text-center sm:p-8">
               <p className="font-display text-4xl font-bold text-white sm:text-5xl">{marketingStats.systemUptime}</p>
@@ -104,9 +102,9 @@ export default async function HomePage() {
       {/* 3-Step Lifecycle Flow */}
       <section className="relative z-10 mx-auto mt-32 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-display text-3xl text-white sm:text-5xl">Built For The Quant Lifecycle</h2>
+          <h2 className="font-display text-3xl text-white sm:text-5xl">Quant Lifecycle</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">
-            From algorithmic ideation to high-frequency cloud execution.
+            From ideation to high-frequency cloud execution.
           </p>
         </div>
 
@@ -123,7 +121,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-display text-2xl text-white">Learn & Backtest</h3>
             <p className="mt-4 text-muted leading-relaxed">
-              Access the Academy to learn institutional quant strategies. Run historical backtests on years of tick data directly in the browser within seconds.
+              Access the Academy for institutional quant strategies. Run historical backtests on years of tick data, in-browser, within seconds.
             </p>
           </div>
 
@@ -139,7 +137,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-display text-2xl text-white">Build & Simulate</h3>
             <p className="mt-4 text-muted leading-relaxed">
-              Use our Python SDK or the visual editor to construct your logic. Forward-test in a live paper-trading environment without risking real capital.
+              Use our Python SDK or visual editor to construct logic. Forward-test in a live paper-trading environment without real capital risk.
             </p>
           </div>
 
@@ -155,7 +153,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-display text-2xl text-white">Deploy & Scale</h3>
             <p className="mt-4 text-muted leading-relaxed">
-              Connect your API keys securely. Spin up 24/7 dedicated cloud executors that run alongside exchanges for minimum latency routing.
+              Securely connect API keys. Deploy 24/7 dedicated cloud executors for minimum latency routing alongside exchanges.
             </p>
           </div>
         </div>
@@ -166,7 +164,7 @@ export default async function HomePage() {
         <div className="glass rounded-3xl p-10 sm:p-16">
           <h2 className="font-display text-3xl text-white">Join The Hub</h2>
           <p className="mx-auto mt-4 max-w-lg text-muted">
-            Trade alongside a growing community of quantitative developers, share strategies, and get priority support from the Marcus engineering team.
+            Connect with quantitative developers, share strategies, and get priority support from the Marcus engineering team.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <a href="#" className="inline-flex items-center gap-2 rounded-xl bg-info px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">

@@ -80,7 +80,7 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
   const pair = bot.tradingPair ?? 'BTC/USDT';
 
   const snippets = {
-    curl: `curl -X POST http://171.244.195.150:8081/api/v1/signals \\
+    curl: `curl -X POST https://marcus-api.tromoi.xyz/api/v1/signals \\
   -H "X-Marcus-Api-Key: ${apiKey}" \\
   -H "X-Marcus-Bot-Secret: <YOUR_SECRET>" \\
   -H "Content-Type: application/json" \\
@@ -105,7 +105,7 @@ const payload = {
   timestamp: "${timestamp}"
 };
 
-axios.post('http://171.244.195.150:8081/api/v1/signals', payload, {
+axios.post('https://marcus-api.tromoi.xyz/api/v1/signals', payload, {
   headers: {
     'X-Marcus-Api-Key': '${apiKey}',
     'X-Marcus-Bot-Secret': '<YOUR_SECRET>',
@@ -135,7 +135,7 @@ headers = {
 }
 
 response = requests.post(
-    "http://171.244.195.150:8081/api/v1/signals", 
+    "https://marcus-api.tromoi.xyz/api/v1/signals", 
     json=payload, 
     headers=headers
 )
@@ -163,7 +163,7 @@ func main() {
 	}
 
 	jsonValue, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", "http://171.244.195.150:8081/api/v1/signals", bytes.NewBuffer(jsonValue))
+	req, _ := http.NewRequest("POST", "https://marcus-api.tromoi.xyz/api/v1/signals", bytes.NewBuffer(jsonValue))
 	
 	req.Header.Set("X-Marcus-Api-Key", "${apiKey}")
 	req.Header.Set("X-Marcus-Bot-Secret", "<YOUR_SECRET>")
@@ -518,7 +518,7 @@ func main() {
                 <code>
                   {selectedLanguage === 'curl' && (
                     <>
-                      <span className="text-emerald-400 font-bold">curl</span> -X POST http://171.244.195.150:8081/api/v1/signals \<br />
+                      <span className="text-emerald-400 font-bold">curl</span> -X POST https://marcus-api.tromoi.xyz/api/v1/signals \<br />
                       {"  "}-H <span className="text-blue-300">&quot;X-Marcus-Api-Key: {apiKey}&quot;</span> \<br />
                       {"  "}-H <span className="text-blue-300">&quot;X-Marcus-Bot-Secret: &lt;YOUR_SECRET&gt;&quot;</span> \<br />
                       {"  "}-H <span className="text-blue-300">&quot;Content-Type: application/json&quot;</span> \<br />
@@ -546,7 +546,7 @@ func main() {
                       {"  "}price: <span className="text-amber-400">67321.12</span>,<br />
                       {"  "}timestamp: <span className="text-emerald-300">&quot;{timestamp}&quot;</span><br />
                       {'}'};<br /><br />
-                      axios.<span className="text-blue-300">post</span>(<span className="text-emerald-300">&apos;http://171.244.195.150:8081/api/v1/signals&apos;</span>, payload, {'{'}<br />
+                      axios.<span className="text-blue-300">post</span>(<span className="text-emerald-300">&apos;https://marcus-api.tromoi.xyz/api/v1/signals&apos;</span>, payload, {'{'}<br />
                       {"  "}headers: {'{'}<br />
                       {"    "}<span className="text-emerald-300">&apos;X-Marcus-Api-Key&apos;</span>: <span className="text-emerald-300">&apos;{apiKey}&apos;</span>,<br />
                       {"    "}<span className="text-emerald-300">&apos;X-Marcus-Bot-Secret&apos;</span>: <span className="text-emerald-300">&apos;&lt;YOUR_SECRET&gt;&apos;</span>,<br />
@@ -578,7 +578,7 @@ func main() {
                       {"    "}<span className="text-emerald-300">&quot;Content-Type&quot;</span>: <span className="text-emerald-300">&quot;application/json&quot;</span><br />
                       {'}'}<br /><br />
                       response = requests.post(<br />
-                      {"    "}<span className="text-emerald-300">&quot;http://171.244.195.150:8081/api/v1/signals&quot;</span>, <br />
+                      {"    "}<span className="text-emerald-300">&quot;https://marcus-api.tromoi.xyz/api/v1/signals&quot;</span>, <br />
                       {"    "}json=payload, <br />
                       {"    "}headers=headers<br />
                       )<br />
@@ -607,7 +607,7 @@ func main() {
                       {"		"}<span className="text-emerald-300">&quot;timestamp&quot;</span>:    time.Now().UTC().Format(time.RFC3339),<br />
                       {"	"}{'}'}<br /><br />
                       {"	"}jsonValue, _ := json.Marshal(payload)<br />
-                      {"	"}req, _ := http.NewRequest(<span className="text-emerald-300">&quot;POST&quot;</span>, <span className="text-emerald-300">&quot;http://171.244.195.150:8081/api/v1/signals&quot;</span>, bytes.NewBuffer(jsonValue))<br /><br />
+                      {"	"}req, _ := http.NewRequest(<span className="text-emerald-300">&quot;POST&quot;</span>, <span className="text-emerald-300">&quot;https://marcus-api.tromoi.xyz/api/v1/signals&quot;</span>, bytes.NewBuffer(jsonValue))<br /><br />
                       {"	"}req.Header.Set(<span className="text-emerald-300">&quot;X-Marcus-Api-Key&quot;</span>, <span className="text-emerald-300">&quot;{apiKey}&quot;</span>)<br />
                       {"	"}req.Header.Set(<span className="text-emerald-300">&quot;X-Marcus-Bot-Secret&quot;</span>, <span className="text-emerald-300">&quot;&lt;YOUR_SECRET&gt;&quot;</span>)<br />
                       {"	"}req.Header.Set(<span className="text-emerald-300">&quot;Content-Type&quot;</span>, <span className="text-emerald-300">&quot;application/json&quot;</span>)<br /><br />

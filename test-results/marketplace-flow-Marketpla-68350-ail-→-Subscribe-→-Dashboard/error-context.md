@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: decision-dashboard.spec.ts >> Decision Dashboard smoke: load, filter, search, refresh
-- Location: tests\e2e\decision-dashboard.spec.ts:3:5
+- Name: marketplace-flow.spec.ts >> Marketplace → Bot Detail → Subscribe → Dashboard
+- Location: tests\e2e\marketplace-flow.spec.ts:3:5
 
 # Error details
 
@@ -88,11 +88,11 @@ TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.
 ```ts
   1  | import { test, expect } from '@playwright/test';
   2  | 
-  3  | test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page }) => {
+  3  | test('Marketplace → Bot Detail → Subscribe → Dashboard', async ({ page }) => {
   4  |   const uniqueId = Date.now();
-  5  |   const email = `e2e+decision-${uniqueId}@example.com`;
+  5  |   const email = `e2e+${uniqueId}@example.com`;
   6  |   const password = `E2eTestPass1!${uniqueId}`;
-  7  |   const displayName = `E2E Decision ${uniqueId}`;
+  7  |   const displayName = `E2E User ${uniqueId}`;
   8  | 
   9  |   await page.goto('/register');
   10 |   await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
@@ -102,44 +102,59 @@ TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.
   14 |   await page.getByLabel('Password').fill(password);
   15 |   await page.getByRole('button', { name: 'Create account' }).click();
   16 | 
-> 17 |   await page.waitForFunction(
+> 17 |   await page.waitForFunction(() => window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/terminal'), {
      |              ^ TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.
-  18 |     () => window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/terminal'),
-  19 |     { timeout: 30000 }
-  20 |   );
-  21 | 
-  22 |   const currentPath = await page.evaluate(() => window.location.pathname);
-  23 |   if (currentPath.startsWith('/login')) {
-  24 |     await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
-  25 |     await page.getByLabel('Username or email').fill(email);
-  26 |     await page.getByLabel('Password').fill(password);
-  27 |     await Promise.all([
-  28 |       page.waitForFunction(() => window.location.pathname.startsWith('/terminal'), { timeout: 30000 }),
-  29 |       page.getByRole('button', { name: 'Sign In' }).click(),
-  30 |     ]);
-  31 |   }
-  32 | 
-  33 |   await page.goto('/terminal/decision');
-  34 | 
-  35 |   await expect(page.getByRole('heading', { name: 'Decision Dashboard' })).toBeVisible();
-  36 |   await expect(page.getByRole('heading', { name: 'Your Subscriptions' })).toBeVisible();
-  37 | 
-  38 |   await expect(page.getByRole('button', { name: 'All Bots' })).toBeVisible();
-  39 |   await expect(page.getByRole('button', { name: 'Active' })).toBeVisible();
-  40 |   await expect(page.getByRole('button', { name: 'At-Risk' })).toBeVisible();
-  41 | 
-  42 |   await page.getByRole('button', { name: 'At-Risk' }).click();
-  43 |   await expect(page.getByRole('button', { name: 'At-Risk' })).toBeVisible();
-  44 | 
-  45 |   const searchInput = page.getByPlaceholder('Search bot name...');
-  46 |   await expect(searchInput).toBeVisible();
-  47 |   await searchInput.fill('btc');
-  48 | 
-  49 |   const refreshButton = page.getByRole('button', { name: 'Refresh' });
-  50 |   await expect(refreshButton).toBeVisible();
-  51 |   await refreshButton.click();
+  18 |     timeout: 30000,
+  19 |   });
+  20 | 
+  21 |   const currentPath = await page.evaluate(() => window.location.pathname);
+  22 |   if (currentPath.startsWith('/login')) {
+  23 |     await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
+  24 |     await page.getByLabel('Username or email').fill(email);
+  25 |     await page.getByLabel('Password').fill(password);
+  26 |     await Promise.all([
+  27 |       page.waitForFunction(() => window.location.pathname.startsWith('/terminal'), { timeout: 30000 }),
+  28 |       page.getByRole('button', { name: 'Sign In' }).click(),
+  29 |     ]);
+  30 |   } else {
+  31 |     await expect(page).toHaveURL(/\/terminal($|\/|\?)/);
+  32 |   }
+  33 | 
+  34 |   await page.goto('/terminal/marketplace');
+  35 |   await expect(page.getByRole('heading', { name: 'Strategy Marketplace' })).toBeVisible();
+  36 |   const marketplaceHits = page.locator('article:has-text("View Detail")');
+  37 |   await expect(await marketplaceHits.count()).toBeGreaterThan(0);
+  38 | 
+  39 |   await page.getByLabel('Search').fill('');
+  40 |   await page.getByRole('button', { name: 'Apply Filters' }).click();
+  41 |   await page.waitForURL('**/terminal/marketplace**');
+  42 | 
+  43 |   const firstDetail = page.locator('text=View Detail').first();
+  44 |   await expect(firstDetail).toBeVisible();
+  45 |   await firstDetail.click();
+  46 | 
+  47 |   await expect(page.getByText('Bot Profile')).toBeVisible();
+  48 |   await expect(page.getByRole('heading', { name: 'Subscribe Bot' })).toBeVisible();
+  49 | 
+  50 |   const subscribeButton = page.getByRole('button', { name: 'Subscribe Bot' });
+  51 |   await expect(subscribeButton).toBeDisabled();
   52 | 
-  53 |   await expect(page.locator('text=Last updated:')).toBeVisible();
-  54 | });
+  53 |   await page.locator('input[type="checkbox"]').check();
+  54 |   await expect(subscribeButton).toBeEnabled();
   55 | 
+  56 |   await subscribeButton.click();
+  57 |   await expect(page.locator('text=Subscription Status')).toBeVisible();
+  58 |   await expect(page.locator('p:has-text("SUBSCRIBED")')).toBeVisible();
+  59 | 
+  60 |   const unsubscribeButton = page.getByRole('button', { name: 'Unsubscribe' });
+  61 |   await expect(unsubscribeButton).toBeEnabled();
+  62 |   await unsubscribeButton.click();
+  63 |   await expect(page.locator('p:has-text("UNSUBSCRIBED")')).toBeVisible();
+  64 | 
+  65 |   await page.goto('/terminal');
+  66 |   await expect(page.getByRole('heading', { name: 'Portfolio Control Center' })).toBeVisible();
+  67 |   await expect(page.getByRole('button', { name: 'Refresh Data' })).toBeVisible();
+  68 |   await expect(page.locator('text=Active Bot Performance')).toBeVisible();
+  69 | });
+  70 | 
 ```

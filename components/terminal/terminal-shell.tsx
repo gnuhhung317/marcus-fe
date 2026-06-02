@@ -92,7 +92,7 @@ function getIcon(href: string) {
   }
 }
 
-export function TerminalShell({ children, role }: { children: ReactNode; role: string }) {
+export function TerminalShell({ children, role, username }: { children: ReactNode; role: string; username?: string }) {
   const pathname = usePathname();
   const dashboardV2Enabled = useFeatureFlag('dashboard-v2');
   const normalizedRole = role === 'USER' ? 'TRADER' : role;
@@ -137,7 +137,7 @@ export function TerminalShell({ children, role }: { children: ReactNode; role: s
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-0)] text-white">
-      <SiteHeader isAuthenticated role={normalizedRole} />
+      <SiteHeader isAuthenticated role={normalizedRole} username={username} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">
         <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4 flex flex-col gap-6">
           {/* Workspace Info Connection */}

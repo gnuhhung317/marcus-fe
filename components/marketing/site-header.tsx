@@ -19,6 +19,18 @@ interface SiteHeaderProps {
   username?: string;
 }
 
+function formatRole(role?: string): string {
+  if (!role) return '';
+  const map: Record<string, string> = {
+    ADMIN: 'Admin',
+    USER: 'Trader',
+    TRADER: 'Trader',
+    DEVELOPER: 'Developer',
+    OPERATOR: 'Operator',
+  };
+  return map[role.toUpperCase()] ?? role;
+}
+
 export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps) {
   const pathname = usePathname();
   const focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(4,7,13,0.92)]';
@@ -79,7 +91,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
           ) : (
             <>
               <span className="rounded-xl bg-[rgba(148,163,184,0.12)] px-3 py-2 text-sm text-muted">
-                {username || 'Trader'} · {role}
+                {username ?? formatRole(role)}
               </span>
               <Link
                 href="/terminal"
@@ -136,7 +148,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               ) : (
                 <>
                   <span className="rounded-lg bg-[rgba(148,163,184,0.12)] px-3 py-2 text-xs text-muted">
-                    {username || 'Trader'} · {role}
+                  {username ?? formatRole(role)}
                   </span>
                   <Link href="/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Go to dashboard">
                     Dashboard

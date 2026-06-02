@@ -1,27 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getStrategyPageData } from '@/lib/contracts/client';
-import { TimeSeriesValue } from '@/lib/contracts/types';
-
-function buildSeriesPath(series: TimeSeriesValue[]) {
-  if (series.length <= 1) {
-    return 'M0,30 L100,10';
-  }
-
-  const values = series.map((point) => point.value);
-  const minValue = Math.min(...values);
-  const maxValue = Math.max(...values);
-  const range = maxValue - minValue || 1;
-
-  return series
-    .map((point, index) => {
-      const x = (index / (series.length - 1)) * 100;
-      const normalized = (point.value - minValue) / range;
-      const y = 36 - normalized * 30;
-      return `${index === 0 ? 'M' : 'L'}${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(' ');
-}
+import { PerformanceChart } from '@/components/shared/performance-chart';
 
 export default async function TerminalStrategiesPage() {
   const cookieStore = cookies();
@@ -32,7 +12,6 @@ export default async function TerminalStrategiesPage() {
   }
 
   const strategy = await getStrategyPageData();
-  const chartPath = buildSeriesPath(strategy.performanceSeries);
 
   return (
     <div className="space-y-8">
@@ -50,21 +29,53 @@ export default async function TerminalStrategiesPage() {
         </div>
       </header>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {strategy.metrics.map((metric) => (
-          <article key={metric.label} className="glass-strong rounded-2xl p-4 shadow-[var(--shadow-soft)]">
-            <p className="text-xs uppercase tracking-[0.12em] text-muted">{metric.label}</p>
-            <p className="mt-2 text-2xl font-semibold text-white">{metric.value}</p>
-          </article>
-        ))}
-      </section>
+      <section className="grid gap-5 xl:grid-cols-[minmax(280px,0.32fr)_minmax(0,0.68fr)]">
+        <div className="space-y-5">
+          {strategy.metricBlocks.map((block) => (
+            <article key={block.title} className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
+              <h2 className="text-2xl font-semibold text-white">{block.title}</h2>
+              <div className="mt-6 space-y-3">
+                <div className="flex items-center justify-between rounded-lg border border-[rgba(132,162,191,0.22)] bg-white/[0.04] px-3 py-3">
+                  <span className="text-sm text-white">Estimated annual return</span>
+                  <span className="font-semibold text-positive">{block.annualReturn}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-[rgba(132,162,191,0.22)] bg-white/[0.04] px-3 py-3">
+                  <span className="text-sm text-white">Maximum drawdown</span>
+                  <span className="font-semibold text-positive">{block.maxDrawdown}</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-[rgba(132,162,191,0.22)] bg-white/[0.04] px-3 py-3">
+                  <span className="text-sm text-white">Sharpe ratio</span>
+                  <span className="font-semibold text-white">{block.sharpe}</span>
+                </div>
+              </div>
+              {block.warning ? (
+                <p className="mt-4 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 py-2 text-xs text-amber-200" title={block.warning}>
+                  {block.warning}
+                </p>
+              ) : null}
+            </article>
+          ))}
+        </div>
 
-      <section className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="text-2xl font-semibold text-white">Performance Vector</h2>
-        <div className="mt-6 h-72 rounded-xl border border-[rgba(132,162,191,0.2)] bg-[linear-gradient(180deg,rgba(62,183,255,0.07),rgba(19,227,163,0.06))] p-4">
-          <svg viewBox="0 0 100 40" className="h-full w-full text-[var(--primary)]" preserveAspectRatio="none" aria-label="Strategy performance curve">
-            <path d={chartPath} fill="none" stroke="currentColor" strokeWidth="1.2" />
-          </svg>
+        <div className="space-y-5">
+          <section className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
+            <h2 className="text-2xl font-semibold text-white">Performance chart</h2>
+            <div className="mt-6">
+              <PerformanceChart data={strategy.performanceSeries} splitTimestamp={strategy.splitTimestamp} />
+            </div>
+          </section>
+
+          <section className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
+            <h2 className="text-2xl font-semibold text-white">Performance metrics</h2>
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {strategy.metrics.map((metric) => (
+                <div key={metric.label} className="flex items-center justify-between border-b border-[rgba(132,162,191,0.16)] py-3">
+                  <span className="text-sm font-medium text-white">{metric.label}</span>
+                  <span className="text-lg font-semibold text-positive">{metric.value}</span>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </section>
 

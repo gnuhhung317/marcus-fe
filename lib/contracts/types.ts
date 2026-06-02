@@ -221,6 +221,15 @@ export interface StrategyMetricTile {
 export interface TimeSeriesValue {
   timestamp: string;
   value: number;
+  phase?: 'HISTORICAL' | 'OUT_OF_SAMPLE';
+}
+
+export interface StrategyMetricBlock {
+  title: 'Total Data' | 'Historical' | 'Out-of-sample';
+  annualReturn: string;
+  maxDrawdown: string;
+  sharpe: string;
+  warning?: string | null;
 }
 
 export interface StrategyPageData {
@@ -229,6 +238,8 @@ export interface StrategyPageData {
   ownerName: string;
   market: string;
   status: string;
+  splitTimestamp?: string | null;
+  metricBlocks: StrategyMetricBlock[];
   metrics: StrategyMetricTile[];
   performanceSeries: TimeSeriesValue[];
   trades: StrategyTrade[];

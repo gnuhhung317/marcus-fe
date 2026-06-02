@@ -43,6 +43,7 @@ import {
   ResearchPageData,
   ResearchReport,
   StrategyPageData,
+  StrategyMetricBlock,
   StrategyTrade,
   SubscriptionResult,
   TerminalKpi,
@@ -306,6 +307,29 @@ interface StrategyMetricsResponse {
 interface TimeSeriesPointResponse {
   timestamp?: string;
   value?: number;
+  phase?: 'HISTORICAL' | 'OUT_OF_SAMPLE';
+}
+
+interface BotAnalyticsMetricBlockResponse {
+  annualReturn?: number;
+  maxDrawdown?: number;
+  sharpe?: number;
+  sortino?: number;
+  calmar?: number;
+  profitFactor?: number;
+  sampleSizeDays?: number;
+  statisticalSignificanceWarning?: string | null;
+}
+
+interface BotAnalyticsMetricsResponse {
+  total?: BotAnalyticsMetricBlockResponse;
+  historical?: BotAnalyticsMetricBlockResponse;
+  outOfSample?: BotAnalyticsMetricBlockResponse;
+}
+
+interface BotAnalyticsSeriesResponse {
+  splitTimestamp?: string | null;
+  points?: TimeSeriesPointResponse[];
 }
 
 interface SignalItemResponse {
@@ -557,6 +581,10 @@ function formatSignedCurrency(value: number, digits = 2) {
 
 function formatSignedPercent(value: number, digits = 2) {
   return `${value >= 0 ? '+' : ''}${value.toFixed(digits)}%`;
+}
+
+function formatRatio(value: number, digits = 2) {
+  return Number.isFinite(value) ? value.toFixed(digits) : '0.00';
 }
 
 function normalizeTradeSide(side: string | undefined): StrategyTrade['side'] {
@@ -1403,18 +1431,17 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
       async () => undefined,
     ),
     withFallback(
-      () => requestContractJson<StrategyMetricsResponse>('strategy-metrics', {
-        pathParams: { strategyId: safeStrategyId },
-        queryParams: { feeMode: 'AFTER_FEES' },
+      () => requestContractJson<BotAnalyticsMetricsResponse>('bot-analytics-metrics', {
+        pathParams: { botId: safeStrategyId },
       }),
       async () => undefined,
     ),
     withFallback(
-      () => requestContractJson<TimeSeriesPointResponse[]>('strategy-series', {
-        pathParams: { strategyId: safeStrategyId },
-        queryParams: { range: '1W' },
+      () => requestContractJson<BotAnalyticsSeriesResponse>('bot-analytics-series', {
+        pathParams: { botId: safeStrategyId },
+        queryParams: { range: 'ALL' },
       }),
-      async () => [],
+      async () => ({ points: [] }),
     ),
     withFallback(
       () => requestContractJson<TradeLogPageResponse>('strategy-trades', {
@@ -1425,19 +1452,29 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
     ),
   ]);
 
-  const metrics = [
-    { label: 'Annual Return', value: formatSignedPercent(toNumber(metricsResponse?.annualReturn, 14.28), 2) },
-    { label: 'Max Drawdown', value: `${toNumber(metricsResponse?.maxDrawdown, 2.14).toFixed(2)}%` },
-    { label: 'Sharpe', value: toNumber(metricsResponse?.sharpe, 4.82).toFixed(2) },
-    { label: 'Sortino', value: toNumber(metricsResponse?.sortino, 5.11).toFixed(2) },
-    { label: 'Calmar', value: toNumber(metricsResponse?.calmar, 3.12).toFixed(2) },
-    { label: 'Profit Factor', value: toNumber(metricsResponse?.profitFactor, 1.92).toFixed(2) },
+  const totalMetrics = metricsResponse?.total ?? {};
+  const historicalMetrics = metricsResponse?.historical ?? {};
+  const oosMetrics = metricsResponse?.outOfSample ?? {};
+  const metricBlocks: StrategyMetricBlock[] = [
+    mapMetricBlock('Total Data', totalMetrics),
+    mapMetricBlock('Historical', historicalMetrics),
+    mapMetricBlock('Out-of-sample', oosMetrics),
   ];
 
-  const performanceSeries = seriesResponse
+  const metrics = [
+    { label: 'Average return', value: formatSignedPercent(toNumber(totalMetrics.annualReturn, 0) * 100, 2) },
+    { label: 'Maximum drawdown', value: formatSignedPercent(toNumber(totalMetrics.maxDrawdown, 0) * 100, 2) },
+    { label: 'Sharpe ratio', value: formatRatio(toNumber(totalMetrics.sharpe, 0), 2) },
+    { label: 'Sortino ratio', value: formatRatio(toNumber(totalMetrics.sortino, 0), 2) },
+    { label: 'Calmar ratio', value: formatRatio(toNumber(totalMetrics.calmar, 0), 2) },
+    { label: 'Profit factor', value: formatRatio(toNumber(totalMetrics.profitFactor, 0), 2) },
+  ];
+
+  const performanceSeries = (seriesResponse.points ?? [])
     .map((point) => ({
       timestamp: point.timestamp ?? new Date().toISOString(),
       value: toNumber(point.value),
+      phase: point.phase,
     }))
     .filter((point) => Number.isFinite(point.value));
 
@@ -1451,9 +1488,21 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
     ownerName: detailResponse?.ownerName ?? 'Marcus Quant Lab',
     market: detailResponse?.market ?? 'CRYPTO',
     status: detailResponse?.status ?? 'ACTIVE',
+    splitTimestamp: seriesResponse.splitTimestamp ?? null,
+    metricBlocks,
     metrics,
     performanceSeries,
     trades,
+  };
+}
+
+function mapMetricBlock(title: StrategyMetricBlock['title'], block: BotAnalyticsMetricBlockResponse): StrategyMetricBlock {
+  return {
+    title,
+    annualReturn: formatSignedPercent(toNumber(block.annualReturn, 0) * 100, 2),
+    maxDrawdown: formatSignedPercent(toNumber(block.maxDrawdown, 0) * 100, 2),
+    sharpe: formatRatio(toNumber(block.sharpe, 0), 2),
+    warning: block.statisticalSignificanceWarning ?? null,
   };
 }
 

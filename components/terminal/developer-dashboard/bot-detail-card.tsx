@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
+import { BotAnalyticsSection } from '@/components/terminal/bot-detail/bot-analytics-section';
 import { updateBotStatus } from '@/lib/contracts/client';
 import { BotIntegrationHealth, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary, DeveloperBotStatus } from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
@@ -47,7 +48,7 @@ interface BotDetailCardProps {
 }
 
 export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false, onStatusChange }: BotDetailCardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
   const [selectedLanguage, setSelectedLanguage] = useState<'curl' | 'node' | 'python' | 'go'>('curl');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -333,7 +334,7 @@ func main() {
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 mt-6 border-b border-white/5 pb-0">
-          {(['overview', 'credentials', 'integration', 'signals', 'subscribers'] as const).map((tab) => (
+          {(['overview', 'analytics', 'credentials', 'integration', 'signals', 'subscribers'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -344,6 +345,7 @@ func main() {
               }`}
             >
               {tab === 'overview' && 'Overview'}
+              {tab === 'analytics' && 'Analytics'}
               {tab === 'credentials' && 'API Credentials'}
               {tab === 'integration' && 'Integration Health'}
               {tab === 'signals' && 'Signals'}
@@ -459,6 +461,17 @@ func main() {
                 </div>
               )}
             </div>
+          </div>
+        )}
+
+        {/* ANALYTICS TAB */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-4 animate-fade-in">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Bot Analytics</h3>
+              <p className="text-xs text-slate-500 mt-1">Bot-level historical and out-of-sample performance for this runtime botId.</p>
+            </div>
+            <BotAnalyticsSection analytics={bot.analytics} />
           </div>
         )}
 

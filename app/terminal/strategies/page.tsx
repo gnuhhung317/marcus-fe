@@ -17,15 +17,15 @@ export default async function TerminalStrategiesPage() {
     <div className="space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Live Analytics</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">Benchmark Analytics</p>
           <h1 className="mt-3 text-4xl font-semibold text-white">{strategy.strategyName}</h1>
           <p className="mt-2 text-sm text-muted">
-            Owned by {strategy.ownerName} · Market {strategy.market} · Status {strategy.status}
+            Legacy strategy benchmark workspace. Runtime bot performance now lives on each bot profile.
           </p>
         </div>
         <div className="flex gap-2">
           <button className="rounded-xl border border-[rgba(132,162,191,0.3)] px-4 py-2 text-sm text-white">Export JSON</button>
-          <button className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold">Deploy to Paper</button>
+          <button className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold">Review Benchmark</button>
         </div>
       </header>
 

@@ -10,6 +10,7 @@ import {
   AllocationSlice,
   BlogPageData,
   BotDetail,
+  BotAnalyticsData,
   BlogPost,
   BotProvisioningCredentials,
   BotIntegrationHealth,
@@ -1090,12 +1091,15 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
 }
 
 export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
-  const response = await withFallback(
-    () => requestContractJson<BotDetailResponse>('bot-detail', {
-      pathParams: { botId },
-    }),
-    async () => undefined,
-  );
+  const [response, analytics] = await Promise.all([
+    withFallback(
+      () => requestContractJson<BotDetailResponse>('bot-detail', {
+        pathParams: { botId },
+      }),
+      async () => undefined,
+    ),
+    getBotAnalyticsData(botId),
+  ]);
 
   if (!response) {
     return {
@@ -1113,10 +1117,14 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
         avgTradeReturn: 0,
         tradesPerDay: 0,
       },
+      analytics,
     };
   }
 
-  return mapBotDetail(response);
+  return {
+    ...mapBotDetail(response),
+    analytics,
+  };
 }
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {
@@ -1420,6 +1428,53 @@ export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActi
   return activities;
 }
 
+function mapBotAnalyticsData(
+  metricsResponse?: BotAnalyticsMetricsResponse,
+  seriesResponse: BotAnalyticsSeriesResponse = { points: [] },
+): BotAnalyticsData {
+  const totalMetrics = metricsResponse?.total ?? {};
+  const historicalMetrics = metricsResponse?.historical ?? {};
+  const oosMetrics = metricsResponse?.outOfSample ?? {};
+
+  const performanceSeries = (seriesResponse.points ?? [])
+    .map((point) => ({
+      timestamp: point.timestamp ?? new Date().toISOString(),
+      value: toNumber(point.value),
+      phase: point.phase,
+    }))
+    .filter((point) => Number.isFinite(point.value));
+
+  return {
+    metricBlocks: [
+      mapMetricBlock('Total Data', totalMetrics),
+      mapMetricBlock('Historical', historicalMetrics),
+      mapMetricBlock('Out-of-sample', oosMetrics),
+    ],
+    performanceSeries,
+    splitTimestamp: seriesResponse.splitTimestamp ?? null,
+  };
+}
+
+export async function getBotAnalyticsData(botId: string, range = 'ALL'): Promise<BotAnalyticsData> {
+  const [metricsResponse, seriesResponse] = await Promise.all([
+    withFallback(
+      () => requestContractJson<BotAnalyticsMetricsResponse>('bot-analytics-metrics', {
+        pathParams: { botId },
+      }),
+      async () => undefined,
+    ),
+    withFallback(
+      () => requestContractJson<BotAnalyticsSeriesResponse>('bot-analytics-series', {
+        pathParams: { botId },
+        queryParams: { range },
+      }),
+      async () => ({ points: [] }),
+    ),
+  ]);
+
+  return mapBotAnalyticsData(metricsResponse, seriesResponse);
+}
+
 export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_ID): Promise<StrategyPageData> {
   const safeStrategyId = strategyId || DEFAULT_STRATEGY_ID;
 
@@ -1453,13 +1508,7 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
   ]);
 
   const totalMetrics = metricsResponse?.total ?? {};
-  const historicalMetrics = metricsResponse?.historical ?? {};
-  const oosMetrics = metricsResponse?.outOfSample ?? {};
-  const metricBlocks: StrategyMetricBlock[] = [
-    mapMetricBlock('Total Data', totalMetrics),
-    mapMetricBlock('Historical', historicalMetrics),
-    mapMetricBlock('Out-of-sample', oosMetrics),
-  ];
+  const analytics = mapBotAnalyticsData(metricsResponse, seriesResponse);
 
   const metrics = [
     { label: 'Average return', value: formatSignedPercent(toNumber(totalMetrics.annualReturn, 0) * 100, 2) },
@@ -1469,14 +1518,6 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
     { label: 'Calmar ratio', value: formatRatio(toNumber(totalMetrics.calmar, 0), 2) },
     { label: 'Profit factor', value: formatRatio(toNumber(totalMetrics.profitFactor, 0), 2) },
   ];
-
-  const performanceSeries = (seriesResponse.points ?? [])
-    .map((point) => ({
-      timestamp: point.timestamp ?? new Date().toISOString(),
-      value: toNumber(point.value),
-      phase: point.phase,
-    }))
-    .filter((point) => Number.isFinite(point.value));
 
   const trades = (tradeLogPage.items ?? [])
     .map((item) => mapTradeLogItem(item))
@@ -1488,10 +1529,10 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
     ownerName: detailResponse?.ownerName ?? 'Marcus Quant Lab',
     market: detailResponse?.market ?? 'CRYPTO',
     status: detailResponse?.status ?? 'ACTIVE',
-    splitTimestamp: seriesResponse.splitTimestamp ?? null,
-    metricBlocks,
+    splitTimestamp: analytics.splitTimestamp,
+    metricBlocks: analytics.metricBlocks,
     metrics,
-    performanceSeries,
+    performanceSeries: analytics.performanceSeries,
     trades,
   };
 }
@@ -1643,7 +1684,7 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     };
   }
 
-  const [detailResponse, subscriptionsResponse, integrationHealthResponse, signalsResponse] = await Promise.all([
+  const [detailResponse, subscriptionsResponse, integrationHealthResponse, signalsResponse, analytics] = await Promise.all([
     withFallback(
       () => requestContractJson<DeveloperBotDetailResponse>('developer-bot-detail', { pathParams: { botId: selectedBotId } }),
       async () => undefined,
@@ -1660,6 +1701,7 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
       () => requestContractJson<SignalItemResponse[]>('system-signals', { queryParams: { botId: selectedBotId, limit: 50 } }),
       async () => [],
     ),
+    getBotAnalyticsData(selectedBotId),
   ]);
 
   const matchedSummary = resolvedBots.find(b => b.botId === selectedBotId);
@@ -1685,6 +1727,7 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
           tradesPerDay: toNumber(detailResponse.performance.tradesPerDay),
         }
       : null,
+    analytics,
   };
 
   const subscriptions: DeveloperSubscriptionSummary[] = subscriptionsResponse.map((item, index) => ({

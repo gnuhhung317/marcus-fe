@@ -79,8 +79,8 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
       <header className="space-y-4">
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Marketplace</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Strategy Marketplace</h1>
-          <p className="mt-2 text-sm text-muted">Compare verified strategy profiles and deploy only what matches your risk budget.</p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">Bot Marketplace</h1>
+          <p className="mt-2 text-sm text-muted">Compare verified strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.</p>
         </div>
 
         <form method="get" className="grid gap-3 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.42)] p-4 lg:grid-cols-[1.4fr_0.85fr_0.65fr_auto]">
@@ -131,7 +131,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
         <p>
-          Showing {marketplacePage.bots.length} bots · {sortLabel(query.sortBy ?? 'RETURN_30D')}
+          Showing {marketplacePage.bots.length} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
         </p>
         <p>
           Page {marketplacePage.page}
@@ -167,15 +167,12 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
                   <p className="mt-1 text-lg font-semibold text-negative">-{bot.drawdown.toFixed(1)}%</p>
                 </div>
               </div>
-              <div className="mt-5 grid gap-2 sm:grid-cols-2">
+              <div className="mt-5">
                 <Link
                   href={`/terminal/marketplace/${encodeURIComponent(bot.botId)}`}
-                  className="rounded-xl border border-[rgba(148,163,184,0.26)] px-4 py-2 text-center text-sm text-white transition-colors hover:bg-[rgba(148,163,184,0.12)]"
+                  className="block rounded-xl cta-primary px-4 py-2 text-center text-sm font-semibold"
                 >
-                  View Detail
-                </Link>
-                <Link href={`/terminal/marketplace/${encodeURIComponent(bot.botId)}`} className="rounded-xl cta-primary px-4 py-2 text-center text-sm font-semibold">
-                  Deploy Strategy
+                  Open Bot
                 </Link>
               </div>
             </article>

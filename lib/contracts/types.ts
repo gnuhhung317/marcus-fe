@@ -188,6 +188,15 @@ export interface BotPerformance {
   tradesPerDay: number;
 }
 
+export interface BotSignalItem {
+  signalId: string;
+  botId: string;
+  symbol?: string | null;
+  action?: string | null;
+  status?: string | null;
+  generatedTimestamp?: string | null;
+}
+
 export interface BotDetail {
   botId: string;
   name: string;
@@ -199,6 +208,8 @@ export interface BotDetail {
   createdAt?: string;
   updatedAt?: string;
   performance?: BotPerformance;
+  analytics?: BotAnalyticsData | null;
+  signals?: BotSignalItem[];
 }
 
 export interface SubscriptionResult {
@@ -230,6 +241,12 @@ export interface StrategyMetricBlock {
   maxDrawdown: string;
   sharpe: string;
   warning?: string | null;
+}
+
+export interface BotAnalyticsData {
+  metricBlocks: StrategyMetricBlock[];
+  performanceSeries: TimeSeriesValue[];
+  splitTimestamp?: string | null;
 }
 
 export interface StrategyPageData {
@@ -349,6 +366,7 @@ export interface DeveloperBotDetail extends DeveloperBotSummary {
   createdAt?: string | null;
   updatedAt?: string | null;
   performance?: BotPerformance | null;
+  analytics?: BotAnalyticsData | null;
 }
 
 export interface DeveloperSubscriptionSummary {

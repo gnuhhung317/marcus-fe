@@ -95,10 +95,11 @@ export interface LeaderboardRow {
   strategyId: string;
   strategyName: string;
   category: string;
-  return24h: number;
+  cagr: number;  // Changed from return24h to cagr
   drawdown: number;
   sharpe: number;
   status: 'ACTIVE' | 'HIBERNATING';
+  dataSource?: 'DRY_RUN' | 'HISTORICAL';  // Added: data source for badge display
 }
 
 export interface ResearchReport {

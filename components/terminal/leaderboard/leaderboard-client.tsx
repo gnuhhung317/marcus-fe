@@ -8,7 +8,8 @@ interface LeaderboardClientProps {
   initialData: LeaderboardPageData;
 }
 
-type TabKey = 'top-returns' | 'top-risk-adjusted';
+type TabKey = 'main' | 'proving-grounds';
+type SortKey = 'CAGR' | 'SHARPE';
 
 function formatPercent(value: number, showSign = true): string {
   const sign = showSign && value >= 0 ? '+' : '';
@@ -24,10 +25,10 @@ function getDataSourceBadge(dataSource?: string) {
       </span>
     );
   }
-  if (dataSource === 'SIGNAL_BASED') {
+  if (dataSource === 'HISTORICAL') {
     return (
-      <span className="inline-flex items-center rounded-md bg-[rgba(59,130,246,0.15)] px-1.5 py-0.5 text-[10px] font-medium text-[rgba(59,130,246,1)] uppercase tracking-[0.08em]">
-        Signal
+      <span className="inline-flex items-center rounded-md bg-[rgba(245,158,11,0.15)] px-1.5 py-0.5 text-[10px] font-medium text-[rgba(245,158,11,1)] uppercase tracking-[0.08em]">
+        Backtest
       </span>
     );
   }
@@ -53,8 +54,8 @@ function PodiumCard({ row, rank, variant }: { row: LeaderboardRow; rank: number;
         <div className="mt-6 grid grid-cols-3 gap-4">
           <div>
             <p className="text-[10px] uppercase tracking-[0.12em] text-muted">CAGR</p>
-            <p className={`mt-1 text-2xl font-semibold ${row.return24h >= 0 ? 'text-positive' : 'text-negative'}`}>
-              {formatPercent(row.return24h)}
+            <p className={`mt-1 text-2xl font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
+              {formatPercent(row.cagr)}
             </p>
           </div>
           <div>
@@ -134,8 +135,8 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
                 </div>
               </td>
               <td className="px-4 py-3.5 text-muted">{row.category}</td>
-              <td className={`px-4 py-3.5 text-right font-semibold ${row.return24h >= 0 ? 'text-positive' : 'text-negative'}`}>
-                {formatPercent(row.return24h)}
+              <td className={`px-4 py-3.5 text-right font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
+                {formatPercent(row.cagr)}
               </td>
               <td className="px-4 py-3.5 text-right text-muted">{Math.abs(row.drawdown).toFixed(2)}%</td>
               <td className="px-4 py-3.5 text-right text-white">{row.sharpe.toFixed(2)}</td>
@@ -156,18 +157,31 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
 }
 
 export default function LeaderboardClient({ initialData }: LeaderboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>('top-returns');
+  const [activeTab, setActiveTab] = useState<TabKey>('main');
+  const [sortBy, setSortBy] = useState<SortKey>('CAGR');
 
+  // Filter rows based on tab (data source)
+  const filteredRows = useMemo(() => {
+    if (activeTab === 'main') {
+      // Main Leaderboard: only DRY_RUN data
+      return initialData.rows.filter(row => row.dataSource === 'DRY_RUN' || !row.dataSource);
+    } else {
+      // Proving Grounds: only HISTORICAL data
+      return initialData.rows.filter(row => row.dataSource === 'HISTORICAL');
+    }
+  }, [initialData.rows, activeTab]);
+
+  // Sort filtered rows
   const sortedRows = useMemo(() => {
-    const rows = [...initialData.rows];
-    if (activeTab === 'top-returns') {
-      rows.sort((a, b) => b.return24h - a.return24h);
+    const rows = [...filteredRows];
+    if (sortBy === 'CAGR') {
+      rows.sort((a, b) => b.cagr - a.cagr);
     } else {
       rows.sort((a, b) => b.sharpe - a.sharpe);
     }
     // Assign ranks based on sorted order
     return rows.map((row, idx) => ({ ...row, rank: idx + 1 }));
-  }, [initialData.rows, activeTab]);
+  }, [filteredRows, sortBy]);
 
   const top3 = sortedRows.slice(0, 3);
   const restRows = sortedRows.slice(3);
@@ -177,34 +191,85 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
       <header className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted">Verified Performance</p>
-            <h1 className="mt-3 text-4xl font-semibold text-white">Leaderboard</h1>
-            <p className="mt-2 text-sm text-muted">Third-party verified metrics with live strategy ranking.</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">
+              {activeTab === 'main' ? 'Verified Performance' : 'Strategy Discovery'}
+            </p>
+            <h1 className="mt-3 text-4xl font-semibold text-white">
+              {activeTab === 'main' ? 'Main Leaderboard' : 'Proving Grounds'}
+            </h1>
+            <p className="mt-2 text-sm text-muted">
+              {activeTab === 'main'
+                ? 'Real-time verified metrics with live strategy ranking.'
+                : 'Explore backtested strategies. Not yet verified in live markets.'}
+            </p>
           </div>
         </div>
 
+        {/* Data Source Tabs */}
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setActiveTab('top-returns')}
+            onClick={() => setActiveTab('main')}
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === 'top-returns'
+              activeTab === 'main'
                 ? 'cta-primary'
                 : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
             }`}
           >
-            Top Returns
+            Main Leaderboard
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('top-risk-adjusted')}
+            onClick={() => setActiveTab('proving-grounds')}
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === 'top-risk-adjusted'
+              activeTab === 'proving-grounds'
                 ? 'cta-primary'
                 : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
             }`}
           >
-            Top Risk-Adjusted
+            Proving Grounds
+          </button>
+        </div>
+
+        {/* Risk Warning for Proving Grounds */}
+        {activeTab === 'proving-grounds' && (
+          <div className="bg-orange-900/20 border border-orange-500/50 rounded-xl p-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <h3 className="font-semibold text-orange-400">Risk Warning</h3>
+                <p className="text-sm text-orange-300 mt-1">
+                  Historical backtest data does not guarantee future results. These strategies have not been
+                  verified in live markets. Capital at risk.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sort Buttons */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setSortBy('CAGR')}
+            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+              sortBy === 'CAGR'
+                ? 'cta-primary'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+            }`}
+          >
+            Sort by CAGR
+          </button>
+          <button
+            type="button"
+            onClick={() => setSortBy('SHARPE')}
+            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
+              sortBy === 'SHARPE'
+                ? 'cta-primary'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+            }`}
+          >
+            Sort by Sharpe
           </button>
         </div>
       </header>
@@ -224,7 +289,8 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
       <div className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
         <span className="text-muted">
-          Showing {sortedRows.length} strategies · {activeTab === 'top-returns' ? 'Sorted by CAGR' : 'Sorted by Sharpe'}
+          Showing {sortedRows.length} strategies · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by{' '}
+          {sortBy}
         </span>
       </div>
     </div>

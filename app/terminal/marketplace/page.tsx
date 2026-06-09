@@ -155,8 +155,10 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
               </div>
               <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
                 <div>
-                  <p className="text-muted">30D Return</p>
-                  <p className="mt-1 text-lg font-semibold text-positive">+{bot.pnl30d.toFixed(1)}%</p>
+                  <p className="text-muted">Annual Return</p>
+                  <p className={`mt-1 text-lg font-semibold ${bot.pnl30d >= 0 ? 'text-positive' : 'text-negative'}`}>
+                    {bot.pnl30d >= 0 ? '+' : ''}{bot.pnl30d.toFixed(1)}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted">Win Rate</p>

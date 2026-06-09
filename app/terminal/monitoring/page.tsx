@@ -189,7 +189,7 @@ export default function MonitoringDashboardPage() {
           </div>
           <div className="mt-6 rounded-xl border border-[rgba(148,163,184,0.1)] bg-[rgba(8,13,22,0.5)] p-4 text-sm text-muted">
             Open PnL: <span className={dashboard.terminalKpis[1]?.value?.startsWith('-') ? 'text-negative font-semibold' : 'text-positive font-semibold'}>
-              {formatSignedCurrency(dashboard.strategyTrades.reduce((sum, trade) => sum + trade.pnl, 0))}
+              {formatSignedCurrency(dashboard.botTrades.reduce((sum, trade) => sum + trade.pnl, 0))}
             </span>
           </div>
         </article>
@@ -263,7 +263,7 @@ export default function MonitoringDashboardPage() {
             <h2 className="text-xl font-semibold text-white">Trade Detail</h2>
             <p className="mt-1 text-sm text-muted">Recent fills and exits to support monitoring and follow-up.</p>
           </div>
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-muted">{dashboard.strategyTrades.length} trades</span>
+          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-muted">{dashboard.botTrades.length} trades</span>
         </div>
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/5">
           <table className="min-w-full text-left text-sm">
@@ -279,7 +279,7 @@ export default function MonitoringDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {dashboard.strategyTrades.map((trade) => (
+              {dashboard.botTrades.map((trade) => (
                 <tr key={`${trade.timestamp}-${trade.pair}`} className="border-t border-white/5 text-muted hover:bg-white/[0.03]">
                   <td className="px-3 py-2.5 text-white">{trade.pair}</td>
                   <td className="px-3 py-2.5">{trade.side}</td>
@@ -292,7 +292,7 @@ export default function MonitoringDashboardPage() {
                   <td className="px-3 py-2.5">{formatDateTime(trade.timestamp)}</td>
                 </tr>
               ))}
-              {!dashboard.strategyTrades.length ? (
+              {!dashboard.botTrades.length ? (
                 <tr>
                   <td className="px-3 py-8 text-center text-muted" colSpan={7}>
                     No trade data available.

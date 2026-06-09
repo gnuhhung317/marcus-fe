@@ -43,9 +43,9 @@ import {
   ResearchLibraryFile,
   ResearchPageData,
   ResearchReport,
-  StrategyPageData,
-  StrategyMetricBlock,
-  StrategyTrade,
+  BotAnalyticsPageData,
+  BotMetricBlock,
+  BotTrade,
   SubscriptionResult,
   TerminalKpi,
   TimeSeriesValue,
@@ -54,7 +54,7 @@ import {
   UserProfile,
 } from './types';
 
-const DEFAULT_STRATEGY_ID = 'kinetic-alpha-v4';
+const DEFAULT_BOT_ID = 'kinetic-alpha-v4';
 const ACCESS_TOKEN_COOKIE = 'marcus_access_token';
 const REFRESH_TOKEN_COOKIE = 'marcus_refresh_token';
 
@@ -89,7 +89,7 @@ const defaultConnectivity = {
 
 const defaultAcademyMetrics: AcademyMetricsData = {
   activeStudents: 0,
-  strategiesDeployed: 0,
+  botsDeployed: 0,
   averagePerformancePercent: 0,
   academyRating: 0,
 };
@@ -131,6 +131,12 @@ interface BotSummaryResponse {
   status?: string;
   tradingPair?: string;
   exchange?: string;
+  asset?: string;
+  risk?: string;
+  annualReturn?: number;
+  maxDrawdown?: number;
+  winRate?: number;
+  subscribers?: number;
 }
 
 interface BotPerformanceResponse {
@@ -156,18 +162,18 @@ interface SubscribeBotResultResponse {
   status?: string;
 }
 
-interface LeaderboardStrategyItemResponse {
+interface LeaderboardBotItemResponse {
   rank?: number;
-  strategyId?: string;
-  strategyName?: string;
+  botId?: string;
+  botName?: string;
   creatorName?: string;
   cagr?: number;
   sharpe?: number;
   maxDrawdown?: number;
 }
 
-interface LeaderboardStrategiesPageResponse {
-  items?: LeaderboardStrategyItemResponse[];
+interface LeaderboardBotsPageResponse {
+  items?: LeaderboardBotItemResponse[];
 }
 
 interface BotSummaryPageResponse {
@@ -182,8 +188,8 @@ interface BotSummaryPageResponse {
 }
 
 interface LeaderboardFeaturedItemResponse {
-  strategyId?: string;
-  strategyName?: string;
+  botId?: string;
+  botName?: string;
   rankLabel?: string;
   sharpe?: number;
 }
@@ -288,23 +294,6 @@ interface UpdatePreferencesRequest {
   sessionTimeoutMinutes?: number;
 }
 
-interface StrategyDetailResponse {
-  strategyId?: string;
-  strategyName?: string;
-  ownerName?: string;
-  market?: string;
-  status?: string;
-}
-
-interface StrategyMetricsResponse {
-  annualReturn?: number;
-  maxDrawdown?: number;
-  sharpe?: number;
-  sortino?: number;
-  calmar?: number;
-  profitFactor?: number;
-}
-
 interface TimeSeriesPointResponse {
   timestamp?: string;
   value?: number;
@@ -380,7 +369,7 @@ interface MarketTickerResponse {
 
 interface MarketOverviewResponse {
   topVolume24h?: number;
-  activeStrategies?: number;
+  activeBots?: number;
   liveTickers?: MarketTickerResponse[];
 }
 
@@ -399,7 +388,7 @@ interface AcademyCoursesResponse {
 
 interface AcademyMetricsResponse {
   activeStudents?: number;
-  strategiesDeployed?: number;
+  botsDeployed?: number;
   averagePerformancePercent?: number;
   academyRating?: number;
 }
@@ -588,7 +577,7 @@ function formatRatio(value: number, digits = 2) {
   return Number.isFinite(value) ? value.toFixed(digits) : '0.00';
 }
 
-function normalizeTradeSide(side: string | undefined): StrategyTrade['side'] {
+function normalizeTradeSide(side: string | undefined): BotTrade['side'] {
   return (side ?? '').toUpperCase().includes('SHORT') ? 'SHORT' : 'LONG';
 }
 
@@ -718,7 +707,7 @@ function mapDashboardKpis(overview: DashboardOverviewResponse): TerminalKpi[] {
   ];
 }
 
-function mapTradeLogItem(item: TradeLogItemResponse): StrategyTrade | null {
+function mapTradeLogItem(item: TradeLogItemResponse): BotTrade | null {
   if (!item.timestamp || !item.assetPair) {
     return null;
   }
@@ -735,13 +724,31 @@ function mapTradeLogItem(item: TradeLogItemResponse): StrategyTrade | null {
 }
 
 function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
+  const annualReturnPct = (bot.annualReturn ?? 0) * 100;
+  const maxDrawdownPct = Math.abs(bot.maxDrawdown ?? 0) * 100;
+  const winRatePct = (bot.winRate ?? 0) * 100;
+
+  const tags: string[] = [];
+  if (bot.asset) {
+    tags.push(bot.asset);
+  }
+  if (bot.risk) {
+    tags.push(bot.risk);
+  }
+  
+  // Backwards compatibility/default fallback tags if empty
+  if (tags.length === 0) {
+    tags.push(bot.exchange ?? 'UNKNOWN');
+    tags.push(bot.status ?? 'ACTIVE');
+  }
+
   return {
     botId: bot.botId ?? randomToken('bot'),
     name: bot.botName ?? 'Unnamed Bot',
-    tags: [bot.exchange ?? 'UNKNOWN', bot.status ?? 'ACTIVE'],
-    pnl30d: 0,
-    winRate: 0,
-    drawdown: 0,
+    tags: tags,
+    pnl30d: annualReturnPct,
+    winRate: winRatePct,
+    drawdown: maxDrawdownPct,
   };
 }
 
@@ -793,7 +800,7 @@ function sortLeaderboardRows(rows: LeaderboardRow[], sortBy?: LeaderboardQueryPa
   } else if (sortBy === 'SHARPE') {
     sorted.sort((left, right) => right.sharpe - left.sharpe);
   } else {
-    sorted.sort((left, right) => right.return24h - left.return24h);
+    sorted.sort((left, right) => right.cagr - left.cagr);
   }
 
   return sorted;
@@ -872,20 +879,20 @@ function mapLoginActivity(item: LoginActivityResponse, index: number): ProfileLo
   };
 }
 
-function mapLeaderboardRow(item: LeaderboardStrategyItemResponse, index: number): LeaderboardRow {
+function mapLeaderboardRow(item: LeaderboardBotItemResponse, index: number): LeaderboardRow {
   return {
     rank: Math.max(1, Math.round(toNumber(item.rank, index + 1))),
-    strategyId: item.strategyId ?? `strategy-${index + 1}`,
-    strategyName: item.strategyName ?? `Strategy ${index + 1}`,
-    category: item.creatorName ?? 'System',
-    return24h: toNumber(item.cagr, 0),
+    botId: item.botId ?? `bot-${index + 1}`,
+    botName: item.botName ?? `Bot ${index + 1}`,
+    creatorName: item.creatorName ?? 'System',
+    cagr: toNumber(item.cagr, 0),
     drawdown: toNumber(item.maxDrawdown, 0),
     sharpe: toNumber(item.sharpe, 0),
     status: 'ACTIVE',
   };
 }
 
-function buildFallbackStrategySeries(): TimeSeriesValue[] {
+function buildFallbackBotSeries(): TimeSeriesValue[] {
   const values = [100, 102, 104, 101, 106, 109, 111, 108, 114, 117];
 
   return values.map((value, index) => ({
@@ -918,7 +925,7 @@ export async function getHomePageData(): Promise<HomePageData> {
   return {
     marketOverview: {
       topVolume24h: toNumber(response?.topVolume24h, defaultTopVolume24h),
-      activeStrategies: Math.max(0, Math.round(toNumber(response?.activeStrategies, 0))),
+      activeBots: Math.max(0, Math.round(toNumber(response?.activeBots, 0))),
       liveTickers,
     },
     principles: [],
@@ -940,7 +947,7 @@ export async function getTrainingPageData(): Promise<TrainingPageData> {
   const courses = (coursesResponse.items ?? []).map((course, index) => mapAcademyCourse(course, index));
   const metrics: AcademyMetricsData = {
     activeStudents: Math.max(0, Math.round(toNumber(metricsResponse?.activeStudents, defaultAcademyMetrics.activeStudents))),
-    strategiesDeployed: Math.max(0, Math.round(toNumber(metricsResponse?.strategiesDeployed, defaultAcademyMetrics.strategiesDeployed))),
+    botsDeployed: Math.max(0, Math.round(toNumber(metricsResponse?.botsDeployed, defaultAcademyMetrics.botsDeployed))),
     averagePerformancePercent: toNumber(metricsResponse?.averagePerformancePercent, defaultAcademyMetrics.averagePerformancePercent),
     academyRating: toNumber(metricsResponse?.academyRating, defaultAcademyMetrics.academyRating),
   };
@@ -1019,8 +1026,8 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
     withFallback(() => requestContractJson<DashboardOverviewResponse>('dashboard-overview'), async () => undefined),
     withFallback(() => requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'), async () => []),
     withFallback(
-      () => requestContractJson<TradeLogPageResponse>('strategy-trades', {
-        pathParams: { strategyId: DEFAULT_STRATEGY_ID },
+      () => requestContractJson<TradeLogPageResponse>('bot-trades', {
+        pathParams: { botId: DEFAULT_BOT_ID },
         queryParams: { page: 0, size: 8 },
       }),
       async () => ({ items: [] }),
@@ -1042,7 +1049,7 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
 
   const mappedTrades = (tradeLogPage.items ?? [])
     .map((item) => mapTradeLogItem(item))
-    .filter((item): item is StrategyTrade => item !== null);
+    .filter((item): item is BotTrade => item !== null);
 
   const performanceSeries = (equitySeriesResponse ?? [])
     .map((point) => ({
@@ -1053,7 +1060,7 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
 
   return {
     terminalKpis: overview ? mapDashboardKpis(overview) : [],
-    strategyTrades: mappedTrades,
+    botTrades: mappedTrades,
     allocations: mappedAllocations,
     performanceSeries,
   };
@@ -1170,21 +1177,21 @@ export async function unsubscribeFromBot(botId: string): Promise<SubscriptionRes
 export async function getLeaderboardPageData(query: LeaderboardQueryParams = {}): Promise<LeaderboardPageData> {
   const page = Math.max(1, query.page ?? 1);
   const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
-  const [strategiesPage, featuredResponse] = await Promise.all([
+  const [botsPage, featuredResponse] = await Promise.all([
     withFallback(
-      () => requestContractJson<LeaderboardStrategiesPageResponse>('leaderboard-list'),
+      () => requestContractJson<LeaderboardBotsPageResponse>('leaderboard-list'),
       async () => ({ items: [] }),
     ),
     withFallback(() => requestContractJson<LeaderboardFeaturedResponse>('leaderboard-featured'), async () => ({ items: [] })),
   ]);
 
-  const rows = (strategiesPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
+  const rows = (botsPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
   const resolvedRows = rows;
   const pagedRows = applyLeaderboardFilters(resolvedRows, { ...query, page, pageSize });
 
   const featured = (featuredResponse.items ?? [])
     .map((item, index) => {
-      const matchedRow = resolvedRows.find((row) => row.strategyId === item.strategyId);
+      const matchedRow = resolvedRows.find((row) => row.botId === item.botId);
 
       if (matchedRow) {
         return matchedRow;
@@ -1192,10 +1199,10 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
 
       return {
         rank: index + 1,
-        strategyId: item.strategyId ?? `featured-${index + 1}`,
-        strategyName: item.strategyName ?? `Featured Strategy ${index + 1}`,
-        category: item.rankLabel ?? 'Featured',
-        return24h: 0,
+        botId: item.botId ?? `featured-${index + 1}`,
+        botName: item.botName ?? `Featured Bot ${index + 1}`,
+        creatorName: item.rankLabel ?? 'Featured',
+        cagr: 0,
         drawdown: 0,
         sharpe: toNumber(item.sharpe),
         status: 'ACTIVE' as const,
@@ -1475,32 +1482,32 @@ export async function getBotAnalyticsData(botId: string, range = 'ALL'): Promise
   return mapBotAnalyticsData(metricsResponse, seriesResponse);
 }
 
-export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_ID): Promise<StrategyPageData> {
-  const safeStrategyId = strategyId || DEFAULT_STRATEGY_ID;
+export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): Promise<BotAnalyticsPageData> {
+  const safeBotId = botId || DEFAULT_BOT_ID;
 
   const [detailResponse, metricsResponse, seriesResponse, tradeLogPage] = await Promise.all([
     withFallback(
-      () => requestContractJson<StrategyDetailResponse>('strategy-detail', {
-        pathParams: { strategyId: safeStrategyId },
+      () => requestContractJson<BotDetailResponse>('bot-detail', {
+        pathParams: { botId: safeBotId },
       }),
       async () => undefined,
     ),
     withFallback(
       () => requestContractJson<BotAnalyticsMetricsResponse>('bot-analytics-metrics', {
-        pathParams: { botId: safeStrategyId },
+        pathParams: { botId: safeBotId },
       }),
       async () => undefined,
     ),
     withFallback(
       () => requestContractJson<BotAnalyticsSeriesResponse>('bot-analytics-series', {
-        pathParams: { botId: safeStrategyId },
+        pathParams: { botId: safeBotId },
         queryParams: { range: 'ALL' },
       }),
       async () => ({ points: [] }),
     ),
     withFallback(
-      () => requestContractJson<TradeLogPageResponse>('strategy-trades', {
-        pathParams: { strategyId: safeStrategyId },
+      () => requestContractJson<TradeLogPageResponse>('bot-trades', {
+        pathParams: { botId: safeBotId },
         queryParams: { page: 0, size: 12 },
       }),
       async () => ({ items: [] }),
@@ -1521,13 +1528,12 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
 
   const trades = (tradeLogPage.items ?? [])
     .map((item) => mapTradeLogItem(item))
-    .filter((item): item is StrategyTrade => item !== null);
+    .filter((item): item is BotTrade => item !== null);
 
   return {
-    strategyId: detailResponse?.strategyId ?? safeStrategyId,
-    strategyName: detailResponse?.strategyName ?? 'NEURAL_MOMENTUM_V24',
-    ownerName: detailResponse?.ownerName ?? 'Marcus Quant Lab',
-    market: detailResponse?.market ?? 'CRYPTO',
+    botId: detailResponse?.botId ?? safeBotId,
+    botName: detailResponse?.botName ?? 'NEURAL_MOMENTUM_V24',
+    exchange: detailResponse?.exchange ?? 'BINANCE',
     status: detailResponse?.status ?? 'ACTIVE',
     splitTimestamp: analytics.splitTimestamp,
     metricBlocks: analytics.metricBlocks,
@@ -1537,7 +1543,7 @@ export async function getStrategyPageData(strategyId: string = DEFAULT_STRATEGY_
   };
 }
 
-function mapMetricBlock(title: StrategyMetricBlock['title'], block: BotAnalyticsMetricBlockResponse): StrategyMetricBlock {
+function mapMetricBlock(title: BotMetricBlock['title'], block: BotAnalyticsMetricBlockResponse): BotMetricBlock {
   return {
     title,
     annualReturn: formatSignedPercent(toNumber(block.annualReturn, 0) * 100, 2),
@@ -1774,10 +1780,10 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
 }
 
 export async function getTerminalData() {
-  const [dashboardData, marketplaceData, strategyData, profileData, leaderboardData] = await Promise.all([
+  const [dashboardData, marketplaceData, botAnalyticsData, profileData, leaderboardData] = await Promise.all([
     getDashboardPageData(),
     listMarketplaceBots(),
-    getStrategyPageData(),
+    getBotAnalyticsPageData(),
     getProfilePageData(),
     getLeaderboardPageData(),
   ]);
@@ -1785,7 +1791,7 @@ export async function getTerminalData() {
   return {
     terminalKpis: dashboardData.terminalKpis,
     marketplaceBots: marketplaceData,
-    strategyTrades: strategyData.trades,
+    botTrades: botAnalyticsData.trades,
     profileApiKeys: profileData.apiKeys,
     leaderboardRows: leaderboardData.rows,
   };

@@ -117,7 +117,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
                   <p className="text-xs uppercase tracking-[0.14em] font-semibold text-white">Institutional Security</p>
                 </div>
                 <p className="mt-2 text-xs text-muted leading-relaxed">
-                  Enterprise session encryption, secure MFA authorization, and isolated API-key strategies safeguard your trades.
+                  Enterprise session encryption, secure MFA authorization, and isolated API-key bots safeguard your trades.
                 </p>
               </div>
 
@@ -129,7 +129,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
                   <p className="text-xs uppercase tracking-[0.14em] font-semibold text-white">Low-Latency Execution</p>
                 </div>
                 <p className="mt-2 text-xs text-muted leading-relaxed">
-                  Execute strategies with direct-to-exchange routing, zero execution lags, and live telemetry.
+                  Execute bots with direct-to-exchange routing, zero execution lags, and live telemetry.
                 </p>
               </div>
             </div>

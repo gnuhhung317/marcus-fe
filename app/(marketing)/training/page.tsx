@@ -19,8 +19,8 @@ export default async function TrainingPage() {
           <p className="mt-2 text-3xl font-semibold text-white">{metrics.activeStudents}</p>
         </article>
         <article className="glass rounded-2xl p-5">
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Strategies Deployed</p>
-          <p className="mt-2 text-3xl font-semibold text-white">{metrics.strategiesDeployed}</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">Bots Deployed</p>
+          <p className="mt-2 text-3xl font-semibold text-white">{metrics.botsDeployed}</p>
         </article>
         <article className="glass rounded-2xl p-5">
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Avg Performance</p>

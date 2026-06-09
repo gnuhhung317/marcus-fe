@@ -47,8 +47,8 @@ function PodiumCard({ row, rank, variant }: { row: LeaderboardRow; rank: number;
         <span className={`text-xs uppercase tracking-[0.16em] ${rankColor} font-semibold`}>Rank #{rank}</span>
         {getDataSourceBadge((row as any).dataSource)}
       </div>
-      <h2 className="mt-3 text-2xl font-semibold text-white line-clamp-1">{row.strategyName}</h2>
-      <p className="mt-1 text-sm text-muted">By {row.category}</p>
+      <h2 className="mt-3 text-2xl font-semibold text-white line-clamp-1">{row.botName}</h2>
+      <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
 
       <div className="mt-auto">
         <div className="mt-6 grid grid-cols-3 gap-4">
@@ -69,7 +69,7 @@ function PodiumCard({ row, rank, variant }: { row: LeaderboardRow; rank: number;
         </div>
 
         <Link
-          href={`/terminal/strategies?id=${row.strategyId}`}
+          href={`/terminal/bots/${row.botId}`}
           className="mt-6 block rounded-xl cta-primary px-4 py-2.5 text-center text-sm font-semibold"
         >
           View Details
@@ -116,7 +116,7 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
         <thead className="bg-[rgba(148,163,184,0.08)] text-xs uppercase tracking-[0.12em] text-muted">
           <tr>
             <th className="px-4 py-3">Rank</th>
-            <th className="px-4 py-3">Strategy</th>
+            <th className="px-4 py-3">Bot</th>
             <th className="px-4 py-3">Creator</th>
             <th className="px-4 py-3 text-right">CAGR</th>
             <th className="px-4 py-3 text-right">Max DD</th>
@@ -126,15 +126,15 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
         </thead>
         <tbody>
           {rows.map((row, idx) => (
-            <tr key={row.strategyId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
+            <tr key={row.botId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
               <td className="px-4 py-3.5 text-white font-medium">#{startRank + idx}</td>
               <td className="px-4 py-3.5 font-medium text-white">
                 <div className="flex items-center gap-2">
-                  <span>{row.strategyName}</span>
+                  <span>{row.botName}</span>
                   {getDataSourceBadge((row as any).dataSource)}
                 </div>
               </td>
-              <td className="px-4 py-3.5 text-muted">{row.category}</td>
+              <td className="px-4 py-3.5 text-muted">{row.creatorName}</td>
               <td className={`px-4 py-3.5 text-right font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
                 {formatPercent(row.cagr)}
               </td>
@@ -142,7 +142,7 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
               <td className="px-4 py-3.5 text-right text-white">{row.sharpe.toFixed(2)}</td>
               <td className="px-4 py-3.5 text-right">
                 <Link
-                  href={`/terminal/strategies?id=${row.strategyId}`}
+                  href={`/terminal/bots/${row.botId}`}
                   className="text-xs font-semibold text-white hover:text-positive transition-colors"
                 >
                   Details →
@@ -192,15 +192,15 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-muted">
-              {activeTab === 'main' ? 'Verified Performance' : 'Strategy Discovery'}
+              {activeTab === 'main' ? 'Verified Performance' : 'Bot Discovery'}
             </p>
             <h1 className="mt-3 text-4xl font-semibold text-white">
               {activeTab === 'main' ? 'Main Leaderboard' : 'Proving Grounds'}
             </h1>
             <p className="mt-2 text-sm text-muted">
               {activeTab === 'main'
-                ? 'Real-time verified metrics with live strategy ranking.'
-                : 'Explore backtested strategies. Not yet verified in live markets.'}
+                ? 'Real-time verified metrics with live bot ranking.'
+                : 'Explore backtested bots. Not yet verified in live markets.'}
             </p>
           </div>
         </div>
@@ -239,7 +239,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
               <div>
                 <h3 className="font-semibold text-orange-400">Risk Warning</h3>
                 <p className="text-sm text-orange-300 mt-1">
-                  Historical backtest data does not guarantee future results. These strategies have not been
+                  Historical backtest data does not guarantee future results. These bots have not been
                   verified in live markets. Capital at risk.
                 </p>
               </div>
@@ -278,7 +278,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
         <PodiumSection top3={top3} />
       ) : (
         <div className="glass-strong rounded-2xl border border-[var(--panel-border)] p-8 text-center">
-          <p className="text-lg font-semibold text-white">No strategies available</p>
+          <p className="text-lg font-semibold text-white">No bots available</p>
           <p className="mt-2 text-sm text-muted">Check back later for updated rankings.</p>
         </div>
       )}
@@ -289,7 +289,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
       <div className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
         <span className="text-muted">
-          Showing {sortedRows.length} strategies · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by{' '}
+          Showing {sortedRows.length} bots · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by{' '}
           {sortBy}
         </span>
       </div>

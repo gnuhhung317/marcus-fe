@@ -23,17 +23,17 @@ The following routes are marked `status: 'available'`:
 - `GET /bots`
 - `POST /bots`
 - `POST /signals`
-- `GET /strategies/{strategyId}`
-- `GET /strategies/{strategyId}/metrics`
-- `GET /strategies/{strategyId}/performance-series`
-- `GET /strategies/{strategyId}/trades`
+- `GET /bots/{botId}`
+- `GET /bots/{botId}/analytics/metrics`
+- `GET /bots/{botId}/analytics/performance-series`
+- `GET /bots/{botId}/trades`
 - `GET /paper/session`
 - `GET /paper/signals`
 - `POST /paper/orders`
 - `GET /users/me`
 - `GET /users/me/api-keys`
 - `GET /signals`
-- `GET /leaderboard/strategies`
+- `GET /leaderboard/bots`
 - `GET /leaderboard/featured`
 - `GET /bots/my-bots`
 - `GET /bots/{botId}`
@@ -72,10 +72,10 @@ The terminal app uses real backend endpoints with fallback mock data.
 - Real endpoints:
   - `GET /dashboard/overview`
   - `GET /dashboard/exchange-allocation`
-  - `GET /strategies/{strategyId}/trades`
+  - `GET /bots/{botId}/trades`
 - Mock fallback:
   - `terminalKpis`
-  - `strategyTrades`
+  - `botTrades`
   - `defaultAllocations` defined in page code
 
 #### Marketplace
@@ -97,14 +97,14 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `profileApiKeys`
   - `defaultLoginActivities`
 
-#### Strategies
+#### Bot analytics
 - Real endpoints:
-  - `GET /strategies/{strategyId}`
-  - `GET /strategies/{strategyId}/metrics`
-  - `GET /strategies/{strategyId}/performance-series`
-  - `GET /strategies/{strategyId}/trades`
+  - `GET /bots/{botId}`
+  - `GET /bots/{botId}/analytics/metrics`
+  - `GET /bots/{botId}/analytics/performance-series`
+  - `GET /bots/{botId}/trades`
 - Mock fallback:
-  - `strategyTrades`
+  - `botTrades`
   - fallback series and metrics when endpoint payload is missing or unavailable
 
 #### Paper trading

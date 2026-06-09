@@ -27,14 +27,14 @@ export default async function HomePage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-positive opacity-75"></span>
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-positive"></span>
               </span>
-              Engine Online · {marketOverview.activeStrategies} Active Strategies
+              Engine Online · {marketOverview.activeBots} Active Bots
             </div>
             <h1 className="mt-8 font-display text-5xl leading-[1.08] text-white md:text-7xl">
               High-Frequency <br />
               <span className="text-muted">Algorithmic Trading.</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted sm:text-xl">
-              Design, backtest, and deploy high-frequency strategies with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.
+              Design, backtest, and deploy high-frequency bots with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Link href="/login?next=/terminal" className="cta-primary rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-wide transition-transform hover:scale-105">
@@ -61,12 +61,12 @@ export default async function HomePage() {
               <p className="text-positive">$ pip install marcus-sdk</p>
               <p className="mt-2">Collecting marcus-sdk...</p>
               <p>Successfully installed marcus-sdk-4.2.0</p>
-              <p className="mt-4 text-positive">$ marcus deploy strategy.py --env prod</p>
+              <p className="mt-4 text-positive">$ marcus deploy bot.py --env prod</p>
               <p className="mt-2 text-white/70">[<span className="text-positive">OK</span>] Validating schema parameters...</p>
               <p className="text-white/70">[<span className="text-positive">OK</span>] Connecting to execution cloud...</p>
               <p className="text-white/70">[<span className="text-positive">OK</span>] Provisioning isolation container...</p>
               <div className="mt-6 border-l-2 border-positive pl-4">
-                <p className="text-white">Strategy Deployed Successfully</p>
+                <p className="text-white">Bot Deployed Successfully</p>
                 <p className="mt-1 text-xs text-muted">Routing ID: mrx_8f72a911</p>
                 <p className="text-xs text-muted">Latency: 1.2ms (Direct-To-Venue)</p>
               </div>
@@ -121,7 +121,7 @@ export default async function HomePage() {
             </div>
             <h3 className="font-display text-2xl text-white">Learn & Backtest</h3>
             <p className="mt-4 text-muted leading-relaxed">
-              Access the Academy for institutional quant strategies. Run historical backtests on years of tick data, in-browser, within seconds.
+              Access the Academy for institutional quant bots. Run historical backtests on years of tick data, in-browser, within seconds.
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export default async function HomePage() {
         <div className="glass rounded-3xl p-10 sm:p-16">
           <h2 className="font-display text-3xl text-white">Join The Hub</h2>
           <p className="mx-auto mt-4 max-w-lg text-muted">
-            Connect with quantitative developers, share strategies, and get priority support from the Marcus engineering team.
+            Connect with quantitative developers, share bots, and get priority support from the Marcus engineering team.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <a href="#" className="inline-flex items-center gap-2 rounded-xl bg-info px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">

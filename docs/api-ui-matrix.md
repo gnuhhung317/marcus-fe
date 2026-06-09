@@ -15,15 +15,15 @@
 | UI Block | API Contract | Method | OperationId | Status | Notes |
 |---|---|---|---|---|---|
 | Course cards | /academy/courses | GET | listAcademyCourses | AVAILABLE | Supports modules list and progress |
-| KPI strip | /academy/metrics | GET | getAcademyMetrics | AVAILABLE | Active students, deployed strategies |
+| KPI strip | /academy/metrics | GET | getAcademyMetrics | AVAILABLE | Active students, deployed bots |
 | Start training action | /academy/courses/{courseId}/enroll | POST | enrollCourse | GAP | Optional but needed for CTA consistency |
 
 ### 3) Marketing: Market Leaderboard
 | UI Block | API Contract | Method | OperationId | Status | Notes |
 |---|---|---|---|---|---|
-| Ranking table | /leaderboard/strategies | GET | listLeaderboardStrategies | AVAILABLE | Supports timeframe and rankMetric filters |
+| Ranking table | /leaderboard/bots | GET | listLeaderboardBots | AVAILABLE | Supports timeframe and rankMetric filters |
 | Featured cards | /leaderboard/featured | GET | listLeaderboardFeatured | AVAILABLE | Top ranked tiles |
-| Spotlights | /leaderboard/spotlights | GET | listStrategySpotlights | AVAILABLE | Strategy spotlight section |
+| Spotlights | /leaderboard/spotlights | GET | listBotSpotlights | AVAILABLE | Bot spotlight section |
 
 ### 4) Marketing: Blog
 | UI Block | API Contract | Method | OperationId | Status | Notes |
@@ -55,16 +55,13 @@
 | Bot detail modal | /bots/{botId} | GET | getBotDetail | AVAILABLE | Bot metadata |
 | Subscribe/deploy action | /subscriptions/{botId} | POST | subscribeBot | AVAILABLE | Trading subscription |
 
-### 8) Terminal: Strategy Analytics
+### 8) Terminal: Bot Analytics
 | UI Block | API Contract | Method | OperationId | Status | Notes |
 |---|---|---|---|---|---|
-| Header + strategy identity | /strategies/{strategyId} | GET | getStrategyDetail | AVAILABLE | Strategy descriptor |
-| Metric cards | /strategies/{strategyId}/metrics | GET | getStrategyMetrics | AVAILABLE | feeMode aware |
-| Performance chart | /strategies/{strategyId}/performance-series | GET | getStrategyPerformanceSeries | AVAILABLE | Range filter |
-| Trade logs | /strategies/{strategyId}/trades | GET | listStrategyTradeLogs | AVAILABLE | Pageable table |
-| Export actions | /strategies/{strategyId}/export/pdf | POST | exportStrategyReportPdf | AVAILABLE | Async export |
-| Export JSON | /strategies/{strategyId}/export/json | POST | exportStrategySnapshotJson | AVAILABLE | Async export |
-| Deploy to paper | /strategies/{strategyId}/paper-history | GET | listStrategyPaperHistory | AVAILABLE | History lookup for CTA context |
+| Header + bot identity | /bots/{botId} | GET | getBotDetail | AVAILABLE | Bot descriptor |
+| Metric cards | /bots/{botId}/analytics/metrics | GET | getBotAnalyticsMetrics | AVAILABLE | feeMode aware |
+| Performance chart | /bots/{botId}/analytics/performance-series | GET | getBotAnalyticsPerformanceSeries | AVAILABLE | Range filter |
+| Trade logs | /bots/{botId}/trades | GET | listBotTrades | AVAILABLE | Pageable table |
 
 ### 9) Terminal: Create Bot
 | UI Block | API Contract | Method | OperationId | Status | Notes |

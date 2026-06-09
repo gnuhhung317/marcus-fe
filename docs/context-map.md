@@ -14,7 +14,7 @@
 | app/terminal/layout.tsx | Terminal app shell route layout | Apply left nav shell for app pages |
 | app/terminal/page.tsx | Terminal dashboard | Render KPIs, active bot performance table, allocation bars |
 | app/terminal/marketplace/page.tsx | Marketplace app page | Render bot cards and deploy CTA |
-| app/terminal/strategies/page.tsx | Strategy analytics page | Render strategy curve and trade logs |
+| app/terminal/bots/[botId]/page.tsx | Bot analytics page | Render bot curve and trade logs |
 | app/terminal/create-bot/page.tsx | Bot wizard page | Render step flow and strategy configuration form |
 | app/terminal/paper-trading/page.tsx | Paper trading page | Render session controls, equity curve, quick order fields |
 | app/terminal/profile/page.tsx | User profile page | Render subscription and API key sections |
@@ -37,7 +37,7 @@
 | app/(marketing)/research/page.tsx | Consumes researchReports from mock contract layer |
 | app/terminal/page.tsx | Uses KpiCard component and terminal contract data |
 | app/terminal/marketplace/page.tsx | Uses marketplaceBots from mock contract layer |
-| app/terminal/strategies/page.tsx | Uses strategyTrades from mock contract layer |
+| app/terminal/bots/[botId]/page.tsx | Uses botTrades from contract layer |
 | app/terminal/profile/page.tsx | Uses profileApiKeys from mock contract layer |
 | lib/contracts/client.ts | Depends on endpoint registry and API HTTP client |
 

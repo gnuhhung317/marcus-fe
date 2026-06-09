@@ -9,7 +9,6 @@ import { SiteHeader } from '@/components/marketing/site-header';
 const terminalNav = [
   { href: '/terminal/marketplace', label: 'Marketplace', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
   { href: '/terminal/leaderboard', label: 'Leaderboard', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-  { href: '/terminal/strategies', label: 'Strategies', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/create-bot', label: 'Create Bot', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/paper-trading', label: 'Paper Trading', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/profile', label: 'Profile', roles: ['TRADER', 'DEVELOPER', 'OPERATOR', 'ADMIN'] },
@@ -45,12 +44,6 @@ function getIcon(href: string) {
       return (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-        </svg>
-      );
-    case '/terminal/strategies':
-      return (
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
         </svg>
       );
     case '/terminal/create-bot':
@@ -101,8 +94,7 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
   const tradingDeskNav = visibleNav.filter(
     (item) =>
       item.href === '/terminal/marketplace' ||
-      item.href === '/terminal/leaderboard' ||
-      item.href === '/terminal/strategies'
+      item.href === '/terminal/leaderboard'
   );
 
   const executionNav = visibleNav.filter(

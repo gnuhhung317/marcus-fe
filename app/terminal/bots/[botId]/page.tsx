@@ -1,9 +1,9 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getStrategyPageData } from '@/lib/contracts/client';
+import { getBotAnalyticsPageData } from '@/lib/contracts/client';
 import { PerformanceChart } from '@/components/shared/performance-chart';
 
-export default async function TerminalStrategiesPage() {
+export default async function TerminalBotPage({ params }: { params: { botId: string } }) {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
 
@@ -11,27 +11,27 @@ export default async function TerminalStrategiesPage() {
     redirect('/terminal');
   }
 
-  const strategy = await getStrategyPageData();
+  const bot = await getBotAnalyticsPageData(params.botId);
 
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Benchmark Analytics</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">{strategy.strategyName}</h1>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">Bot Analytics</p>
+          <h1 className="mt-3 text-4xl font-semibold text-white">{bot.botName}</h1>
           <p className="mt-2 text-sm text-muted">
-            Legacy strategy benchmark workspace. Runtime bot performance now lives on each bot profile.
+            Runtime bot performance, backtest history, and closed trades for {bot.exchange}.
           </p>
         </div>
         <div className="flex gap-2">
           <button className="rounded-xl border border-[rgba(132,162,191,0.3)] px-4 py-2 text-sm text-white">Export JSON</button>
-          <button className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold">Review Benchmark</button>
+          <button className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold">Review Bot</button>
         </div>
       </header>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(280px,0.32fr)_minmax(0,0.68fr)]">
         <div className="space-y-5">
-          {strategy.metricBlocks.map((block) => (
+          {bot.metricBlocks.map((block) => (
             <article key={block.title} className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
               <h2 className="text-2xl font-semibold text-white">{block.title}</h2>
               <div className="mt-6 space-y-3">
@@ -61,14 +61,14 @@ export default async function TerminalStrategiesPage() {
           <section className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
             <h2 className="text-2xl font-semibold text-white">Performance chart</h2>
             <div className="mt-6">
-              <PerformanceChart data={strategy.performanceSeries} splitTimestamp={strategy.splitTimestamp} />
+              <PerformanceChart data={bot.performanceSeries} splitTimestamp={bot.splitTimestamp} />
             </div>
           </section>
 
           <section className="glass-strong rounded-lg p-5 shadow-[var(--shadow-soft)]">
             <h2 className="text-2xl font-semibold text-white">Performance metrics</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {strategy.metrics.map((metric) => (
+              {bot.metrics.map((metric) => (
                 <div key={metric.label} className="flex items-center justify-between border-b border-[rgba(132,162,191,0.16)] py-3">
                   <span className="text-sm font-medium text-white">{metric.label}</span>
                   <span className="text-lg font-semibold text-positive">{metric.value}</span>
@@ -92,7 +92,7 @@ export default async function TerminalStrategiesPage() {
               </tr>
             </thead>
             <tbody>
-              {strategy.trades.map((trade) => (
+              {bot.trades.map((trade) => (
                 <tr key={`${trade.timestamp}-${trade.pair}`} className="border-t border-[rgba(132,162,191,0.15)]">
                   <td className="py-3 text-muted">
                     {Number.isNaN(Date.parse(trade.timestamp))

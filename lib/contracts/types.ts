@@ -28,7 +28,7 @@ export interface Principle {
 
 export interface MarketOverviewData {
   topVolume24h: number;
-  activeStrategies: number;
+  activeBots: number;
   liveTickers: MarketTicker[];
 }
 
@@ -62,7 +62,7 @@ export interface TrainingCourse {
 
 export interface AcademyMetricsData {
   activeStudents: number;
-  strategiesDeployed: number;
+  botsDeployed: number;
   averagePerformancePercent: number;
   academyRating: number;
 }
@@ -92,14 +92,14 @@ export interface MarketplaceQueryParams {
 
 export interface LeaderboardRow {
   rank: number;
-  strategyId: string;
-  strategyName: string;
-  category: string;
-  cagr: number;  // Changed from return24h to cagr
+  botId: string;
+  botName: string;
+  creatorName: string;
+  cagr: number;
   drawdown: number;
   sharpe: number;
   status: 'ACTIVE' | 'HIBERNATING';
-  dataSource?: 'DRY_RUN' | 'HISTORICAL';  // Added: data source for badge display
+  dataSource?: 'DRY_RUN' | 'HISTORICAL';
 }
 
 export interface ResearchReport {
@@ -147,7 +147,7 @@ export interface AllocationSlice {
   value: number;
 }
 
-export interface StrategyTrade {
+export interface BotTrade {
   timestamp: string;
   pair: string;
   side: 'LONG' | 'SHORT';
@@ -221,11 +221,11 @@ export interface SubscriptionResult {
 
 export interface DashboardPageData {
   terminalKpis: TerminalKpi[];
-  strategyTrades: StrategyTrade[];
+  botTrades: BotTrade[];
   allocations: AllocationSlice[];
 }
 
-export interface StrategyMetricTile {
+export interface BotMetricTile {
   label: string;
   value: string;
 }
@@ -236,7 +236,7 @@ export interface TimeSeriesValue {
   phase?: 'HISTORICAL' | 'OUT_OF_SAMPLE';
 }
 
-export interface StrategyMetricBlock {
+export interface BotMetricBlock {
   title: 'Total Data' | 'Historical' | 'Out-of-sample';
   annualReturn: string;
   maxDrawdown: string;
@@ -245,22 +245,21 @@ export interface StrategyMetricBlock {
 }
 
 export interface BotAnalyticsData {
-  metricBlocks: StrategyMetricBlock[];
+  metricBlocks: BotMetricBlock[];
   performanceSeries: TimeSeriesValue[];
   splitTimestamp?: string | null;
 }
 
-export interface StrategyPageData {
-  strategyId: string;
-  strategyName: string;
-  ownerName: string;
-  market: string;
+export interface BotAnalyticsPageData {
+  botId: string;
+  botName: string;
+  exchange: string;
   status: string;
   splitTimestamp?: string | null;
-  metricBlocks: StrategyMetricBlock[];
-  metrics: StrategyMetricTile[];
+  metricBlocks: BotMetricBlock[];
+  metrics: BotMetricTile[];
   performanceSeries: TimeSeriesValue[];
-  trades: StrategyTrade[];
+  trades: BotTrade[];
 }
 
 export interface PaperSignal {

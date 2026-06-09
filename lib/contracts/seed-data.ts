@@ -9,7 +9,7 @@ import {
   Principle,
   ProfileApiKey,
   ResearchReport,
-  StrategyTrade,
+  BotTrade,
   TerminalKpi,
   TrainingCourse,
 } from './types';
@@ -33,7 +33,7 @@ export const principles: Principle[] = [
   },
   {
     title: 'Yield',
-    description: 'Adaptive strategies balance momentum and drawdown constraints in real time.',
+    description: 'Adaptive bots balance momentum and drawdown constraints in real time.',
     badge: 'APY 18.4%',
   },
 ];
@@ -92,40 +92,40 @@ export const marketplaceBots: MarketplaceBot[] = [
 export const leaderboardRows: LeaderboardRow[] = [
   {
     rank: 1,
-    strategyId: 'kinetic-alpha-v4',
-    strategyName: 'KINETIC_ALPHA_V4',
-    category: 'Arbitrage',
-    return24h: 14.28,
+    botId: 'kinetic-alpha-v4',
+    botName: 'KINETIC_ALPHA_V4',
+    creatorName: 'Arbitrage',
+    cagr: 14.28,
     drawdown: 2.14,
     sharpe: 4.82,
     status: 'ACTIVE',
   },
   {
     rank: 2,
-    strategyId: 'void-runner-grid',
-    strategyName: 'VOID_RUNNER_GRID',
-    category: 'Grid',
-    return24h: 8.91,
+    botId: 'void-runner-grid',
+    botName: 'VOID_RUNNER_GRID',
+    creatorName: 'Grid',
+    cagr: 8.91,
     drawdown: 1.05,
     sharpe: 3.95,
     status: 'ACTIVE',
   },
   {
     rank: 3,
-    strategyId: 'neural-storm-x',
-    strategyName: 'NEURAL_STORM_X',
-    category: 'Neural',
-    return24h: 7.22,
+    botId: 'neural-storm-x',
+    botName: 'NEURAL_STORM_X',
+    creatorName: 'Neural',
+    cagr: 7.22,
     drawdown: 4.4,
     sharpe: 3.11,
     status: 'ACTIVE',
   },
   {
     rank: 4,
-    strategyId: 'eclipse-trend-max',
-    strategyName: 'ECLIPSE_TREND_MAX',
-    category: 'Trend',
-    return24h: -2.15,
+    botId: 'eclipse-trend-max',
+    botName: 'ECLIPSE_TREND_MAX',
+    creatorName: 'Trend',
+    cagr: -2.15,
     drawdown: 12.8,
     sharpe: 1.42,
     status: 'HIBERNATING',
@@ -136,7 +136,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: 'liquidity-traps',
     title: 'Decoding High-Frequency Liquidity Traps',
-    category: 'Strategy',
+    category: 'Trading',
     excerpt: 'How institutional flows manipulate thin books and how to position around it.',
     readTime: '12 min',
   },
@@ -211,7 +211,7 @@ export const terminalKpis: TerminalKpi[] = [
   },
 ];
 
-export const strategyTrades: StrategyTrade[] = [
+export const botTrades: BotTrade[] = [
   { timestamp: '2024-05-24 14:32:01', pair: 'BTC/USDT', side: 'LONG', pnl: 1240.2 },
   { timestamp: '2024-05-24 13:14:55', pair: 'ETH/USDT', side: 'SHORT', pnl: -326.8 },
   { timestamp: '2024-05-24 11:09:22', pair: 'SOL/USDT', side: 'LONG', pnl: 587.5 },

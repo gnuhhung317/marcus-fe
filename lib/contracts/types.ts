@@ -420,7 +420,7 @@ export interface LeaderboardPageData {
 export type LeaderboardSortBy = 'RETURN_24H' | 'DRAWDOWN' | 'SHARPE';
 
 export interface LeaderboardQueryParams {
-  timeframe?: '24H' | '7D' | '30D';
+  dataSource?: 'DRY_RUN' | 'HISTORICAL';
   sortBy?: LeaderboardSortBy;
   page?: number;
   pageSize?: number;

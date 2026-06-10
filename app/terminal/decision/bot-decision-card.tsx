@@ -1,19 +1,24 @@
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
 import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
 
 interface BotCardProps {
   card: BotDecisionCard;
-  onKeep?: (subscriptionId: string) => void;
-  onReview?: (subscriptionId: string) => void;
-  onUnsubscribe?: (subscriptionId: string) => void;
+  onKeep?: (botId: string) => Promise<void> | void;
+  onUnsubscribe?: (botId: string) => Promise<void> | void;
+  isBusy?: boolean;
+  isKept?: boolean;
 }
 
 /**
  * Single bot decision card with reason tag, metrics, and quick actions.
  */
-export function BotDecisionCardComponent({ card, onKeep, onReview, onUnsubscribe }: BotCardProps) {
-  // Color scheme based on decision reason
+export function BotDecisionCardComponent({ card, onKeep, onUnsubscribe, isBusy = false, isKept = false }: BotCardProps) {
+  const [isLocalPending, setIsLocalPending] = useState(false);
+
   const reasonColors: Record<DecisionReason, { bg: string; text: string; border: string }> = {
     [DecisionReason.SOLID_PERFORMER]: {
       bg: 'bg-emerald-500/[0.02]',
@@ -38,94 +43,110 @@ export function BotDecisionCardComponent({ card, onKeep, onReview, onUnsubscribe
   };
 
   const colors = reasonColors[card.reason];
-  const pnlColor = card.currentPnL >= 0 ? 'text-emerald-400' : 'text-rose-400';
-  const drawdownBadgeColor = card.drawdownPercent < -0.1 ? 'text-rose-400' : 'text-amber-400';
+  const pnlColor = card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
+  const drawdownBadgeColor = card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
+  const signalSuccess = card.signalCount24h > 0 ? Math.round((card.successfulSignals24h / card.signalCount24h) * 100) : 0;
+  const actionDisabled = isBusy || isLocalPending;
+
+  const handleKeep = async () => {
+    if (!onKeep) return;
+    setIsLocalPending(true);
+    try {
+      await onKeep(card.botId);
+    } finally {
+      setIsLocalPending(false);
+    }
+  };
 
   return (
-    <div
-      className={`${colors.bg} border ${colors.border} rounded-2xl p-5 hover:border-slate-500/50 hover:bg-white/[0.01] transition-all duration-300 shadow-md backdrop-blur-md flex flex-col justify-between`}
-    >
+    <div className={`${colors.bg} flex flex-col justify-between rounded-2xl border ${colors.border} p-5 shadow-[var(--shadow-soft)] backdrop-blur-md transition-colors duration-200`}>
       <div>
-        {/* Header: Bot name + icon */}
-        <div className="flex items-start justify-between mb-5 gap-3">
+        <div className="mb-5 flex items-start justify-between gap-3">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1.5">
-              {card.botIcon && (
-                <img src={card.botIcon} alt={card.botName} className="w-8 h-8 rounded-lg object-cover border border-[rgba(255,255,255,0.06)]" />
-              )}
-              <h3 className="text-base font-bold text-white tracking-tight">{card.botName}</h3>
+            <div className="mb-1.5 flex items-center gap-3">
+              {card.botIcon ? (
+                <Image
+                  src={card.botIcon}
+                  alt={card.botName}
+                  width={32}
+                  height={32}
+                  unoptimized
+                  className="h-8 w-8 rounded-lg border border-[rgba(255,255,255,0.06)] object-cover"
+                />
+              ) : null}
+              <h3 className="text-base font-bold tracking-tight text-white">{card.botName}</h3>
             </div>
-            <p className="text-xs text-slate-500 font-mono font-medium">{card.exchange}</p>
+            <p className="font-mono text-xs font-medium text-muted">{card.exchange}</p>
           </div>
 
-          {/* Reason tag */}
-          <div className={`${colors.text} text-[9px] font-bold px-2.5 py-1 rounded-lg bg-white/[0.04] border border-[rgba(255,255,255,0.06)] uppercase tracking-wider font-mono`}>
+          <div className={`${colors.text} rounded-lg border border-[rgba(255,255,255,0.06)] bg-white/[0.04] px-2.5 py-1 font-mono text-[9px] font-bold uppercase tracking-wider`}>
             {card.reason.replace('_', ' ')}
           </div>
         </div>
 
-        {/* Metrics row */}
-        <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-[rgba(255,255,255,0.06)] font-mono">
-          {/* Current P&L */}
+        <div className="mb-4 grid grid-cols-2 gap-3 border-b border-[rgba(255,255,255,0.06)] pb-4 font-mono md:grid-cols-4">
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-semibold">Current P&L</p>
-            <p className={`${pnlColor} text-sm font-bold`}>
-              {card.currentPnL >= 0 ? '+' : ''}${card.currentPnL.toFixed(2)}
-            </p>
-            <p className="text-[11px] text-slate-400 font-medium">{(card.pnlPercent * 100).toFixed(2)}%</p>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted">Current P&amp;L</p>
+            <p className={`text-sm font-bold ${pnlColor}`}>{card.currentPnL >= 0 ? '+' : ''}${card.currentPnL.toFixed(2)}</p>
+            <p className="text-[11px] font-medium text-muted">{(card.pnlPercent * 100).toFixed(2)}%</p>
           </div>
-
-          {/* Drawdown */}
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-semibold">Drawdown</p>
-            <p className={`${drawdownBadgeColor} text-sm font-bold`}>
-              {(card.drawdownPercent * 100).toFixed(1)}%
-            </p>
-            <p className="text-[11px] text-slate-500 font-medium">7-day max</p>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted">Drawdown</p>
+            <p className={`text-sm font-bold ${drawdownBadgeColor}`}>{(card.drawdownPercent * 100).toFixed(1)}%</p>
+            <p className="text-[11px] font-medium text-muted">7-day max</p>
           </div>
-
-          {/* Win Rate */}
           <div>
-            <p className="text-[10px] text-slate-500 uppercase tracking-wider mb-1 font-semibold">Win Rate</p>
-            <p className="text-emerald-400 text-sm font-bold">{(card.winRate * 100).toFixed(1)}%</p>
-            <p className="text-[11px] text-slate-500 font-medium">24h avg</p>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted">Win Rate</p>
+            <p className="text-sm font-bold text-positive">{(card.winRate * 100).toFixed(1)}%</p>
+            <p className="text-[11px] font-medium text-muted">24h avg</p>
+          </div>
+          <div>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-muted">Signals</p>
+            <p className="text-sm font-bold text-white">{card.successfulSignals24h}/{card.signalCount24h}</p>
+            <p className="text-[11px] font-medium text-muted">{signalSuccess}% success</p>
           </div>
         </div>
 
-        {/* Reason explanation */}
         <div className="mb-4">
-          <p className={`text-xs ${colors.text} font-medium leading-relaxed`}>{card.reasonExplanation}</p>
+          <p className={`text-sm font-medium leading-relaxed ${colors.text}`}>{card.reasonExplanation}</p>
         </div>
 
-        {/* Signal stats */}
-        <div className="text-[11px] text-slate-500 mb-5 leading-relaxed">
-          <p className="font-medium">
-            Signal Success: <span className="text-slate-300 font-semibold">{card.successfulSignals24h}</span> / <span className="text-slate-300">{card.signalCount24h}</span> signals (
-            {card.signalCount24h > 0 ? ((card.successfulSignals24h / card.signalCount24h) * 100).toFixed(0) : 0}%)
+        <div className="mb-5 space-y-1 text-[11px] leading-relaxed text-muted">
+          <p>
+            Last signal:{' '}
+            <span className="font-mono text-white">
+              {card.lastSignal ? new Date(card.lastSignal).toLocaleTimeString() : 'No recent signal'}
+            </span>
           </p>
-          {card.lastSignal && (
-            <p className="text-[10px] mt-0.5 font-mono">Last signal: {new Date(card.lastSignal).toLocaleTimeString()}</p>
-          )}
+          {isKept ? <p className="text-positive">Kept in portfolio</p> : null}
         </div>
       </div>
 
-      {/* Quick action buttons */}
-      <div className="flex gap-2.5 pt-4 border-t border-[rgba(255,255,255,0.06)]">
+      <div className="flex gap-2.5 border-t border-[rgba(255,255,255,0.06)] pt-4">
         <button
-          onClick={() => onKeep?.(card.subscriptionId)}
-          className="flex-1 px-3 py-2 text-[11px] font-semibold text-white bg-white/[0.04] hover:bg-white/[0.08] rounded-xl border border-[rgba(255,255,255,0.08)] transition-all duration-200 active:scale-95"
+          type="button"
+          onClick={handleKeep}
+          disabled={actionDisabled || !onKeep}
+          className="flex-1 rounded-xl border border-[rgba(255,255,255,0.08)] bg-white/[0.04] px-3 py-2 text-[11px] font-semibold text-white transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label={`Keep ${card.botName} active`}
         >
-          Keep Subscribed
+          {actionDisabled ? 'Saving...' : 'Keep'}
         </button>
-        <button
-          onClick={() => onReview?.(card.subscriptionId)}
-          className="flex-1 px-3 py-2 text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/15 rounded-xl border border-emerald-500/20 transition-all duration-200 active:scale-95"
+
+        <Link
+          href={`/terminal/marketplace/${card.botId}`}
+          className="flex-1 rounded-xl border border-[rgba(0,190,115,0.24)] bg-[rgba(0,190,115,0.08)] px-3 py-2 text-center text-[11px] font-semibold text-positive transition-colors hover:bg-[rgba(0,190,115,0.12)]"
+          aria-label={`Review ${card.botName}`}
         >
           Review
-        </button>
+        </Link>
+
         <button
-          onClick={() => onUnsubscribe?.(card.subscriptionId)}
-          className="flex-1 px-3 py-2 text-[11px] font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/15 rounded-xl border border-rose-500/20 transition-all duration-200 active:scale-95"
+          type="button"
+          onClick={() => onUnsubscribe?.(card.botId)}
+          disabled={actionDisabled || !onUnsubscribe}
+          className="flex-1 rounded-xl border border-[rgba(244,63,94,0.2)] bg-[rgba(244,63,94,0.1)] px-3 py-2 text-[11px] font-semibold text-negative transition-colors hover:bg-[rgba(244,63,94,0.15)] disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label={`Unsubscribe from ${card.botName}`}
         >
           Unsubscribe
         </button>

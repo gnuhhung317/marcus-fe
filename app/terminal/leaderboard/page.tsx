@@ -6,8 +6,9 @@ import LeaderboardClient from '@/components/terminal/leaderboard/leaderboard-cli
 export default async function TerminalLeaderboardPage() {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
+  const normalizedRole = role === 'USER' ? 'TRADER' : role;
 
-  if (role !== 'TRADER' && role !== 'OPERATOR' && role !== 'ADMIN') {
+  if (normalizedRole !== 'TRADER' && normalizedRole !== 'OPERATOR' && normalizedRole !== 'ADMIN') {
     redirect('/terminal');
   }
 

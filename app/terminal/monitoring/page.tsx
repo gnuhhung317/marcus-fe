@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
+import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { KpiCard } from '@/components/shared/kpi-card';
 import { PerformanceChart } from '@/components/shared/performance-chart';
 import { getDashboardPageData, getDeveloperConsolePageData } from '@/lib/contracts/client';
@@ -139,6 +139,26 @@ export default function MonitoringDashboardPage() {
       {error ? <ErrorStateCard title="Monitoring refresh failed" message={error} onAction={refresh} actionLabel="Try again" /> : null}
 
       <section className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.16em] text-muted">
+          <span
+            className={`rounded-full border px-3 py-1 ${
+              ops.connectivity.overallStatus === 'UP'
+                ? 'border-positive/20 bg-positive/10 text-positive'
+                : 'border-amber-400/20 bg-amber-400/10 text-amber-300'
+            }`}
+          >
+            Connectivity: {ops.connectivity.overallStatus}
+          </span>
+          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+            Signals: <span className="text-white">{ops.signalStream.length}</span>
+          </span>
+          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+            Logs: <span className="text-white">{ops.executionLogs.length}</span>
+          </span>
+          <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
+            Trades: <span className="text-white">{dashboard.botTrades.length}</span>
+          </span>
+        </div>
         <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
           {dashboard.terminalKpis.map((kpi, index) => (
             <KpiCard
@@ -204,17 +224,23 @@ export default function MonitoringDashboardPage() {
             </div>
             <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-muted">{ops.executionLogs.length} entries</span>
           </div>
-          <ul className="mt-4 space-y-2">
-            {ops.executionLogs.map((log) => (
-              <li key={`${log.timestamp}-${log.source}`} className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 text-sm text-muted">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-semibold text-white">[{log.level}] {log.source}</span>
-                  <span className="text-[11px] uppercase tracking-[0.16em] text-muted/50">{formatDateTime(log.timestamp)}</span>
-                </div>
-                <p className="mt-1.5 leading-relaxed">{log.message}</p>
-              </li>
-            ))}
-          </ul>
+          {ops.executionLogs.length === 0 ? (
+            <div className="mt-4">
+              <EmptyStateCard title="No execution logs" message="Runtime events will appear here when the system emits observability data." />
+            </div>
+          ) : (
+            <ul className="mt-4 space-y-2">
+              {ops.executionLogs.map((log) => (
+                <li key={`${log.timestamp}-${log.source}`} className="rounded-xl border border-white/5 bg-white/[0.02] px-3 py-2.5 text-sm text-muted">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-semibold text-white">[{log.level}] {log.source}</span>
+                    <span className="text-[11px] uppercase tracking-[0.16em] text-muted/50">{formatDateTime(log.timestamp)}</span>
+                  </div>
+                  <p className="mt-1.5 leading-relaxed">{log.message}</p>
+                </li>
+              ))}
+            </ul>
+          )}
         </article>
 
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
@@ -225,35 +251,34 @@ export default function MonitoringDashboardPage() {
             </div>
             <span className="rounded-full bg-[rgba(0,190,115,0.08)] px-3 py-1 text-xs font-semibold text-[var(--positive)]">{ops.signalStream.length} signals</span>
           </div>
-          <div className="mt-4 overflow-hidden rounded-xl border border-white/5">
-            <table className="min-w-full text-left text-sm">
-              <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.14em] text-muted/60">
-                <tr>
-                  <th className="px-3 py-2.5">Symbol</th>
-                  <th className="px-3 py-2.5">Bot</th>
-                  <th className="px-3 py-2.5">Action</th>
-                  <th className="px-3 py-2.5">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {primarySignals.map((signal) => (
-                  <tr key={signal.signalId} className="border-t border-white/5 text-muted">
-                    <td className="px-3 py-2.5 text-white">{signal.symbol}</td>
-                    <td className="px-3 py-2.5">{signal.botId}</td>
-                    <td className="px-3 py-2.5 text-white">{signal.action}</td>
-                    <td className="px-3 py-2.5">{signal.status}</td>
-                  </tr>
-                ))}
-                {!primarySignals.length ? (
+          {primarySignals.length === 0 ? (
+            <div className="mt-4">
+              <EmptyStateCard title="No recent signals" message="Signal activity will appear here when bots emit events." />
+            </div>
+          ) : (
+            <div className="mt-4 overflow-hidden rounded-xl border border-white/5">
+              <table className="min-w-full text-left text-sm">
+                <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.14em] text-muted/60">
                   <tr>
-                    <td className="px-3 py-8 text-center text-muted" colSpan={4}>
-                      No recent signals available.
-                    </td>
+                    <th className="px-3 py-2.5">Symbol</th>
+                    <th className="px-3 py-2.5">Bot</th>
+                    <th className="px-3 py-2.5">Action</th>
+                    <th className="px-3 py-2.5">Status</th>
                   </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {primarySignals.map((signal) => (
+                    <tr key={signal.signalId} className="border-t border-white/5 text-muted">
+                      <td className="px-3 py-2.5 text-white">{signal.symbol}</td>
+                      <td className="px-3 py-2.5">{signal.botId}</td>
+                      <td className="px-3 py-2.5 text-white">{signal.action}</td>
+                      <td className="px-3 py-2.5">{signal.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </article>
       </section>
 
@@ -266,41 +291,38 @@ export default function MonitoringDashboardPage() {
           <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-muted">{dashboard.botTrades.length} trades</span>
         </div>
         <div className="mt-4 overflow-x-auto rounded-xl border border-white/5">
-          <table className="min-w-full text-left text-sm">
-            <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.14em] text-muted/60">
-              <tr>
-                <th className="px-3 py-2.5">Instrument</th>
-                <th className="px-3 py-2.5">Side</th>
-                <th className="px-3 py-2.5">Size</th>
-                <th className="px-3 py-2.5">Entry</th>
-                <th className="px-3 py-2.5">Exit</th>
-                <th className="px-3 py-2.5">PnL</th>
-                <th className="px-3 py-2.5">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboard.botTrades.map((trade) => (
-                <tr key={`${trade.timestamp}-${trade.pair}`} className="border-t border-white/5 text-muted hover:bg-white/[0.03]">
-                  <td className="px-3 py-2.5 text-white">{trade.pair}</td>
-                  <td className="px-3 py-2.5">{trade.side}</td>
-                  <td className="px-3 py-2.5">{trade.size?.toFixed(4) ?? '--'}</td>
-                  <td className="px-3 py-2.5">{trade.entryPrice ? formatCurrency(trade.entryPrice) : '--'}</td>
-                  <td className="px-3 py-2.5">{trade.exitPrice ? formatCurrency(trade.exitPrice) : '--'}</td>
-                  <td className={`px-3 py-2.5 font-semibold ${trade.pnl >= 0 ? 'text-positive' : 'text-negative'}`}>
-                    {trade.pnl >= 0 ? '+' : '-'}{formatCurrency(Math.abs(trade.pnl))}
-                  </td>
-                  <td className="px-3 py-2.5">{formatDateTime(trade.timestamp)}</td>
-                </tr>
-              ))}
-              {!dashboard.botTrades.length ? (
+          {dashboard.botTrades.length === 0 ? (
+            <EmptyStateCard title="No trade data" message="Recent fills and exits will appear here once the bot starts trading." />
+          ) : (
+            <table className="min-w-full text-left text-sm">
+              <thead className="bg-white/[0.03] text-xs uppercase tracking-[0.14em] text-muted/60">
                 <tr>
-                  <td className="px-3 py-8 text-center text-muted" colSpan={7}>
-                    No trade data available.
-                  </td>
+                  <th className="px-3 py-2.5">Instrument</th>
+                  <th className="px-3 py-2.5">Side</th>
+                  <th className="px-3 py-2.5">Size</th>
+                  <th className="px-3 py-2.5">Entry</th>
+                  <th className="px-3 py-2.5">Exit</th>
+                  <th className="px-3 py-2.5">PnL</th>
+                  <th className="px-3 py-2.5">Timestamp</th>
                 </tr>
-              ) : null}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {dashboard.botTrades.map((trade) => (
+                  <tr key={`${trade.timestamp}-${trade.pair}`} className="border-t border-white/5 text-muted hover:bg-white/[0.03]">
+                    <td className="px-3 py-2.5 text-white">{trade.pair}</td>
+                    <td className="px-3 py-2.5">{trade.side}</td>
+                    <td className="px-3 py-2.5">{trade.size?.toFixed(4) ?? '--'}</td>
+                    <td className="px-3 py-2.5">{trade.entryPrice ? formatCurrency(trade.entryPrice) : '--'}</td>
+                    <td className="px-3 py-2.5">{trade.exitPrice ? formatCurrency(trade.exitPrice) : '--'}</td>
+                    <td className={`px-3 py-2.5 font-semibold ${trade.pnl >= 0 ? 'text-positive' : 'text-negative'}`}>
+                      {trade.pnl >= 0 ? '+' : '-'}{formatCurrency(Math.abs(trade.pnl))}
+                    </td>
+                    <td className="px-3 py-2.5">{formatDateTime(trade.timestamp)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </section>
     </div>

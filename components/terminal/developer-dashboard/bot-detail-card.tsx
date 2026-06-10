@@ -1,42 +1,73 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { BotAnalyticsSection } from '@/components/terminal/bot-detail/bot-analytics-section';
 import { updateBotStatus } from '@/lib/contracts/client';
-import { BotIntegrationHealth, DeveloperBotDetail, DeveloperSignalItem, DeveloperSubscriptionSummary, DeveloperBotStatus } from '@/lib/contracts/types';
+import {
+  BotIntegrationHealth,
+  DeveloperBotDetail,
+  DeveloperBotStatus,
+  DeveloperSignalItem,
+  DeveloperSubscriptionSummary,
+} from '@/lib/contracts/types';
 import { CopyButton } from './copy-button';
 import { EditBotModal } from './edit-bot-modal';
 import { DeleteBotModal } from './delete-bot-modal';
 import { IntegrationHealthWidget } from './integration-health-widget';
 import { SignalStreamTable } from './signal-stream-table';
 import { SignalDetailDrawer } from './signal-detail-drawer';
+import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
 
-const statusStyles: Record<string, string> = {
-  ACTIVE: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  PAUSED: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  DOWN: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  DELETED: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+type DetailTab = 'overview' | 'analytics' | 'credentials' | 'integration' | 'signals' | 'subscribers';
+type SnippetLanguage = 'curl' | 'node' | 'python' | 'go';
+
+const tabLabels: Record<DetailTab, string> = {
+  overview: 'Overview',
+  analytics: 'Analytics',
+  credentials: 'API credentials',
+  integration: 'Integration health',
+  signals: 'Signals',
+  subscribers: 'Subscribers',
 };
 
-const formatMetricPercent = (val: number | null | undefined, alwaysSign = false) => {
+const statusTone: Record<DeveloperBotStatus, string> = {
+  ACTIVE: 'bg-positive-soft text-positive',
+  PAUSED: 'bg-warning-soft text-warning',
+  DOWN: 'bg-negative-soft text-negative',
+  DELETED: 'bg-surface text-fg-muted',
+};
+
+function formatMetricPercent(val: number | null | undefined, alwaysSign = false) {
   if (val === undefined || val === null) return 'N/A';
   const value = val * 100;
   const prefix = alwaysSign && value >= 0 ? '+' : '';
   return `${prefix}${value.toFixed(2)}%`;
-};
+}
 
-const formatDrawdownPercent = (val: number | null | undefined) => {
+function formatDrawdownPercent(val: number | null | undefined) {
   if (val === undefined || val === null) return 'N/A';
   const value = Math.abs(val) * 100;
   return `-${value.toFixed(2)}%`;
-};
+}
 
-const formatMetricNumber = (val: number | null | undefined, decimals = 2) => {
+function formatMetricNumber(val: number | null | undefined, decimals = 2) {
   if (val === undefined || val === null) return 'N/A';
   return val.toFixed(decimals);
-};
+}
+
+function integrationTone(status?: string | null) {
+  const normalized = String(status ?? '').toUpperCase();
+  if (normalized === 'UP') return 'bg-positive-soft text-positive';
+  if (normalized === 'DEGRADED') return 'bg-warning-soft text-warning';
+  if (normalized === 'DOWN') return 'bg-negative-soft text-negative';
+  return 'bg-surface text-fg-muted';
+}
+
+function statusLabel(status: DeveloperBotStatus) {
+  return status === 'DELETED' ? 'Deleted' : status;
+}
 
 interface BotDetailCardProps {
   bot: DeveloperBotDetail;
@@ -48,17 +79,13 @@ interface BotDetailCardProps {
 }
 
 export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false, onStatusChange }: BotDetailCardProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'credentials' | 'integration' | 'signals' | 'subscribers'>('overview');
-  const [selectedLanguage, setSelectedLanguage] = useState<'curl' | 'node' | 'python' | 'go'>('curl');
+  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+  const [selectedLanguage, setSelectedLanguage] = useState<SnippetLanguage>('curl');
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedSignal, setSelectedSignal] = useState<DeveloperSignalItem | null>(null);
-
-  const router = useRouter();
-
-  // Optimistic local status — avoids router.refresh() which causes redirect loop
   const [localStatus, setLocalStatus] = useState<DeveloperBotStatus>(bot.status);
 
   useEffect(() => {
@@ -67,9 +94,7 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
   }, [bot.botId, bot.status]);
 
   const statusMutation = useMutation({
-    mutationFn: async (nextStatus: DeveloperBotStatus) => {
-      return updateBotStatus(bot.botId, nextStatus);
-    },
+    mutationFn: async (nextStatus: DeveloperBotStatus) => updateBotStatus(bot.botId, nextStatus),
     onSuccess: (updated) => {
       const newStatus = updated.status ?? localStatus;
       setLocalStatus(newStatus);
@@ -81,30 +106,26 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
       setStatusError(error instanceof Error ? error.message : 'Unable to update bot status.');
     },
   });
-  
+
   const subscriberCount = subscriptions.length;
   const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
-
-  const statusClass = statusStyles[localStatus] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20';
   const nextLifecycleStatus: DeveloperBotStatus | null =
     localStatus === 'ACTIVE' ? 'PAUSED' : localStatus === 'PAUSED' || localStatus === 'DOWN' ? 'ACTIVE' : null;
-  const lifecycleLabel = nextLifecycleStatus === 'PAUSED' ? 'Stop Bot' : nextLifecycleStatus === 'ACTIVE' ? 'Resume Bot' : 'Status Locked';
+  const lifecycleLabel = nextLifecycleStatus === 'PAUSED' ? 'Stop bot' : nextLifecycleStatus === 'ACTIVE' ? 'Resume bot' : 'Status locked';
   const apiKey = bot.apiKey ?? 'Not available';
-
-
-  // API Signal Snippets
-  const timestamp = new Date().toISOString();
   const exchangeSlug = (bot.exchange ?? 'binance').toLowerCase();
   const pair = bot.tradingPair ?? 'BTC/USDT';
+  const timestamp = new Date().toISOString();
 
-  const snippets = {
-    curl: `curl -X POST https://marcus-api.tromoi.xyz/api/v1/signals \\
+  const snippets = useMemo(
+    () => ({
+      curl: `curl -X POST https://marcus-api.tromoi.xyz/api/v1/signals \\
   -H "X-Marcus-Api-Key: ${apiKey}" \\
   -H "X-Marcus-Bot-Secret: <YOUR_SECRET>" \\
   -H "Content-Type: application/json" \\
   -d '{
-    "signalId": "sig_${Date.now()}",
+    "signalId": "sig_${bot.botId}",
     "botId": "${bot.botId}",
     "exchangeSlug": "${exchangeSlug}",
     "symbol": "${pair}",
@@ -112,10 +133,10 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
     "price": 67321.12,
     "timestamp": "${timestamp}"
   }'`,
-    node: `const axios = require('axios');
+      node: `const axios = require('axios');
 
 const payload = {
-  signalId: "sig_${Date.now()}",
+  signalId: "sig_${bot.botId}",
   botId: "${bot.botId}",
   exchangeSlug: "${exchangeSlug}",
   symbol: "${pair}",
@@ -131,14 +152,13 @@ axios.post('https://marcus-api.tromoi.xyz/api/v1/signals', payload, {
     'Content-Type': 'application/json'
   }
 })
-.then(res => console.log('Signal sent:', res.status))
-.catch(err => console.error('Error:', err.message));`,
-    python: `import requests
-import time
+.then((res) => console.log('Signal sent:', res.status))
+.catch((err) => console.error('Error:', err.message));`,
+      python: `import requests
 from datetime import datetime
 
 payload = {
-    "signalId": f"sig_{int(time.time())}",
+    "signalId": "sig_${bot.botId}",
     "botId": "${bot.botId}",
     "exchangeSlug": "${exchangeSlug}",
     "symbol": "${pair}",
@@ -154,400 +174,223 @@ headers = {
 }
 
 response = requests.post(
-    "https://marcus-api.tromoi.xyz/api/v1/signals", 
-    json=payload, 
+    "https://marcus-api.tromoi.xyz/api/v1/signals",
+    json=payload,
     headers=headers
 )
 print("Status code:", response.status_code)
 print("Response:", response.text)`,
-    go: `package main
+      go: `package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"net/http"
-	"time"
+\t"bytes"
+\t"encoding/json"
+\t"fmt"
+\t"net/http"
+\t"time"
 )
 
 func main() {
-	payload := map[string]interface{}{
-		"signalId":     fmt.Sprintf("sig_%d", time.Now().Unix()),
-		"botId":        "${bot.botId}",
-		"exchangeSlug": "${exchangeSlug}",
-		"symbol":       "${pair}",
-		"action":       "OPEN_LONG",
-		"price":        67321.12,
-		"timestamp":    time.Now().UTC().Format(time.RFC3339),
-	}
+\tpayload := map[string]interface{}{
+\t\t"signalId":     fmt.Sprintf("sig_%d", time.Now().Unix()),
+\t\t"botId":        "${bot.botId}",
+\t\t"exchangeSlug": "${exchangeSlug}",
+\t\t"symbol":       "${pair}",
+\t\t"action":       "OPEN_LONG",
+\t\t"price":        67321.12,
+\t\t"timestamp":    time.Now().UTC().Format(time.RFC3339),
+\t}
 
-	jsonValue, _ := json.Marshal(payload)
-	req, _ := http.NewRequest("POST", "https://marcus-api.tromoi.xyz/api/v1/signals", bytes.NewBuffer(jsonValue))
-	
-	req.Header.Set("X-Marcus-Api-Key", "${apiKey}")
-	req.Header.Set("X-Marcus-Bot-Secret", "<YOUR_SECRET>")
-	req.Header.Set("Content-Type", "application/json")
+\tjsonValue, _ := json.Marshal(payload)
+\treq, _ := http.NewRequest("POST", "https://marcus-api.tromoi.xyz/api/v1/signals", bytes.NewBuffer(jsonValue))
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
+\treq.Header.Set("X-Marcus-Api-Key", "${apiKey}")
+\treq.Header.Set("X-Marcus-Bot-Secret", "<YOUR_SECRET>")
+\treq.Header.Set("Content-Type", "application/json")
 
-	fmt.Println("Response Status:", resp.Status)
-}`
-  };
+\tclient := &http.Client{}
+\tresp, err := client.Do(req)
+\tif err != nil {
+\t\tpanic(err)
+\t}
+\tdefer resp.Body.Close()
+
+\tfmt.Println("Response Status:", resp.Status)
+}`,
+    }),
+    [apiKey, bot.botId, exchangeSlug, pair, timestamp]
+  );
+
+  const snippetText = snippets[selectedLanguage];
 
   return (
-    <article className="glass-strong rounded-2xl shadow-[var(--shadow-soft)] border border-[var(--panel-border)] overflow-hidden flex flex-col relative group">
-      {/* Decorative colored glow in detail view */}
-      <div className="absolute top-0 left-0 w-48 h-48 bg-emerald-500/[0.02] rounded-full blur-3xl pointer-events-none" />
-      
-      {/* Slim Switching Loading Bar */}
-      {isSwitching && (
-        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-emerald-500/20 via-emerald-500 to-emerald-500/20 animate-pulse z-30" />
-      )}
+    <article className="glass-strong flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--panel-border)] shadow-[var(--shadow-soft)]">
+      {isSwitching ? <div className="h-1 w-full animate-pulse bg-[var(--primary-soft)]" /> : null}
 
-      {/* Bot Header Area */}
-      <div className="p-6 sm:p-8 pb-5 border-b border-[var(--panel-border)] bg-[var(--panel)]">
-        <div className="mb-4">
-          <button
-            onClick={() => router.push('/terminal/developer-dashboard')}
-            className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors outline-none cursor-pointer"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Fleet Overview
-          </button>
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Stop/resume lifecycle control */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider hover:bg-white/5 transition-all outline-none cursor-pointer ${statusClass}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${localStatus === 'ACTIVE' ? 'bg-emerald-400 animate-pulse' : localStatus === 'DOWN' ? 'bg-rose-400' : 'bg-slate-400'}`} />
-                  {localStatus}
-                  <svg className="w-3 h-3 opacity-60 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {integrationHealth && (
-                  <div className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold tracking-wider ${
-                    integrationHealth.overallStatus === 'UP' 
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                      : integrationHealth.overallStatus === 'DEGRADED'
-                      ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                      : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                  }`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${
-                      integrationHealth.overallStatus === 'UP' 
-                        ? 'bg-emerald-400 animate-pulse' 
-                        : integrationHealth.overallStatus === 'DEGRADED'
-                        ? 'bg-amber-400'
-                        : 'bg-rose-400 animate-pulse'
-                    }`} />
-                    Connection: {integrationHealth.overallStatus}
-                  </div>
-                )}
-                {isStatusDropdownOpen && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-10" 
-                      onClick={() => setIsStatusDropdownOpen(false)}
-                    />
-                    <div className="absolute left-0 mt-1.5 w-40 rounded-xl border border-white/10 bg-slate-950/95 p-1 shadow-2xl z-20 backdrop-blur-md">
-                      {nextLifecycleStatus ? (
-                        <button
-                          disabled={statusMutation.isPending}
-                          onClick={() => {
-                            statusMutation.mutate(nextLifecycleStatus);
-                          }}
-                          className="w-full flex items-center gap-2 text-left px-3 py-2 text-[10px] font-bold uppercase rounded-lg hover:bg-white/5 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${nextLifecycleStatus === 'ACTIVE' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                          {statusMutation.isPending ? 'Updating...' : lifecycleLabel}
-                        </button>
-                      ) : (
-                        <div className="px-3 py-2 text-[10px] font-bold uppercase text-slate-500">
-                          No status action
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </div>
-              <span className="text-xs font-mono text-slate-500 bg-white/5 border border-white/5 rounded-md px-2 py-0.5">
-                ID: {bot.botId}
+      <div className="border-b border-[var(--panel-border)] p-6 sm:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1 space-y-4">
+            <Link href="/terminal/developer-dashboard" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-fg-muted transition-colors hover:text-fg">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to fleet
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center rounded-full border border-[var(--panel-border)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${statusTone[localStatus]}`}>
+                {statusLabel(localStatus)}
+              </span>
+              {integrationHealth ? (
+                <span className={`inline-flex items-center rounded-full border border-[var(--panel-border)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${integrationTone(integrationHealth.overallStatus)}`}>
+                  {integrationHealth.overallStatus}
+                </span>
+              ) : null}
+              <span className="rounded-full border border-[var(--panel-border)] bg-surface px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-fg-muted">
+                {bot.botId}
               </span>
             </div>
-            <h2 className="mt-3 text-2xl font-bold text-white tracking-tight truncate">
-              {bot.botName}
-            </h2>
-            {bot.description && (
-              <p className="mt-1.5 text-sm text-slate-400 leading-relaxed">
-                {bot.description}
-              </p>
-            )}
+
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight text-fg sm:text-4xl">{bot.botName}</h1>
+              {bot.description ? <p className="line-clamp-3 max-w-3xl text-sm leading-relaxed text-fg-muted">{bot.description}</p> : null}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Venue</p>
+                <p className="mt-2 text-sm font-semibold text-fg">{bot.exchange ?? 'N/A'}</p>
+              </div>
+              <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Pair</p>
+                <p className="mt-2 font-mono text-sm font-semibold text-fg">{bot.tradingPair ?? 'N/A'}</p>
+              </div>
+              <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Developer</p>
+                <p className="mt-2 truncate font-mono text-sm text-fg">{bot.developerId ? `${bot.developerId.slice(0, 8)}...` : 'N/A'}</p>
+              </div>
+              <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Updated</p>
+                <p className="mt-2 text-sm font-semibold text-fg">{bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}</p>
+              </div>
+            </div>
           </div>
 
-          {/* Action buttons (Edit & Delete) */}
-          <div className="flex-shrink-0 flex items-center gap-3">
+          <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
             <button
+              type="button"
               onClick={() => setIsEditModalOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-bold text-white hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-strong"
             >
-              <svg className="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-              </svg>
-              Edit Bot
+              Edit bot
             </button>
             <button
+              type="button"
               onClick={() => setIsDeleteModalOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-rose-500/10 bg-rose-500/5 px-4 py-2 text-xs font-bold text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--panel-border)] bg-negative-soft px-4 py-2 text-sm font-semibold text-negative transition-colors hover:brightness-105"
             >
-              <svg className="w-4 h-4 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              Delete
+              Delete bot
             </button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        {statusError && (
-          <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-xs font-semibold text-rose-300">
+        {statusError ? (
+          <div className="mt-4 rounded-xl border border-[var(--panel-border)] bg-negative-soft px-4 py-3 text-sm text-negative">
             {statusError}
           </div>
-        )}
+        ) : null}
 
-        {localStatus === 'PAUSED' && (
-          <div className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-xs font-semibold text-amber-200">
+        {localStatus === 'PAUSED' ? (
+          <div className="mt-4 rounded-xl border border-[var(--panel-border)] bg-warning-soft px-4 py-3 text-sm text-warning">
             This bot is stopped. Existing subscriptions remain active, but new trading signals are rejected until it is resumed.
           </div>
-        )}
+        ) : null}
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mt-6 border-b border-white/5 pb-0">
-          {(['overview', 'analytics', 'credentials', 'integration', 'signals', 'subscribers'] as const).map((tab) => (
+        <div className="mt-6 flex flex-wrap gap-2 border-b border-[var(--panel-border)] pb-0">
+          {(Object.keys(tabLabels) as DetailTab[]).map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setActiveTab(tab)}
-              className={`pb-3 px-4 text-xs font-semibold uppercase tracking-wider relative transition-all duration-200 outline-none ${
-                activeTab === tab 
-                  ? 'text-white' 
-                  : 'text-slate-500 hover:text-slate-300'
+              className={`relative px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] transition-colors ${
+                activeTab === tab ? 'text-fg' : 'text-fg-muted hover:text-fg'
               }`}
             >
-              {tab === 'overview' && 'Overview'}
-              {tab === 'analytics' && 'Analytics'}
-              {tab === 'credentials' && 'API Credentials'}
-              {tab === 'integration' && 'Integration Health'}
-              {tab === 'signals' && 'Signals'}
-              {tab === 'subscribers' && 'Subscribers'}
-              {activeTab === tab && (
-                <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-500 rounded-full shadow-[0_0_8px_var(--primary-soft)]" />
-              )}
+              {tabLabels[tab]}
+              {activeTab === tab ? <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-[var(--primary)]" /> : null}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Tab Contents */}
-      <div className="p-6 sm:p-8 flex-1">
-        {/* OVERVIEW TAB */}
-        {activeTab === 'overview' && (
-          <div className="space-y-8 animate-fade-in">
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Configuration Details</h3>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Trading Venue</span>
-                  <span className="text-sm font-semibold text-white mt-1.5">{bot.exchange ?? 'N/A'}</span>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Execution Pair</span>
-                  <span className="text-sm font-semibold text-white mt-1.5 font-mono">{bot.tradingPair ?? 'N/A'}</span>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Developer UUID</span>
-                  <span className="text-sm font-mono text-slate-300 mt-1.5 truncate" title={bot.developerId ?? undefined}>
-                    {bot.developerId ? `${bot.developerId.slice(0, 8)}...` : 'N/A'}
-                  </span>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Created Date</span>
-                  <span className="text-sm font-mono text-slate-300 mt-1.5">
-                    {bot.createdAt ? new Date(bot.createdAt).toLocaleDateString() : 'N/A'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
-                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Bot Status</p>
-                <p className="mt-2 text-sm font-semibold text-white">{localStatus}</p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
-                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Subscribers</p>
-                <p className="mt-2 text-sm font-semibold text-white">{subscriberCount}</p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
-                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Connected</p>
-                <p className="mt-2 text-sm font-semibold text-emerald-300">{connectedCount}</p>
-              </div>
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4">
-                <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Last Updated</p>
-                <p className="mt-2 text-sm font-semibold text-slate-200">
-                  {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Performance Snapshot</h3>
-              {bot.performance ? (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Annualized Return</span>
-                    <span className={`text-lg font-semibold mt-1.5 ${
-                      (bot.performance.annualReturn ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      {formatMetricPercent(bot.performance.annualReturn, true)}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Max Drawdown</span>
-                    <span className="text-lg font-semibold text-rose-400 mt-1.5">
-                      {formatDrawdownPercent(bot.performance.maxDrawdown)}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Sharpe Ratio</span>
-                    <span className="text-lg font-semibold text-white mt-1.5">
-                      {formatMetricNumber(bot.performance.sharpe)}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Win Rate</span>
-                    <span className="text-lg font-semibold text-slate-200 mt-1.5">
-                      {formatMetricPercent(bot.performance.winRate)}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Avg Trade Return</span>
-                    <span className={`text-lg font-semibold mt-1.5 ${
-                      (bot.performance.avgTradeReturn ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      {formatMetricPercent(bot.performance.avgTradeReturn, true)}
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex flex-col justify-between">
-                    <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Trades Per Day</span>
-                    <span className="text-lg font-semibold text-slate-200 mt-1.5">
-                      {formatMetricNumber(bot.performance.tradesPerDay, 2)}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-6 text-center text-sm text-slate-400">
-                  No performance metrics computed yet. Send signal executions to calculate metrics.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ANALYTICS TAB */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-4 animate-fade-in">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Bot Analytics</h3>
-              <p className="text-xs text-slate-500 mt-1">Bot-level historical and out-of-sample performance for this runtime botId.</p>
-            </div>
-            <BotAnalyticsSection analytics={bot.analytics} />
-          </div>
-        )}
-
-        {/* API CREDENTIALS TAB */}
-        {activeTab === 'credentials' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="rounded-xl border border-amber-500/15 bg-amber-500/[0.02] p-4 flex gap-3">
-              <svg className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <div>
-                <h4 className="text-xs font-bold text-white uppercase tracking-wider">Security & Signing Notice</h4>
-                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                  Authentication requires both your public <span className="text-white font-mono">API Key</span> and your raw <span className="text-white font-mono">Provisioning Secret</span> (which was displayed once upon creation). Store them in a secure environment.
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Bot ID</span>
-                  <p className="text-xs font-mono text-white mt-1 select-all truncate" title={bot.botId}>{bot.botId}</p>
-                </div>
-                <CopyButton value={bot.botId} className="flex-shrink-0" />
-              </div>
-
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-4 flex items-center justify-between gap-4">
-                <div className="min-w-0 flex-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Public API Key</span>
-                  <p className="text-xs font-mono text-white mt-1 select-all truncate" title={apiKey}>{apiKey}</p>
-                </div>
-                <CopyButton value={apiKey} className="flex-shrink-0" />
-              </div>
-
-              <div className="rounded-xl border border-dashed border-white/10 bg-white/[0.01] p-4 flex items-center justify-between">
+      <div className="flex-1 p-6 sm:p-8">
+        {activeTab === 'overview' ? (
+          <div className="space-y-8">
+            <section className="space-y-4">
+              <div className="flex items-end justify-between gap-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Signing Secret</span>
-                  <p className="text-xs text-slate-400 mt-1">Managed during provisioning. Verify signature headers in local scripts.</p>
+                  <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-fg-muted">Summary</h2>
+                  <p className="mt-1 text-sm text-fg-muted">Value-first snapshot of the current bot configuration.</p>
                 </div>
-                <span className="text-[10px] text-slate-500 font-semibold uppercase bg-slate-900 border border-white/5 px-2.5 py-1 rounded-md">
-                  Encrypted
-                </span>
+                <LifecycleBadge status={localStatus} />
               </div>
-            </div>
+
+              <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: 'Status', value: localStatus },
+                  { label: 'Subscribers', value: String(subscriberCount) },
+                  { label: 'Connected', value: String(connectedCount) },
+                  { label: 'Active', value: String(activeCount) },
+                ].map((item) => (
+                  <div key={item.label} className="glass-strong h-full rounded-xl border border-[var(--panel-border)] p-4">
+                    <div className="flex h-full flex-col justify-between">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">{item.label}</p>
+                      <p className="mt-3 text-lg font-semibold text-fg">{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {bot.performance ? (
+              <section className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  { label: 'Annual return', value: formatMetricPercent(bot.performance.annualReturn, true), tone: 'text-positive' },
+                  { label: 'Max drawdown', value: formatDrawdownPercent(bot.performance.maxDrawdown), tone: 'text-negative' },
+                  { label: 'Sharpe', value: formatMetricNumber(bot.performance.sharpe), tone: 'text-fg' },
+                  { label: 'Win rate', value: formatMetricPercent(bot.performance.winRate), tone: 'text-fg' },
+                ].map((item) => (
+                  <div key={item.label} className="glass-strong h-full rounded-xl border border-[var(--panel-border)] p-4">
+                    <div className="flex h-full flex-col justify-between">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">{item.label}</p>
+                      <p className={`mt-3 text-lg font-semibold ${item.tone}`}>{item.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </section>
+            ) : null}
           </div>
-        )}
+        ) : null}
 
-        {/* INTEGRATION GUIDE TAB */}
-        {activeTab === 'integration' && (
-          <div className="space-y-6 animate-fade-in">
-            {isSwitching ? (
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-6 space-y-4 animate-pulse">
-                <div className="h-4 bg-white/10 rounded w-1/3" />
-                <div className="h-3 bg-white/5 rounded w-2/3" />
-                <div className="h-24 bg-white/5 rounded w-full" />
-              </div>
-            ) : (
-              <>
-                <IntegrationHealthWidget health={integrationHealth} />
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        {activeTab === 'analytics' ? (
+          <BotAnalyticsSection analytics={bot.analytics ?? null} />
+        ) : null}
+
+        {activeTab === 'credentials' ? (
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Webhook Signal Gateway</h3>
-                <p className="text-xs text-slate-500 mt-0.5">Stream execution payloads to our public API signal bridge.</p>
+                <h2 className="text-lg font-semibold text-fg">API credentials</h2>
+                <p className="mt-1 text-sm text-fg-muted">Copy a runtime snippet without exposing the secret surface in the layout.</p>
               </div>
-
-              {/* Language Selection */}
-              <div className="flex bg-slate-950 border border-white/5 p-1 rounded-lg">
-                {(['curl', 'node', 'python', 'go'] as const).map((lang) => (
+              <div className="flex flex-wrap gap-2">
+                {(Object.keys(snippets) as SnippetLanguage[]).map((lang) => (
                   <button
                     key={lang}
+                    type="button"
                     onClick={() => setSelectedLanguage(lang)}
-                    className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all outline-none ${
-                      selectedLanguage === lang
-                        ? 'bg-emerald-500 text-black shadow-sm'
-                        : 'text-slate-500 hover:text-slate-300'
+                    className={`rounded-full border border-[var(--panel-border)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                      selectedLanguage === lang ? 'bg-positive-soft text-positive' : 'bg-surface text-fg-muted hover:bg-surface-strong'
                     }`}
                   >
                     {lang === 'curl' ? 'cURL' : lang === 'node' ? 'Node' : lang === 'python' ? 'Python' : 'Go'}
@@ -556,238 +399,144 @@ func main() {
               </div>
             </div>
 
-            {/* Code Block Content */}
-            <div className="relative group/code rounded-xl border border-white/5 bg-slate-950 overflow-hidden">
-              <div className="absolute top-2 right-2 opacity-60 group-hover/code:opacity-100 transition-opacity">
-                <CopyButton value={snippets[selectedLanguage]} className="bg-slate-900 border border-white/5" />
+            <div className="relative overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-canvas-elevated">
+              <div className="absolute right-3 top-3">
+                <CopyButton value={snippetText} className="h-8 w-8" />
               </div>
-              <pre className="overflow-auto p-4 sm:p-5 text-xs font-mono leading-relaxed text-slate-300 max-h-[380px] scrollbar-thin">
-                <code>
-                  {selectedLanguage === 'curl' && (
-                    <>
-                      <span className="text-emerald-400 font-bold">curl</span> -X POST https://marcus-api.tromoi.xyz/api/v1/signals \<br />
-                      {"  "}-H <span className="text-blue-300">&quot;X-Marcus-Api-Key: {apiKey}&quot;</span> \<br />
-                      {"  "}-H <span className="text-blue-300">&quot;X-Marcus-Bot-Secret: &lt;YOUR_SECRET&gt;&quot;</span> \<br />
-                      {"  "}-H <span className="text-blue-300">&quot;Content-Type: application/json&quot;</span> \<br />
-                      {"  "}-d <span className="text-yellow-200">&apos;{'{'}&apos;</span><br />
-                      {"    "}<span className="text-blue-400">&quot;signalId&quot;</span>: <span className="text-emerald-300">&quot;sig_{Date.now()}&quot;</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;botId&quot;</span>: <span className="text-emerald-300">&quot;{bot.botId}&quot;</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;exchangeSlug&quot;</span>: <span className="text-emerald-300">&quot;{exchangeSlug}&quot;</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;symbol&quot;</span>: <span className="text-emerald-300">&quot;{pair}&quot;</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;action&quot;</span>: <span className="text-emerald-300">&quot;OPEN_LONG&quot;</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;price&quot;</span>: <span className="text-amber-400">67321.12</span>,<br />
-                      {"    "}<span className="text-blue-400">&quot;timestamp&quot;</span>: <span className="text-emerald-300">&quot;{timestamp}&quot;</span><br />
-                      {"  "}<span className="text-yellow-200">{'}'}&apos;</span>
-                    </>
-                  )}
-                  {selectedLanguage === 'node' && (
-                    <>
-                      <span className="text-slate-500">{"// Send webhook signal from Node.js environment"}</span><br />
-                      <span className="text-cyan-400">const</span> axios = <span className="text-blue-300">require</span>(<span className="text-emerald-300">&apos;axios&apos;</span>);<br /><br />
-                      <span className="text-cyan-400">const</span> payload = {'{'}<br />
-                      {"  "}signalId: <span className="text-emerald-300">&quot;sig_{Date.now()}&quot;</span>,<br />
-                      {"  "}botId: <span className="text-emerald-300">&quot;{bot.botId}&quot;</span>,<br />
-                      {"  "}exchangeSlug: <span className="text-emerald-300">&quot;{exchangeSlug}&quot;</span>,<br />
-                      {"  "}symbol: <span className="text-emerald-300">&quot;{pair}&quot;</span>,<br />
-                      {"  "}action: <span className="text-emerald-300">&quot;OPEN_LONG&quot;</span>,<br />
-                      {"  "}price: <span className="text-amber-400">67321.12</span>,<br />
-                      {"  "}timestamp: <span className="text-emerald-300">&quot;{timestamp}&quot;</span><br />
-                      {'}'};<br /><br />
-                      axios.<span className="text-blue-300">post</span>(<span className="text-emerald-300">&apos;https://marcus-api.tromoi.xyz/api/v1/signals&apos;</span>, payload, {'{'}<br />
-                      {"  "}headers: {'{'}<br />
-                      {"    "}<span className="text-emerald-300">&apos;X-Marcus-Api-Key&apos;</span>: <span className="text-emerald-300">&apos;{apiKey}&apos;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&apos;X-Marcus-Bot-Secret&apos;</span>: <span className="text-emerald-300">&apos;&lt;YOUR_SECRET&gt;&apos;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&apos;Content-Type&apos;</span>: <span className="text-emerald-300">&apos;application/json&apos;</span><br />
-                      {"  "}{'}'}<br />
-                      {'}'})<br />
-                      .<span className="text-blue-300">then</span>(res =&gt; console.log(<span className="text-emerald-300">&apos;Signal sent:&apos;</span>, res.status))<br />
-                      .<span className="text-blue-300">catch</span>(err =&gt; console.error(<span className="text-emerald-300">&apos;Error:&apos;</span>, err.message));
-                    </>
-                  )}
-                  {selectedLanguage === 'python' && (
-                    <>
-                      <span className="text-slate-500"># Send signal using Requests in Python</span><br />
-                      <span className="text-cyan-400">import</span> requests<br />
-                      <span className="text-cyan-400">import</span> time<br />
-                      <span className="text-cyan-400">from</span> datetime <span className="text-cyan-400">import</span> datetime<br /><br />
-                      payload = {'{'}<br />
-                      {"    "}<span className="text-emerald-300">&quot;signalId&quot;</span>: <span className="text-blue-300">f&quot;sig_</span><span className="text-amber-400">{'{int(time.time())}'}</span><span className="text-blue-300">&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;botId&quot;</span>: <span className="text-emerald-300">&quot;{bot.botId}&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;exchangeSlug&quot;</span>: <span className="text-emerald-300">&quot;{exchangeSlug}&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;symbol&quot;</span>: <span className="text-emerald-300">&quot;{pair}&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;action&quot;</span>: <span className="text-emerald-300">&quot;OPEN_LONG&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;price&quot;</span>: <span className="text-amber-400">67321.12</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;timestamp&quot;</span>: datetime.utcnow().isoformat() + <span className="text-emerald-300">&quot;Z&quot;</span><br />
-                      {'}'}<br /><br />
-                      headers = {'{'}<br />
-                      {"    "}<span className="text-emerald-300">&quot;X-Marcus-Api-Key&quot;</span>: <span className="text-emerald-300">&quot;{apiKey}&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;X-Marcus-Bot-Secret&quot;</span>: <span className="text-emerald-300">&quot;&lt;YOUR_SECRET&gt;&quot;</span>,<br />
-                      {"    "}<span className="text-emerald-300">&quot;Content-Type&quot;</span>: <span className="text-emerald-300">&quot;application/json&quot;</span><br />
-                      {'}'}<br /><br />
-                      response = requests.post(<br />
-                      {"    "}<span className="text-emerald-300">&quot;https://marcus-api.tromoi.xyz/api/v1/signals&quot;</span>, <br />
-                      {"    "}json=payload, <br />
-                      {"    "}headers=headers<br />
-                      )<br />
-                      print(<span className="text-emerald-300">&quot;Status code:&quot;</span>, response.status_code)<br />
-                      print(<span className="text-emerald-300">&quot;Response:&quot;</span>, response.text)
-                    </>
-                  )}
-                  {selectedLanguage === 'go' && (
-                    <>
-                      <span className="text-cyan-400">package</span> main<br /><br />
-                      <span className="text-cyan-400">import</span> (<br />
-                      {"	"}<span className="text-emerald-300">&quot;bytes&quot;</span><br />
-                      {"	"}<span className="text-emerald-300">&quot;encoding/json&quot;</span><br />
-                      {"	"}<span className="text-emerald-300">&quot;fmt&quot;</span><br />
-                      {"	"}<span className="text-emerald-300">&quot;net/http&quot;</span><br />
-                      {"	"}<span className="text-emerald-300">&quot;time&quot;</span><br />
-                      )<br /><br />
-                      <span className="text-cyan-400">func</span> main() {'{'}<br />
-                      {"	"}payload := map[string]interface{}{'{'}<br />
-                      {"		"}<span className="text-emerald-300">&quot;signalId&quot;</span>:     fmt.Sprintf(<span className="text-emerald-300">&quot;sig_%d&quot;</span>, time.Now().Unix()),<br />
-                      {"		"}<span className="text-emerald-300">&quot;botId&quot;</span>:        <span className="text-emerald-300">&quot;{bot.botId}&quot;</span>,<br />
-                      {"		"}<span className="text-emerald-300">&quot;exchangeSlug&quot;</span>: <span className="text-emerald-300">&quot;{exchangeSlug}&quot;</span>,<br />
-                      {"		"}<span className="text-emerald-300">&quot;symbol&quot;</span>:       <span className="text-emerald-300">&quot;{pair}&quot;</span>,<br />
-                      {"		"}<span className="text-emerald-300">&quot;action&quot;</span>:       <span className="text-emerald-300">&quot;OPEN_LONG&quot;</span>,<br />
-                      {"		"}<span className="text-emerald-300">&quot;price&quot;</span>:        <span className="text-amber-400">67321.12</span>,<br />
-                      {"		"}<span className="text-emerald-300">&quot;timestamp&quot;</span>:    time.Now().UTC().Format(time.RFC3339),<br />
-                      {"	"}{'}'}<br /><br />
-                      {"	"}jsonValue, _ := json.Marshal(payload)<br />
-                      {"	"}req, _ := http.NewRequest(<span className="text-emerald-300">&quot;POST&quot;</span>, <span className="text-emerald-300">&quot;https://marcus-api.tromoi.xyz/api/v1/signals&quot;</span>, bytes.NewBuffer(jsonValue))<br /><br />
-                      {"	"}req.Header.Set(<span className="text-emerald-300">&quot;X-Marcus-Api-Key&quot;</span>, <span className="text-emerald-300">&quot;{apiKey}&quot;</span>)<br />
-                      {"	"}req.Header.Set(<span className="text-emerald-300">&quot;X-Marcus-Bot-Secret&quot;</span>, <span className="text-emerald-300">&quot;&lt;YOUR_SECRET&gt;&quot;</span>)<br />
-                      {"	"}req.Header.Set(<span className="text-emerald-300">&quot;Content-Type&quot;</span>, <span className="text-emerald-300">&quot;application/json&quot;</span>)<br /><br />
-                      {"	"}client := &amp;http.Client{}<br />
-                      {"	"}resp, err := client.Do(req)<br />
-                      {"	"}<span className="text-cyan-400">if</span> err != nil {'{'}<br />
-                      {"		"}panic(err)<br />
-                      {"	"}{'}'}<br />
-                      {"	"}<span className="text-cyan-400">defer</span> resp.Body.Close()<br /><br />
-                      {"	"}fmt.Println(<span className="text-emerald-300">&quot;Response Status:&quot;</span>, resp.Status)<br />
-                      {'}'}
-                    </>
-                  )}
-                </code>
+              <pre className="max-h-[440px] overflow-auto p-5 pr-14 font-mono text-xs leading-relaxed text-fg-muted">
+                <code className="whitespace-pre-wrap">{snippetText}</code>
               </pre>
             </div>
-          </>)
-        }
-      </div>
-    )}
+          </section>
+        ) : null}
 
-        {/* SIGNALS TAB */}
-        {activeTab === 'signals' && (
-          <div className="space-y-4 animate-fade-in">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Signal Stream</h3>
-              <p className="text-xs text-slate-500 mt-1">Signals received for this bot. Click a row to inspect full payload.</p>
+        {activeTab === 'integration' ? (
+          <section className="space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-fg">Integration health</h2>
+                <p className="mt-1 text-sm text-fg-muted">Operational summary for the webhook and runtime bridge.</p>
+              </div>
+              {integrationHealth ? (
+                <span className={`rounded-full border border-[var(--panel-border)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] ${integrationTone(integrationHealth.overallStatus)}`}>
+                  {integrationHealth.overallStatus}
+                </span>
+              ) : null}
             </div>
+
+            {integrationHealth ? (
+              <IntegrationHealthWidget health={integrationHealth} />
+            ) : (
+              <div className="rounded-2xl border border-dashed border-[var(--panel-border)] bg-surface p-6 text-sm text-fg-muted">
+                Integration health is not available for this bot yet.
+              </div>
+            )}
+          </section>
+        ) : null}
+
+        {activeTab === 'signals' ? (
+          <section className="space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-fg">Signals</h2>
+                <p className="mt-1 text-sm text-fg-muted">Recent signals received for this bot. Select a row for payload inspection.</p>
+              </div>
+              <span className="rounded-full border border-[var(--panel-border)] bg-surface px-3 py-1 text-xs font-semibold text-fg-muted">
+                {signals.length}
+              </span>
+            </div>
+
             {isSwitching ? (
-              <div className="space-y-3 animate-pulse">
-                <div className="h-10 bg-white/5 rounded-xl w-full" />
-                <div className="h-10 bg-white/5 rounded-xl w-full" />
-                <div className="h-10 bg-white/5 rounded-xl w-full" />
+              <div className="space-y-3">
+                <div className="h-10 animate-pulse rounded-xl bg-surface" />
+                <div className="h-10 animate-pulse rounded-xl bg-surface" />
+                <div className="h-10 animate-pulse rounded-xl bg-surface" />
               </div>
             ) : (
               <SignalStreamTable signals={signals} onSelect={setSelectedSignal} />
             )}
-          </div>
-        )}
+          </section>
+        ) : null}
 
-        {/* SUBSCRIBERS TAB */}
-        {activeTab === 'subscribers' && (
-          <div className="space-y-4 animate-fade-in">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Subscriber Sessions</h3>
-              <p className="text-xs text-slate-500 mt-1">Active subscriptions and connection health. No trader runtime tokens are exposed here.</p>
+        {activeTab === 'subscribers' ? (
+          <section className="space-y-4">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-semibold text-fg">Subscribers</h2>
+                <p className="mt-1 text-sm text-fg-muted">Active subscriptions and connection health.</p>
+              </div>
+              <span className="rounded-full border border-[var(--panel-border)] bg-surface px-3 py-1 text-xs font-semibold text-fg-muted">
+                {subscriberCount}
+              </span>
             </div>
 
             {isSwitching ? (
-              <div className="space-y-3 animate-pulse">
-                <div className="h-20 bg-white/5 rounded-xl w-full" />
-                <div className="h-12 bg-white/5 rounded-xl w-full" />
+              <div className="space-y-3">
+                <div className="h-20 animate-pulse rounded-xl bg-surface" />
+                <div className="h-12 animate-pulse rounded-xl bg-surface" />
+              </div>
+            ) : subscriptions.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[var(--panel-border)] bg-surface p-6 text-sm text-fg-muted">
+                No active subscriber sessions found.
               </div>
             ) : (
-              <div className="rounded-xl border border-white/5 bg-[var(--panel)] overflow-hidden">
-                {subscriptions.length === 0 ? (
-                  <div className="p-8 text-center flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-slate-900 border border-white/5 flex items-center justify-center text-slate-600 mb-3">
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
+              <div className="space-y-4">
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {[
+                    { label: 'Subscribers', value: subscriberCount },
+                    { label: 'Connected', value: connectedCount },
+                    { label: 'Active', value: activeCount },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl border border-[var(--panel-border)] bg-surface px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">{item.label}</p>
+                      <p className="mt-2 text-lg font-semibold text-fg">{item.value}</p>
                     </div>
-                    <p className="text-xs font-medium text-slate-400">No active subscriber sessions found</p>
-                    <p className="text-[11px] text-slate-500 mt-1 max-w-xs leading-relaxed">
-                      Publish a signal from your code to activate listener sessions in real-time.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 p-4">
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Total Subscribers</p>
-                        <p className="mt-1 text-lg font-semibold text-white">{subscriberCount}</p>
-                      </div>
-                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Connected</p>
-                        <p className="mt-1 text-lg font-semibold text-emerald-300">{connectedCount}</p>
-                      </div>
-                      <div className="rounded-lg border border-white/5 bg-slate-950/40 p-3">
-                        <p className="text-[10px] uppercase tracking-wider text-slate-500">Active</p>
-                        <p className="mt-1 text-lg font-semibold text-slate-200">{activeCount}</p>
-                      </div>
-                    </div>
+                  ))}
+                </div>
 
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-left text-xs border-collapse">
-                        <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
-                          <tr>
-                            <th className="px-4 py-3">Subscriber</th>
-                            <th className="px-4 py-3 text-right">Status</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {subscriptions.map((sub, index) => (
-                            <tr key={`${sub.botId}-${index}`} className="hover:bg-white/[0.01] transition-colors">
-                              <td className="px-4 py-3">
-                                <span className="font-mono text-slate-300">Subscriber #{index + 1}</span>
-                              </td>
-                              <td className="px-4 py-3 text-right">
-                                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
-                                  sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                    : 'bg-white/5 text-slate-400 border-white/5'
-                                }`}>
-                                  <span className={`w-1.2 h-1.2 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
-                                  {sub.status}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
+                <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)]">
+                  <table className="min-w-full border-collapse text-left text-sm">
+                    <thead className="bg-surface text-xs uppercase tracking-[0.14em] text-fg-muted">
+                      <tr>
+                        <th className="px-4 py-3">Subscriber</th>
+                        <th className="px-4 py-3 text-right">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {subscriptions.map((sub, index) => (
+                        <tr key={`${sub.botId}-${index}`} className="border-t border-[var(--panel-border)] text-fg-muted">
+                          <td className="px-4 py-3">
+                            <span className="font-mono text-sm text-fg-muted">Subscriber #{index + 1}</span>
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full border border-[var(--panel-border)] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+                                sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-positive-soft text-positive' : 'bg-surface text-fg-muted'
+                              }`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-positive' : 'bg-fg-muted'}`} />
+                              {sub.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
-          </div>
-        )}
+          </section>
+        ) : null}
       </div>
 
       <SignalDetailDrawer signal={selectedSignal} onClose={() => setSelectedSignal(null)} />
-      {/* Modals */}
-      <EditBotModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        bot={bot}
-      />
+
+      <EditBotModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} bot={bot} />
       <DeleteBotModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         bot={bot}
-        activeSubscribersCount={subscriptions.filter(s => s.status === 'ACTIVE' || s.status === 'CONNECTED').length}
+        activeSubscribersCount={subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'CONNECTED').length}
       />
     </article>
   );

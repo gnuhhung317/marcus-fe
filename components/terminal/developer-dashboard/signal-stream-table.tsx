@@ -12,29 +12,29 @@ function formatTimestamp(value?: string | null) {
 }
 
 function statusTone(status?: string | null) {
-  if (!status) return 'bg-white/5 text-slate-400 border-white/5';
+  if (!status) return 'border-[var(--panel-border)] bg-surface text-fg-muted';
   if (['ACKNOWLEDGED', 'DELIVERED', 'SUCCESS'].includes(status)) {
-    return 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
+    return 'border-[var(--primary-soft)] bg-[var(--primary-soft)] text-positive';
   }
   if (['FAILED', 'ERROR'].includes(status)) {
-    return 'bg-rose-500/10 text-rose-300 border-rose-500/20';
+    return 'border-[var(--negative-soft)] bg-[var(--negative-soft)] text-negative';
   }
-  return 'bg-white/5 text-slate-300 border-white/5';
+  return 'border-[var(--panel-border)] bg-surface text-fg';
 }
 
 export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps) {
   if (!signals.length) {
     return (
-      <div className="rounded-xl border border-white/5 bg-[var(--panel)] p-6 text-center text-sm text-slate-500">
+      <div className="glass-strong rounded-2xl border border-[var(--panel-border)] p-6 text-center text-sm text-fg-muted">
         No signals received for this bot yet.
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-white/5 bg-[var(--panel)]">
-      <table className="min-w-full text-left text-xs border-collapse">
-        <thead className="bg-[var(--panel-border)] border-b border-white/5 text-slate-400 font-semibold uppercase tracking-wider">
+    <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-surface">
+      <table className="min-w-full border-collapse text-left text-xs">
+        <thead className="border-b border-[var(--panel-border)] bg-surface-strong uppercase tracking-[0.14em] text-fg-muted">
           <tr>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">Action</th>
@@ -42,25 +42,25 @@ export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps)
             <th className="px-4 py-3 text-right">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-white/5">
+        <tbody className="divide-y divide-[var(--panel-border)]">
           {signals.map((signal) => (
             <tr
               key={signal.signalId}
-              className="hover:bg-white/[0.02] transition-colors cursor-pointer"
+              className="cursor-pointer transition-colors hover:bg-[var(--panel-border)]/20"
               onClick={() => onSelect(signal)}
             >
-              <td className="px-4 py-3 text-slate-300">
+              <td className="px-4 py-3 text-fg-muted">
                 {formatTimestamp(signal.generatedTimestamp)}
               </td>
-              <td className="px-4 py-3 text-white font-mono">
+              <td className="px-4 py-3 font-mono text-fg">
                 {signal.action ?? '—'}
               </td>
-              <td className="px-4 py-3 text-slate-300">
+              <td className="px-4 py-3 text-fg">
                 {signal.symbol ?? '—'}
               </td>
               <td className="px-4 py-3 text-right">
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${statusTone(signal.status)}`}>
-                  <span className="w-1.2 h-1.2 rounded-full bg-current" />
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${statusTone(signal.status)}`}>
+                  <span className="h-1.5 w-1.5 rounded-full bg-current" />
                   {signal.status ?? 'UNKNOWN'}
                 </span>
               </td>

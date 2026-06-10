@@ -119,7 +119,7 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
             : 'text-muted hover:bg-[var(--panel)] hover:text-white'
         }`}
       >
-        <span className={active ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
+        <span className={active ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
           {getIcon(item.href)}
         </span>
         <span>{item.label}</span>
@@ -131,32 +131,13 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-0)] text-white">
       <SiteHeader isAuthenticated role={normalizedRole} username={username} />
       <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">
-        <aside className="glass h-fit rounded-2xl p-4 lg:sticky lg:top-4 flex flex-col gap-6">
-          {/* Workspace Info Connection */}
-          <div className="flex items-center justify-between border-b border-[var(--panel-border)] pb-4">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-xs font-semibold tracking-wider uppercase text-emerald-400">Terminal Connected</span>
-            </div>
-          </div>
-
-          <div className="px-1 -mt-2">
-            <p className="text-[10px] uppercase tracking-[0.15em] text-slate-500 font-semibold">Active Workspace</p>
-            <h3 className="text-sm font-semibold text-slate-200 mt-1 flex items-center gap-1.5">
-              <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-              </svg>
-              Marcus Algo Desk
-            </h3>
-          </div>
+        <aside className="glass flex h-fit flex-col gap-5 rounded-2xl p-4 lg:sticky lg:top-4">
+          <div className="h-px bg-[var(--panel-border)]" />
 
           {/* Dashboards Section */}
           {isAllowedRole(normalizedRole, ['TRADER', 'OPERATOR', 'ADMIN']) && (
             <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Dashboards</p>
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Dashboards</p>
               <nav className="space-y-1">
                 <Link
                   href="/terminal/decision"
@@ -166,12 +147,12 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
                         : 'text-muted hover:bg-[var(--panel)] hover:text-white'
                   }`}
                 >
-                  <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
+                  <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
                     {getIcon('/terminal/decision')}
                   </span>
                   <span className="flex items-center gap-1.5 flex-1 justify-between">
                     <span>Decision Dashboard</span>
-                    {dashboardV2Enabled && <span className="text-[9px] bg-positive/10 border border-positive/20 text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
+                    {dashboardV2Enabled && <span className="text-[9px] bg-positive-soft border border-[var(--panel-border)] text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
                   </span>
                 </Link>
 
@@ -183,12 +164,12 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
                       : 'text-muted hover:bg-[var(--panel)] hover:text-white'
                   }`}
                 >
-                  <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-slate-400 group-hover:text-white transition-colors'}>
+                  <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
                     {getIcon('/terminal/monitoring')}
                   </span>
                   <span className="flex items-center gap-1.5 flex-1 justify-between">
                     <span>Monitoring</span>
-                    <span className="text-[9px] bg-slate-800 border border-slate-700 text-slate-400 px-1 py-0.5 rounded font-bold font-mono">P2</span>
+                    <span className="text-[9px] bg-surface border border-[var(--panel-border)] text-muted px-1 py-0.5 rounded font-bold font-mono">P2</span>
                   </span>
                 </Link>
               </nav>
@@ -198,7 +179,7 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
           {/* Trading Desk Section */}
           {tradingDeskNav.length > 0 && (
             <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Trading Desk</p>
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Trading Desk</p>
               <nav className="space-y-1">{tradingDeskNav.map(renderLink)}</nav>
             </div>
           )}
@@ -206,7 +187,7 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
           {/* Execution & Simulation Section */}
           {executionNav.length > 0 && (
             <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Execution & Sim</p>
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Execution & Sim</p>
               <nav className="space-y-1">{executionNav.map(renderLink)}</nav>
             </div>
           )}
@@ -214,7 +195,7 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
           {/* Account Section */}
           {accountNav.length > 0 && (
             <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">Settings</p>
+              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Settings</p>
               <nav className="space-y-1">{accountNav.map(renderLink)}</nav>
             </div>
           )}

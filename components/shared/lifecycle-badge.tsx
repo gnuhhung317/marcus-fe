@@ -18,7 +18,7 @@ function statusTone(status: string) {
     return 'border-[var(--panel-border)] bg-[var(--negative-soft)] text-negative';
   }
 
-  return 'border-[var(--panel-border)] bg-[var(--panel)] text-white';
+  return 'border-[var(--panel-border)] bg-[var(--panel)] text-fg';
 }
 
 export function LifecycleBadge({ status, mode }: LifecycleBadgeProps) {

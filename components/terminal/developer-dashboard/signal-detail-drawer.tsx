@@ -34,17 +34,22 @@ export function SignalDetailDrawer({ signal, onClose }: SignalDetailDrawerProps)
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <aside className="absolute right-0 top-0 h-full w-full max-w-xl border-l border-white/10 bg-slate-950 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+      <button
+        type="button"
+        aria-label="Close signal detail drawer"
+        className="absolute inset-0 bg-[var(--bg-0)] opacity-70 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <aside className="absolute right-0 top-0 h-full w-full max-w-xl border-l border-[var(--panel-border)] bg-surface-strong shadow-[var(--shadow-soft)]">
+        <div className="flex items-center justify-between border-b border-[var(--panel-border)] px-6 py-4">
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-slate-500">Signal Detail</p>
-            <h3 className="text-lg font-semibold text-white">{signal.signalId}</h3>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Signal detail</p>
+            <h3 className="text-lg font-semibold text-fg">{signal.signalId}</h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-slate-200 transition-colors hover:bg-white/10"
+            className="rounded-lg border border-[var(--panel-border)] bg-surface px-3 py-1.5 text-xs text-fg transition-colors hover:bg-[var(--panel)]"
           >
             Close
           </button>
@@ -52,57 +57,59 @@ export function SignalDetailDrawer({ signal, onClose }: SignalDetailDrawerProps)
 
         <div className="space-y-6 px-6 py-5">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Action</p>
-              <p className="mt-1 text-sm text-white">{signal.action ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Action</p>
+              <p className="mt-1 text-sm text-fg">{signal.action ?? '—'}</p>
             </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Symbol</p>
-              <p className="mt-1 text-sm text-white">{signal.symbol ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Symbol</p>
+              <p className="mt-1 text-sm text-fg">{signal.symbol ?? '—'}</p>
             </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Status</p>
-              <p className="mt-1 text-sm text-white">{signal.status ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Status</p>
+              <p className="mt-1 text-sm text-fg">{signal.status ?? '—'}</p>
             </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Generated</p>
-              <p className="mt-1 text-sm text-white">{formatTimestamp(signal.generatedTimestamp)}</p>
-            </div>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Leverage</p>
-              <p className="mt-1 text-sm text-white">{signal.leverage ?? '—'}</p>
-            </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Market Type</p>
-              <p className="mt-1 text-sm text-white">{signal.marketType ?? '—'}</p>
-            </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Reduce Only</p>
-              <p className="mt-1 text-sm text-white">{signal.reduceOnly === null || signal.reduceOnly === undefined ? '—' : signal.reduceOnly ? 'Yes' : 'No'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Generated</p>
+              <p className="mt-1 text-sm text-fg">{formatTimestamp(signal.generatedTimestamp)}</p>
             </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">Size</p>
-              <p className="mt-1 text-sm text-white">{signal.size ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Leverage</p>
+              <p className="mt-1 text-sm text-fg">{signal.leverage ?? '—'}</p>
             </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">TP</p>
-              <p className="mt-1 text-sm text-white">{signal.tp ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Market type</p>
+              <p className="mt-1 text-sm text-fg">{signal.marketType ?? '—'}</p>
             </div>
-            <div className="rounded-lg border border-white/5 bg-white/[0.02] p-3 text-xs">
-              <p className="text-[10px] uppercase tracking-wider text-slate-500">SL</p>
-              <p className="mt-1 text-sm text-white">{signal.sl ?? '—'}</p>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Reduce only</p>
+              <p className="mt-1 text-sm text-fg">
+                {signal.reduceOnly === null || signal.reduceOnly === undefined ? '—' : signal.reduceOnly ? 'Yes' : 'No'}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Size</p>
+              <p className="mt-1 text-sm text-fg">{signal.size ?? '—'}</p>
+            </div>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">TP</p>
+              <p className="mt-1 text-sm text-fg">{signal.tp ?? '—'}</p>
+            </div>
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3 text-xs">
+              <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">SL</p>
+              <p className="mt-1 text-sm text-fg">{signal.sl ?? '—'}</p>
             </div>
           </div>
 
           <div>
-            <p className="text-[10px] uppercase tracking-wider text-slate-500">Raw Payload</p>
-            <pre className="mt-2 max-h-[260px] overflow-auto rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-slate-200">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Raw payload</p>
+            <pre className="mt-2 max-h-[260px] overflow-auto rounded-xl border border-[var(--panel-border)] bg-canvas-elevated p-3 text-xs text-info">
               {JSON.stringify(payload, null, 2)}
             </pre>
           </div>

@@ -25,15 +25,15 @@ export function CopyButton({ value, className = '' }: CopyButtonProps) {
   return (
     <button
       onClick={handleCopy}
-      className={`inline-flex items-center justify-center rounded p-1 text-slate-400 hover:bg-[var(--panel-border)] hover:text-white transition-all duration-150 focus:outline-none ${className}`}
+      className={`inline-flex items-center justify-center rounded-lg border border-transparent p-1.5 text-fg-muted transition-colors duration-150 hover:border-[var(--panel-border)] hover:bg-[var(--panel)] hover:text-fg focus:outline-none ${className}`}
       title="Copy to clipboard"
     >
       {copied ? (
-        <svg className="h-4.5 w-4.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <svg className="h-4 w-4 text-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       ) : (
-        <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
           <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
         </svg>
       )}

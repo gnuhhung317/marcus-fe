@@ -6,6 +6,7 @@
   color-scheme: dark;
   --bg-0: #05060b;
   --bg-1: #0b0e14;
+  --bg-elevated: #050810;
   --panel: rgba(21, 25, 33, 0.75);
   --panel-strong: rgba(21, 25, 33, 0.95);
   --panel-border: rgba(255, 255, 255, 0.08);
@@ -22,6 +23,8 @@
   --info: #3eb7ff;
   --info-soft: rgba(62,183,255,0.12);
   --shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --grid-line: rgba(132, 162, 191, 0.05);
+  --noise-dot: rgba(255, 255, 255, 0.03);
 }
 
 
@@ -45,9 +48,9 @@ body {
   margin: 0;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background:
-    radial-gradient(1200px 720px at 8% -16%, rgba(16, 185, 129, 0.08), transparent 58%),
+    radial-gradient(1200px 720px at 8% -16%, var(--primary-soft), transparent 58%),
     radial-gradient(900px 620px at 86% -10%, rgba(15, 23, 42, 0.62), transparent 55%),
-    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 52%, #05060d 100%);
+    linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 52%, var(--bg-elevated) 100%);
   color: var(--fg);
 }
 
@@ -68,8 +71,8 @@ a {
 
 .shell-grid {
   background-image:
-    linear-gradient(rgba(132, 162, 191, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(132, 162, 191, 0.05) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 42px 42px;
 }
 
@@ -129,6 +132,77 @@ a {
   inset: 0;
   pointer-events: none;
   opacity: 0.22;
-  background-image: radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-image: radial-gradient(var(--noise-dot) 1px, transparent 1px);
   background-size: 3px 3px;
+}
+
+.bg-canvas {
+  background-color: var(--bg-0);
+}
+
+.bg-canvas-elevated {
+  background-color: var(--bg-elevated);
+}
+
+.bg-surface {
+  background-color: var(--panel);
+}
+
+.bg-surface-strong {
+  background-color: var(--panel-strong);
+}
+
+.border-panel {
+  border-color: var(--panel-border);
+}
+
+.border-line {
+  border-color: var(--line);
+}
+
+.text-fg {
+  color: var(--fg);
+}
+
+.text-fg-muted {
+  color: var(--fg-muted);
+}
+
+.bg-positive-soft {
+  background-color: var(--primary-soft);
+}
+
+.bg-negative-soft {
+  background-color: var(--negative-soft);
+}
+
+.bg-warning-soft {
+  background-color: var(--warning-soft);
+}
+
+.bg-info-soft {
+  background-color: var(--info-soft);
+}
+
+@layer utilities {
+  .line-clamp-2 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .line-clamp-3 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
+  .line-clamp-4 {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
 }

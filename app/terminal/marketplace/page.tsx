@@ -78,29 +78,31 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
     <div className="space-y-8">
       <header className="space-y-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Marketplace</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">Bot Marketplace</h1>
-          <p className="mt-2 text-sm text-muted">Compare verified strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-fg-muted">Marketplace</p>
+          <h1 className="mt-3 text-4xl font-semibold text-fg">Bot marketplace</h1>
+          <p className="mt-2 text-sm text-fg-muted">
+            Compare verified strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.
+          </p>
         </div>
 
-        <form method="get" className="grid gap-3 rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.42)] p-4 lg:grid-cols-[1.4fr_0.85fr_0.65fr_auto]">
+        <form method="get" className="grid gap-3 rounded-2xl border border-[var(--panel-border)] bg-surface p-4 shadow-[var(--shadow-soft)] lg:grid-cols-[1.4fr_0.85fr_0.65fr_auto]">
           <label className="space-y-2">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Search</span>
+            <span className="text-[11px] uppercase tracking-[0.16em] text-fg-muted">Search</span>
             <input
               type="search"
               name="search"
               defaultValue={query.search ?? ''}
               placeholder="Bot name, ID, or tag"
-              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors placeholder:text-muted focus:border-[rgba(16,185,129,0.45)]"
+              className="w-full rounded-xl border border-[var(--panel-border)] bg-surface-strong px-4 py-2.5 text-sm text-fg outline-none transition-colors placeholder:text-fg-muted focus:border-[var(--primary-soft)]"
             />
           </label>
 
           <label className="space-y-2">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Sort</span>
+            <span className="text-[11px] uppercase tracking-[0.16em] text-fg-muted">Sort</span>
             <select
               name="sortBy"
               defaultValue={query.sortBy ?? 'RETURN_30D'}
-              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[rgba(16,185,129,0.45)]"
+              className="w-full rounded-xl border border-[var(--panel-border)] bg-surface-strong px-4 py-2.5 text-sm text-fg outline-none transition-colors focus:border-[var(--primary-soft)]"
             >
               <option value="RETURN_30D">Highest Return</option>
               <option value="DRAWDOWN">Lowest Drawdown</option>
@@ -109,11 +111,11 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
           </label>
 
           <label className="space-y-2">
-            <span className="text-[11px] uppercase tracking-[0.16em] text-muted">Page Size</span>
+            <span className="text-[11px] uppercase tracking-[0.16em] text-fg-muted">Page size</span>
             <select
               name="pageSize"
               defaultValue={String(query.pageSize ?? 12)}
-              className="w-full rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-4 py-2.5 text-sm text-white outline-none transition-colors focus:border-[rgba(16,185,129,0.45)]"
+              className="w-full rounded-xl border border-[var(--panel-border)] bg-surface-strong px-4 py-2.5 text-sm text-fg outline-none transition-colors focus:border-[var(--primary-soft)]"
             >
               <option value="6">6</option>
               <option value="12">12</option>
@@ -124,82 +126,96 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
           <input type="hidden" name="page" value="1" />
 
           <button type="submit" className="rounded-xl cta-primary px-4 py-2.5 text-sm font-semibold">
-            Apply Filters
+            Apply filters
           </button>
         </form>
       </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-fg-muted">
         <p>
           Showing {marketplacePage.bots.length} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
         </p>
-        <p>
-          Page {marketplacePage.page}
-        </p>
+        <p>Page {marketplacePage.page}</p>
       </div>
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid auto-rows-fr gap-5 md:grid-cols-2 xl:grid-cols-3 items-stretch">
         {marketplacePage.bots.length ? (
           marketplacePage.bots.map((bot) => (
-            <article key={bot.botId} className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-              <div className="flex items-start justify-between">
-                <h2 className="text-2xl font-semibold text-white">{bot.name}</h2>
-                <span className="rounded-lg border border-[rgba(148,163,184,0.25)] px-2 py-1 text-[11px] text-muted">{bot.botId}</span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {bot.tags.map((tag) => (
-                  <span key={tag} className="rounded-full border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-2 py-1 text-[11px] text-muted">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <div className="mt-5 grid grid-cols-3 gap-3 text-xs">
-                <div>
-                  <p className="text-muted">Annual Return</p>
-                  <p className={`mt-1 text-lg font-semibold ${bot.pnl30d >= 0 ? 'text-positive' : 'text-negative'}`}>
-                    {bot.pnl30d >= 0 ? '+' : ''}{bot.pnl30d.toFixed(1)}%
-                  </p>
+            <article key={bot.botId} className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+              <div className="flex h-full flex-col">
+                <div className="flex-1 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h2 className="truncate text-2xl font-semibold text-fg">{bot.name}</h2>
+                      <p className="mt-1 font-mono text-xs text-fg-muted">{bot.botId}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {bot.tags.map((tag) => (
+                      <span key={tag} className="rounded-full border border-[var(--panel-border)] bg-surface px-2 py-1 text-[11px] text-fg-muted">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Return</p>
+                      <p className={`mt-2 text-lg font-semibold ${bot.pnl30d >= 0 ? 'text-positive' : 'text-negative'}`}>
+                        {bot.pnl30d >= 0 ? '+' : ''}
+                        {bot.pnl30d.toFixed(1)}%
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Win rate</p>
+                      <p className="mt-2 text-lg font-semibold text-fg">{bot.winRate.toFixed(1)}%</p>
+                    </div>
+                    <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-3 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Drawdown</p>
+                      <p className="mt-2 text-lg font-semibold text-negative">-{bot.drawdown.toFixed(1)}%</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-muted">Win Rate</p>
-                  <p className="mt-1 text-lg font-semibold text-white">{bot.winRate.toFixed(1)}%</p>
-                </div>
-                <div>
-                  <p className="text-muted">Drawdown</p>
-                  <p className="mt-1 text-lg font-semibold text-negative">-{bot.drawdown.toFixed(1)}%</p>
-                </div>
-              </div>
-              <div className="mt-5">
+
                 <Link
                   href={`/terminal/marketplace/${encodeURIComponent(bot.botId)}`}
-                  className="block rounded-xl cta-primary px-4 py-2 text-center text-sm font-semibold"
+                  className="mt-auto rounded-xl cta-primary px-4 py-2 text-center text-sm font-semibold"
                 >
-                  Open Bot
+                  Open bot
                 </Link>
               </div>
             </article>
           ))
         ) : (
-          <article className="glass-strong rounded-2xl p-6 text-sm text-muted">No bots match the current filters.</article>
+          <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-6 text-sm text-fg-muted">
+            No bots match the current filters.
+          </article>
         )}
       </section>
 
-      <nav className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
-        <span className="text-muted">
-          Page {marketplacePage.page}
-        </span>
+      <nav className="flex items-center justify-between rounded-2xl border border-[var(--panel-border)] bg-surface px-4 py-3 text-sm shadow-[var(--shadow-soft)]">
+        <span className="text-fg-muted">Page {marketplacePage.page}</span>
         <div className="flex items-center gap-2">
           <Link
             aria-disabled={!hasPrev}
             href={hasPrev ? buildMarketplaceHref(query, marketplacePage.page - 1) : buildMarketplaceHref(query, marketplacePage.page)}
-            className={`rounded-lg border px-3 py-2 transition-colors ${hasPrev ? 'border-[rgba(148,163,184,0.24)] text-white hover:bg-[rgba(148,163,184,0.1)]' : 'pointer-events-none border-[rgba(148,163,184,0.12)] text-muted opacity-50'}`}
+            className={`rounded-lg border px-3 py-2 transition-colors ${
+              hasPrev
+                ? 'border-[var(--panel-border)] text-fg hover:bg-surface-strong'
+                : 'pointer-events-none border-[var(--panel-border)] text-fg-muted opacity-50'
+            }`}
           >
             Previous
           </Link>
           <Link
             aria-disabled={!hasNext}
             href={hasNext ? buildMarketplaceHref(query, marketplacePage.page + 1) : buildMarketplaceHref(query, marketplacePage.page)}
-            className={`rounded-lg border px-3 py-2 transition-colors ${hasNext ? 'border-[rgba(148,163,184,0.24)] text-white hover:bg-[rgba(148,163,184,0.1)]' : 'pointer-events-none border-[rgba(148,163,184,0.12)] text-muted opacity-50'}`}
+            className={`rounded-lg border px-3 py-2 transition-colors ${
+              hasNext
+                ? 'border-[var(--panel-border)] text-fg hover:bg-surface-strong'
+                : 'pointer-events-none border-[var(--panel-border)] text-fg-muted opacity-50'
+            }`}
           >
             Next
           </Link>

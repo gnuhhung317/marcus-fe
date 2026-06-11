@@ -106,7 +106,7 @@ export function DeveloperBotList({ bots, activeBotId }: DeveloperBotListProps) {
             return (
               <Link
                 key={bot.botId}
-                href={`/terminal/developer-dashboard?botId=${bot.botId}`}
+                href={`/terminal/developer-dashboard/${bot.botId}`}
                 className="block outline-none"
               >
                 <div

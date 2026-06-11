@@ -1026,8 +1026,7 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
     withFallback(() => requestContractJson<DashboardOverviewResponse>('dashboard-overview'), async () => undefined),
     withFallback(() => requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'), async () => []),
     withFallback(
-      () => requestContractJson<TradeLogPageResponse>('bot-trades', {
-        pathParams: { botId: DEFAULT_BOT_ID },
+      () => requestContractJson<TradeLogPageResponse>('dashboard-trades', {
         queryParams: { page: 0, size: 8 },
       }),
       async () => ({ items: [] }),
@@ -2037,6 +2036,15 @@ export async function deleteBot(botId: string): Promise<void> {
     pathParams: { botId },
     init: {
       method: 'DELETE',
+    },
+  });
+}
+
+export async function favoriteBot(botId: string): Promise<{ botId: string; favorited: boolean }> {
+  return requestContractJson<{ botId: string; favorited: boolean }>('bot-favorite', {
+    pathParams: { botId },
+    init: {
+      method: 'POST',
     },
   });
 }

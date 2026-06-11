@@ -55,7 +55,7 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
 
   const handleDone = () => {
     if (credentials?.botId) {
-      router.push(`/terminal/developer-dashboard?botId=${credentials.botId}`);
+      router.push(`/terminal/developer-dashboard/${credentials.botId}`);
       router.refresh();
     }
     // Reset state & close

@@ -1,0 +1,38 @@
+
+> marcus-nextjs@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+  ▲ Next.js 14.2.5
+  - Local:        http://127.0.0.1:3000
+  - Network:      http://127.0.0.1:3000
+
+ ✓ Starting...
+ ✓ Ready in 14.6s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 7s (73 modules)
+ ○ Compiling /terminal/marketplace ...
+ ✓ Compiled /terminal/marketplace in 15.9s (668 modules)
+ GET /terminal/marketplace 200 in 17427ms
+ ○ Compiling /terminal ...
+ ✓ Compiled /terminal in 3s (672 modules)
+ GET /terminal 200 in 3917ms
+ ○ Compiling /terminal/developer-dashboard ...
+ ✓ Compiled /terminal/developer-dashboard in 6.3s (726 modules)
+ GET /terminal/developer-dashboard 200 in 6294ms
+ GET /terminal/developer-dashboard 200 in 498ms
+ ✓ Compiled in 4.6s (740 modules)
+ ✓ Compiled in 2.2s (363 modules)
+ GET /terminal/developer-dashboard 200 in 2277ms
+ ✓ Compiled in 3s (740 modules)
+ ✓ Compiled in 1454ms (363 modules)
+ GET /terminal/developer-dashboard 200 in 3197ms
+ ○ Compiling /_not-found ...
+ ✓ Compiled /_not-found in 4.7s (729 modules)
+ GET /_next/static/css/app/layout.css?v=1781116773496 404 in 5364ms
+ GET /_next/static/chunks/main-app.js?v=1781116773496 404 in 3379ms
+ GET /_next/static/chunks/webpack.js?v=1781116773496 404 in 3415ms
+ GET /_next/static/chunks/app-pages-internals.js 404 in 3146ms
+ GET /_next/static/chunks/app/layout.js 404 in 3143ms
+ GET /_next/static/chunks/app/terminal/developer-dashboard/page.js 404 in 3142ms
+ GET /_next/static/chunks/app/terminal/layout.js 404 in 497ms
+ GET /_next/static/chunks/app/terminal/error.js 404 in 472ms

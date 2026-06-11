@@ -162,7 +162,7 @@ export function BotGridCard({ bot, onStatusChange }: BotGridCardProps) {
             </div>
 
             <Link
-              href={`/terminal/developer-dashboard?botId=${bot.botId}`}
+              href={`/terminal/developer-dashboard/${bot.botId}`}
               className="inline-flex items-center gap-2 rounded-xl border border-[var(--panel-border)] bg-positive-soft px-4 py-2 text-sm font-semibold text-positive transition-colors hover:brightness-105"
             >
               Inspect console

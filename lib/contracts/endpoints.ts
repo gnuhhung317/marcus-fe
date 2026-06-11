@@ -29,6 +29,15 @@ export const contractRoutes: ContractRoute[] = [
     status: 'available',
   },
   {
+    id: 'dashboard-trades',
+    method: 'GET',
+    path: '/dashboard/trades',
+    operationId: 'getDashboardTrades',
+    page: 'terminal/dashboard',
+    feature: 'Dashboard all user trades list',
+    status: 'available',
+  },
+  {
     id: 'bots-list',
     method: 'GET',
     path: '/bots',
@@ -116,6 +125,15 @@ export const contractRoutes: ContractRoute[] = [
     operationId: 'favoriteBot',
     page: 'terminal/bots/[botId]',
     feature: 'Mark a bot as favorite',
+    status: 'available',
+  },
+  {
+    id: 'bot-unsubscribe',
+    method: 'DELETE',
+    path: '/subscriptions/{botId}',
+    operationId: 'unsubscribeFromBot',
+    page: 'terminal/decision',
+    feature: 'Unsubscribe from a bot',
     status: 'available',
   },
   {

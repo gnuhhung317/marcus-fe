@@ -18,7 +18,18 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
   const [riskConfirmed, setRiskConfirmed] = useState(false);
   const { pushToast } = useToast();
 
+  const canSubscribe = (botStatus ?? 'ACTIVE') === 'ACTIVE';
+  const subscriptionBlockedMessage =
+    botStatus && botStatus !== 'ACTIVE'
+      ? `This bot is currently ${botStatus.toLowerCase()} and cannot accept new subscriptions.`
+      : null;
+
   const handleSubscribe = async () => {
+    if (!canSubscribe) {
+      setError(subscriptionBlockedMessage ?? 'This bot is not available for subscription.');
+      return;
+    }
+
     if (!riskConfirmed) {
       setError('Confirm risk warning before subscribing.');
       return;
@@ -27,7 +38,6 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
     setIsSubmitting(true);
     setError(null);
     const previousResult = result;
-    setResult({ botId, wsToken: 'pending...', status: 'SUBSCRIBING' });
 
     try {
       const response = await subscribeToBot(botId);
@@ -80,12 +90,19 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
             {result ? <LifecycleBadge status={result.status} /> : null}
           </div>
 
+          {subscriptionBlockedMessage ? (
+            <div className="rounded-xl border border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-sm text-negative">
+              {subscriptionBlockedMessage}
+            </div>
+          ) : null}
+
           <label className="flex items-start gap-3 rounded-xl border border-[var(--panel-border)] bg-warning-soft p-3 text-sm text-warning">
             <input
               type="checkbox"
               checked={riskConfirmed}
               onChange={(event) => setRiskConfirmed(event.target.checked)}
               className="mt-0.5 h-4 w-4 rounded border-[var(--panel-border)] bg-surface text-positive focus:ring-0"
+              disabled={!canSubscribe}
             />
             <span className="leading-relaxed">
               I understand this strategy can lose capital and past performance does not guarantee future returns.
@@ -111,6 +128,10 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
                 <p className="mt-2 break-all font-mono text-sm text-fg">{result.wsToken}</p>
               </div>
             </div>
+          ) : isSubmitting ? (
+            <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4 text-sm text-fg-muted">
+              Requesting runtime token from the backend...
+            </div>
           ) : (
             <div className="rounded-xl border border-dashed border-[var(--panel-border)] bg-surface px-4 py-4 text-sm text-fg-muted">
               Subscribe to surface the runtime token here.
@@ -123,7 +144,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
             <button
               type="button"
               onClick={handleSubscribe}
-              disabled={isSubmitting || !riskConfirmed}
+              disabled={isSubmitting || !riskConfirmed || !canSubscribe}
               className="flex-1 rounded-xl cta-primary px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? 'Subscribing...' : 'Subscribe bot'}

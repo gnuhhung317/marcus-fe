@@ -6,7 +6,7 @@ High priority (apply immediately)
 
 - [ ] Fix broken imports and enforce absolute imports (`@/`) everywhere.
 - [x] Add `REFACTOR_CHECKLIST.md` (this file).
-- [x] Replace the typo import in `app/developer/bots/[botId]/subscriptions/page.tsx` with `@/components/SubscriptionsList` and replace `text-emerald-400` with `text-positive`.
+- [x] Replace the obsolete developer subscriptions plan editor with the active-subscriptions view backed by `/subscriptions/{botId}/active`.
 - [x] Add ESLint `no-restricted-imports` rule to block deep relative imports.
 - [x] Harden `lib/hooks/useFeatureFlag.ts` toggle helper to avoid server-side errors.
 

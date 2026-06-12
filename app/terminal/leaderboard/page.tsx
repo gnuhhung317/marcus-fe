@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getLeaderboardPageData } from '@/lib/contracts/client';
+import { ErrorStateCard } from '@/components/shared/api-state';
 import LeaderboardClient from '@/components/terminal/leaderboard/leaderboard-client';
+import { getLeaderboardPageData } from '@/lib/contracts/client';
 
 export default async function TerminalLeaderboardPage() {
   const cookieStore = cookies();
@@ -12,8 +13,17 @@ export default async function TerminalLeaderboardPage() {
     redirect('/terminal');
   }
 
-  // Fetch all rows for client-side sorting/filtering
-  const leaderboardPage = await getLeaderboardPageData({ pageSize: 100 });
-
-  return <LeaderboardClient initialData={leaderboardPage} />;
+  try {
+    const leaderboardPage = await getLeaderboardPageData({ dataSource: 'ALL' });
+    return <LeaderboardClient initialData={leaderboardPage} />;
+  } catch (error) {
+    return (
+      <ErrorStateCard
+        title="Leaderboard unavailable"
+        message={error instanceof Error ? error.message : 'Unable to load leaderboard right now.'}
+        actionLabel="Retry"
+        actionHref="/terminal/leaderboard"
+      />
+    );
+  }
 }

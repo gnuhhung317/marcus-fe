@@ -30,6 +30,7 @@ import {
   MarketplaceBot,
   MarketplacePageData,
   MarketplaceQueryParams,
+  MarketplaceSortBy,
   PaperTradingPageData,
   PaperOrderInput,
   PaperOrderResult,
@@ -170,10 +171,18 @@ interface LeaderboardBotItemResponse {
   cagr?: number;
   sharpe?: number;
   maxDrawdown?: number;
+  dataSource?: string;
 }
 
 interface LeaderboardBotsPageResponse {
   items?: LeaderboardBotItemResponse[];
+  meta?: {
+    page?: number;
+    size?: number;
+    totalElements?: number;
+    totalPages?: number;
+    hasNext?: boolean;
+  };
 }
 
 interface BotSummaryPageResponse {
@@ -742,8 +751,12 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
     tags.push(bot.status ?? 'ACTIVE');
   }
 
+  if (!bot.botId) {
+    throw new Error('Marketplace bot item is missing botId');
+  }
+
   return {
-    botId: bot.botId ?? randomToken('bot'),
+    botId: bot.botId,
     name: bot.botName ?? 'Unnamed Bot',
     tags: tags,
     pnl30d: annualReturnPct,
@@ -756,40 +769,16 @@ function normalizeSearchText(value: string | undefined) {
   return (value ?? '').trim().toLowerCase();
 }
 
-function sortMarketplaceBots(bots: MarketplaceBot[], sortBy?: MarketplaceQueryParams['sortBy']) {
-  const sorted = [...bots];
-
-  if (sortBy === 'DRAWDOWN') {
-    sorted.sort((left, right) => left.drawdown - right.drawdown);
-  } else if (sortBy === 'WIN_RATE') {
-    sorted.sort((left, right) => right.winRate - left.winRate);
-  } else {
-    sorted.sort((left, right) => right.pnl30d - left.pnl30d);
+function mapMarketplaceSortToBackend(sortBy?: MarketplaceSortBy) {
+  switch (sortBy) {
+    case 'DRAWDOWN':
+      return 'drawdown';
+    case 'SUBSCRIBERS':
+      return '-subscribers';
+    case 'RETURN_30D':
+    default:
+      return '-return';
   }
-
-  return sorted;
-}
-
-function applyMarketplaceFilters(bots: MarketplaceBot[], query: MarketplaceQueryParams = {}) {
-  const search = normalizeSearchText(query.search);
-  const filtered = search
-    ? bots.filter((bot) => {
-        const searchable = [bot.botId, bot.name, ...bot.tags].join(' ').toLowerCase();
-        return searchable.includes(search);
-      })
-    : bots;
-
-  const sorted = sortMarketplaceBots(filtered, query.sortBy);
-  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
-  const page = Math.max(1, query.page ?? 1);
-  const startIndex = (page - 1) * pageSize;
-
-  return {
-    bots: sorted.slice(startIndex, startIndex + pageSize),
-    total: sorted.length,
-    page,
-    pageSize,
-  };
 }
 
 function sortLeaderboardRows(rows: LeaderboardRow[], sortBy?: LeaderboardQueryParams['sortBy']) {
@@ -820,7 +809,49 @@ function applyLeaderboardFilters(rows: LeaderboardRow[], query: LeaderboardQuery
   };
 }
 
+function mapLeaderboardSortToBackend(sortBy?: LeaderboardQueryParams['sortBy']) {
+  return sortBy === 'SHARPE' ? 'SHARPE' : 'CAGR';
+}
+
+async function fetchLeaderboardSourceRows(
+  dataSource: 'DRY_RUN' | 'HISTORICAL',
+  query: LeaderboardQueryParams = {},
+): Promise<LeaderboardRow[]> {
+  const pageSize = 100;
+  const rows: LeaderboardRow[] = [];
+  let page = 0;
+
+  while (true) {
+    const response = await requestContractJson<LeaderboardBotsPageResponse>('leaderboard-list', {
+      queryParams: {
+        dataSource,
+        market: query.market,
+        asset: query.asset,
+        rankMetric: mapLeaderboardSortToBackend(query.sortBy),
+        page,
+        size: pageSize,
+      },
+    });
+
+    const pageRows = (response.items ?? []).map((item, index) => mapLeaderboardRow(item, rows.length + index));
+    rows.push(...pageRows);
+
+    const hasNext = response.meta?.hasNext;
+    if (pageRows.length === 0 || hasNext === false || (hasNext === undefined && pageRows.length < pageSize)) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return rows;
+}
+
 function mapBotDetail(bot: BotDetailResponse): BotDetail {
+  if (!bot.botId) {
+    throw new Error('Marketplace bot detail is missing botId');
+  }
+
   const performance = bot.performance
     ? {
         annualReturn: toNumber(bot.performance.annualReturn),
@@ -833,7 +864,7 @@ function mapBotDetail(bot: BotDetailResponse): BotDetail {
     : undefined;
 
   return {
-    botId: bot.botId ?? randomToken('bot'),
+    botId: bot.botId,
     name: bot.botName ?? 'Unnamed Bot',
     description: bot.description ?? 'No description available.',
     status: bot.status ?? 'ACTIVE',
@@ -880,6 +911,9 @@ function mapLoginActivity(item: LoginActivityResponse, index: number): ProfileLo
 }
 
 function mapLeaderboardRow(item: LeaderboardBotItemResponse, index: number): LeaderboardRow {
+  const dataSource = item.dataSource?.toUpperCase();
+  const normalizedDataSource = dataSource === 'DRY_RUN' || dataSource === 'HISTORICAL' ? dataSource : undefined;
+
   return {
     rank: Math.max(1, Math.round(toNumber(item.rank, index + 1))),
     botId: item.botId ?? `bot-${index + 1}`,
@@ -889,6 +923,7 @@ function mapLeaderboardRow(item: LeaderboardBotItemResponse, index: number): Lea
     drawdown: toNumber(item.maxDrawdown, 0),
     sharpe: toNumber(item.sharpe, 0),
     status: 'ACTIVE',
+    dataSource: normalizedDataSource,
   };
 }
 
@@ -1065,30 +1100,33 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
   };
 }
 
-async function fetchMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
-  const response = await withFallback(
-    () => requestContractJson<BotSummaryPageResponse>('bots-list'),
-    async () => ({ items: [] }),
-  );
+async function fetchMarketplacePage(query: MarketplaceQueryParams = {}): Promise<MarketplacePageData> {
+  const page = Math.max(1, query.page ?? 1);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
+  const response = await requestContractJson<BotSummaryPageResponse>('bots-list', {
+    queryParams: {
+      q: query.search,
+      asset: query.asset,
+      risk: query.risk,
+      sort: mapMarketplaceSortToBackend(query.sortBy),
+      page: page - 1,
+      size: pageSize,
+    },
+  });
 
-  const items = response.items ?? [];
-  const mapped = items.map((bot) => mapBotSummary(bot));
-  return mapped;
+  const bots = (response.items ?? []).map((bot) => mapBotSummary(bot));
+  const meta = response.meta;
+
+  return {
+    bots,
+    page: Math.max(1, (meta?.page ?? page - 1) + 1),
+    pageSize: Math.max(1, meta?.size ?? pageSize),
+    total: Math.max(0, meta?.totalElements ?? bots.length),
+  };
 }
 
 export async function getMarketplacePageData(query: MarketplaceQueryParams = {}): Promise<MarketplacePageData> {
-  const page = Math.max(1, query.page ?? 1);
-  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
-
-  const resolvedBots = await fetchMarketplaceBots({ ...query, page, pageSize });
-  const paged = applyMarketplaceFilters(resolvedBots, { ...query, page, pageSize });
-
-  return {
-    bots: paged.bots,
-    page: paged.page,
-    pageSize: paged.pageSize,
-    total: paged.total,
-  };
+  return fetchMarketplacePage(query);
 }
 
 export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): Promise<MarketplaceBot[]> {
@@ -1098,33 +1136,14 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
 
 export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
   const [response, analytics] = await Promise.all([
-    withFallback(
-      () => requestContractJson<BotDetailResponse>('bot-detail', {
-        pathParams: { botId },
-      }),
-      async () => undefined,
-    ),
+    requestContractJson<BotDetailResponse>('bot-detail', {
+      pathParams: { botId },
+    }),
     getBotAnalyticsData(botId),
   ]);
 
-  if (!response) {
-    return {
-      botId,
-      name: 'Unknown Bot',
-      description: 'Bot detail endpoint is not reachable.',
-      status: 'UNKNOWN',
-      tradingPair: '',
-      exchange: '',
-      performance: {
-        annualReturn: 0,
-        maxDrawdown: 0,
-        sharpe: 0,
-        winRate: 0,
-        avgTradeReturn: 0,
-        tradesPerDay: 0,
-      },
-      analytics,
-    };
+  if (!response.botId) {
+    throw new Error('Marketplace bot detail is missing botId');
   }
 
   return {
@@ -1134,71 +1153,78 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
 }
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {
-  const response = await withFallback(
-    () => requestContractJson<SubscribeBotResultResponse>('bot-subscribe', {
-      pathParams: { botId },
-      init: { method: 'POST' },
-    }),
-    async () => ({
-      botId,
-      wsToken: randomToken('ws'),
-      status: 'SUBSCRIBED',
-    }),
-  );
+  const response = await requestContractJson<SubscribeBotResultResponse>('bot-subscribe', {
+    pathParams: { botId },
+    init: { method: 'POST' },
+  });
+
+  if (!response.botId || !response.wsToken || !response.status) {
+    throw new Error('Subscribe bot response is missing required fields');
+  }
 
   return {
-    botId: response.botId ?? botId,
-    wsToken: response.wsToken ?? randomToken('ws'),
-    status: response.status ?? 'SUBSCRIBED',
+    botId: response.botId,
+    wsToken: response.wsToken,
+    status: response.status,
   };
 }
 
 export async function unsubscribeFromBot(botId: string): Promise<SubscriptionResult> {
-  const response = await withFallback(
-    () => requestContractJson<SubscribeBotResultResponse>('bot-unsubscribe', {
-      pathParams: { botId },
-      init: { method: 'DELETE' },
-    }),
-    async () => ({
-      botId,
-      wsToken: '',
-      status: 'UNSUBSCRIBED',
-    }),
-  );
+  const response = await requestContractJson<SubscribeBotResultResponse>('bot-unsubscribe', {
+    pathParams: { botId },
+    init: { method: 'DELETE' },
+  });
+
+  if (!response.botId || !response.status) {
+    throw new Error('Unsubscribe bot response is missing required fields');
+  }
 
   return {
-    botId: response.botId ?? botId,
+    botId: response.botId,
     wsToken: response.wsToken ?? '',
-    status: response.status ?? 'UNSUBSCRIBED',
+    status: response.status,
   };
 }
 
-export async function getLeaderboardPageData(query: LeaderboardQueryParams = {}): Promise<LeaderboardPageData> {
-  const page = Math.max(1, query.page ?? 1);
-  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
-  const [botsPage, featuredResponse] = await Promise.all([
-    withFallback(
-      () => requestContractJson<LeaderboardBotsPageResponse>('leaderboard-list'),
-      async () => ({ items: [] }),
-    ),
-    withFallback(() => requestContractJson<LeaderboardFeaturedResponse>('leaderboard-featured'), async () => ({ items: [] })),
-  ]);
+export async function listActiveSubscriptionsForBot(botId: string): Promise<DeveloperSubscriptionSummary[]> {
+  const response = await requestContractJson<BotSubscriptionResultResponse[]>('developer-bot-subscriptions', {
+    pathParams: { botId },
+  });
 
-  const rows = (botsPage.items ?? []).map((item, index) => mapLeaderboardRow(item, index));
-  const resolvedRows = rows;
-  const pagedRows = applyLeaderboardFilters(resolvedRows, { ...query, page, pageSize });
+  return response.map((item, index) => ({
+    botId: item.botId ?? botId,
+    wsToken: item.wsToken ?? `ws_${index + 1}`,
+    status: item.status ?? 'UNKNOWN',
+  }));
+}
+
+export async function getLeaderboardPageData(query: LeaderboardQueryParams = {}): Promise<LeaderboardPageData> {
+  const requestedDataSource = query.dataSource ?? 'ALL';
+  const [featuredResponse, rows] = await Promise.all([
+    withFallback(() => requestContractJson<LeaderboardFeaturedResponse>('leaderboard-featured'), async () => ({ items: [] })),
+    requestedDataSource === 'ALL'
+      ? Promise.all([
+        fetchLeaderboardSourceRows('DRY_RUN', query),
+        fetchLeaderboardSourceRows('HISTORICAL', query),
+      ]).then(([dryRunRows, historicalRows]) => [...dryRunRows, ...historicalRows])
+      : fetchLeaderboardSourceRows(requestedDataSource, query),
+  ]);
 
   const featured = (featuredResponse.items ?? [])
     .map((item, index) => {
-      const matchedRow = resolvedRows.find((row) => row.botId === item.botId);
+      const matchedRow = rows.find((row) => row.botId === item.botId);
 
       if (matchedRow) {
         return matchedRow;
       }
 
+      if (!item.botId) {
+        return null;
+      }
+
       return {
         rank: index + 1,
-        botId: item.botId ?? `featured-${index + 1}`,
+        botId: item.botId,
         botName: item.botName ?? `Featured Bot ${index + 1}`,
         creatorName: item.rankLabel ?? 'Featured',
         cagr: 0,
@@ -1207,10 +1233,33 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
         status: 'ACTIVE' as const,
       };
     })
+    .filter((item): item is LeaderboardRow => item !== null)
     .slice(0, 3);
 
+  if (requestedDataSource === 'ALL') {
+    const sortedRows = sortLeaderboardRows(rows, query.sortBy).map((row, index) => ({
+      ...row,
+      rank: index + 1,
+    }));
+
+    return {
+      rows: sortedRows,
+      featured: featured.length ? featured : [],
+      page: 1,
+      pageSize: Math.max(1, sortedRows.length),
+      total: sortedRows.length,
+    };
+  }
+
+  const page = Math.max(1, query.page ?? 1);
+  const pageSize = Math.max(1, Math.min(48, query.pageSize ?? 12));
+  const pagedRows = applyLeaderboardFilters(sortLeaderboardRows(rows, query.sortBy), { page, pageSize });
+
   return {
-    rows: pagedRows.rows,
+    rows: pagedRows.rows.map((row, index) => ({
+      ...row,
+      rank: (pagedRows.page - 1) * pagedRows.pageSize + index + 1,
+    })),
     featured: featured.length ? featured : [],
     page: pagedRows.page,
     pageSize: pagedRows.pageSize,
@@ -1220,21 +1269,22 @@ export async function getLeaderboardPageData(query: LeaderboardQueryParams = {})
 
 export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
   const [sessionResponse, signalResponse] = await Promise.all([
-    withFallback(() => requestContractJson<PaperSessionSummaryResponse>('paper-session'), async () => undefined),
-    withFallback(
-      () => requestContractJson<PaperSignalResponse[]>('paper-signals', {
-        queryParams: { limit: 8, status: 'ALL' },
-      }),
-      async () => [],
-    ),
+    requestContractJson<PaperSessionSummaryResponse>('paper-session'),
+    requestContractJson<PaperSignalResponse[]>('paper-signals', {
+      queryParams: { limit: 8, status: 'ALL' },
+    }),
   ]);
 
+  if (!sessionResponse.sessionId || !sessionResponse.status) {
+    throw new Error('Paper trading session response is missing required fields');
+  }
+
   const session = {
-    sessionId: sessionResponse?.sessionId ?? '992-ARC-04',
-    status: sessionResponse?.status ?? 'RUNNING',
-    virtualBalance: toNumber(sessionResponse?.virtualBalance, 248502.94),
-    openPnl: toNumber(sessionResponse?.openPnl, 4210),
-    buyingPower: toNumber(sessionResponse?.buyingPower, 1200000),
+    sessionId: sessionResponse.sessionId,
+    status: sessionResponse.status,
+    virtualBalance: toNumber(sessionResponse.virtualBalance, 248502.94),
+    openPnl: toNumber(sessionResponse.openPnl, 4210),
+    buyingPower: toNumber(sessionResponse.buyingPower, 1200000),
   };
 
   const signals = signalResponse
@@ -1256,32 +1306,26 @@ export async function getPaperTradingPageData(): Promise<PaperTradingPageData> {
 }
 
 export async function createPaperOrder(payload: PaperOrderInput): Promise<PaperOrderResult> {
-  const response = await withFallback(
-    () =>
-      requestContractJson<PaperOrderResponse>('paper-order', {
-        init: {
-          method: 'POST',
-          body: JSON.stringify({
-            assetPair: payload.assetPair,
-            side: payload.side,
-            quantity: payload.quantity,
-            estimatedPrice: payload.estimatedPrice,
-            signalId: payload.signalId,
-          }),
-        },
+  const response = await requestContractJson<PaperOrderResponse>('paper-order', {
+    init: {
+      method: 'POST',
+      body: JSON.stringify({
+        assetPair: payload.assetPair,
+        side: payload.side,
+        quantity: payload.quantity,
+        estimatedPrice: payload.estimatedPrice,
+        signalId: payload.signalId,
       }),
-    async () => ({
-      orderId: randomToken('paper_order'),
-      status: 'ACCEPTED',
-      filledQuantity: payload.quantity,
-      avgFillPrice: payload.estimatedPrice,
-      submittedAt: new Date().toISOString(),
-    }),
-  );
+    },
+  });
+
+  if (!response.orderId || !response.status) {
+    throw new Error('Paper order response is missing required fields');
+  }
 
   return {
-    orderId: response.orderId ?? randomToken('paper_order'),
-    status: response.status ?? 'ACCEPTED',
+    orderId: response.orderId,
+    status: response.status,
     filledQuantity: toNumber(response.filledQuantity, payload.quantity),
     avgFillPrice: toNumber(response.avgFillPrice, payload.estimatedPrice),
     submittedAt: response.submittedAt ?? new Date().toISOString(),
@@ -1289,36 +1333,38 @@ export async function createPaperOrder(payload: PaperOrderInput): Promise<PaperO
 }
 
 export async function pausePaperSession(): Promise<PaperSessionData> {
-  const response = await withFallback(
-    () => requestContractJson<PaperSessionSummaryResponse>('paper-session-pause', {
-      init: { method: 'POST' },
-    }),
-    async () => undefined,
-  );
+  const response = await requestContractJson<PaperSessionSummaryResponse>('paper-session-pause', {
+    init: { method: 'POST' },
+  });
+
+  if (!response.sessionId || !response.status) {
+    throw new Error('Paper session pause response is missing required fields');
+  }
 
   return {
-    sessionId: response?.sessionId ?? '992-ARC-04',
-    status: response?.status ?? 'PAUSED',
-    virtualBalance: toNumber(response?.virtualBalance, 248502.94),
-    openPnl: toNumber(response?.openPnl, 4210),
-    buyingPower: toNumber(response?.buyingPower, 1200000),
+    sessionId: response.sessionId,
+    status: response.status,
+    virtualBalance: toNumber(response.virtualBalance, 248502.94),
+    openPnl: toNumber(response.openPnl, 4210),
+    buyingPower: toNumber(response.buyingPower, 1200000),
   };
 }
 
 export async function resumePaperSession(): Promise<PaperSessionData> {
-  const response = await withFallback(
-    () => requestContractJson<PaperSessionSummaryResponse>('paper-session-resume', {
-      init: { method: 'POST' },
-    }),
-    async () => undefined,
-  );
+  const response = await requestContractJson<PaperSessionSummaryResponse>('paper-session-resume', {
+    init: { method: 'POST' },
+  });
+
+  if (!response.sessionId || !response.status) {
+    throw new Error('Paper session resume response is missing required fields');
+  }
 
   return {
-    sessionId: response?.sessionId ?? '992-ARC-04',
-    status: response?.status ?? 'RUNNING',
-    virtualBalance: toNumber(response?.virtualBalance, 248502.94),
-    openPnl: toNumber(response?.openPnl, 4210),
-    buyingPower: toNumber(response?.buyingPower, 1200000),
+    sessionId: response.sessionId,
+    status: response.status,
+    virtualBalance: toNumber(response.virtualBalance, 248502.94),
+    openPnl: toNumber(response.openPnl, 4210),
+    buyingPower: toNumber(response.buyingPower, 1200000),
   };
 }
 
@@ -1412,11 +1458,15 @@ export async function createCurrentUserApiKey(payload: ApiKeyCreateRequest): Pro
     },
   });
 
+  if (!response.apiKeyId || !response.maskedKey || !response.createdAt) {
+    throw new Error('API key creation response is missing required fields');
+  }
+
   return {
-    id: response.apiKeyId ?? randomToken('key'),
+    id: response.apiKeyId,
     label: response.label ?? payload.label,
-    maskedKey: response.maskedKey ?? 'mt_ak_************0000',
-    createdAt: response.createdAt ?? new Date().toISOString(),
+    maskedKey: response.maskedKey,
+    createdAt: response.createdAt,
   } satisfies ProfileApiKey;
 }
 
@@ -1689,13 +1739,13 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     };
   }
 
-  const [detailResponse, subscriptionsResponse, integrationHealthResponse, signalsResponse, analytics] = await Promise.all([
+  const [detailResponse, subscriptions, integrationHealthResponse, signalsResponse, analytics] = await Promise.all([
     withFallback(
       () => requestContractJson<DeveloperBotDetailResponse>('developer-bot-detail', { pathParams: { botId: selectedBotId } }),
       async () => undefined,
     ),
     withFallback(
-      () => requestContractJson<BotSubscriptionResultResponse[]>('developer-bot-subscriptions', { pathParams: { botId: selectedBotId } }),
+      () => listActiveSubscriptionsForBot(selectedBotId),
       async () => [],
     ),
     withFallback(
@@ -1731,15 +1781,9 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
           avgTradeReturn: toNumber(detailResponse.performance.avgTradeReturn),
           tradesPerDay: toNumber(detailResponse.performance.tradesPerDay),
         }
-      : null,
+    : null,
     analytics,
   };
-
-  const subscriptions: DeveloperSubscriptionSummary[] = subscriptionsResponse.map((item, index) => ({
-    botId: item.botId ?? selectedBotId,
-    wsToken: item.wsToken ?? `ws_${index + 1}`,
-    status: item.status ?? 'UNKNOWN',
-  }));
 
   const integrationHealth: BotIntegrationHealth | null = integrationHealthResponse
     ? {
@@ -1794,10 +1838,6 @@ export async function getTerminalData() {
     profileApiKeys: profileData.apiKeys,
     leaderboardRows: leaderboardData.rows,
   };
-}
-
-function randomToken(prefix: string) {
-  return `${prefix}_${Math.random().toString(36).slice(2, 12)}`;
 }
 
 // ========== Phase 1: Decision Dashboard ==========
@@ -1882,10 +1922,9 @@ export async function getPortfolioDecisions(
   statusFilter: 'ALL' | 'ACTIVE' | 'AT_RISK' = 'ALL',
 ): Promise<PortfolioDecisionsResponse> {
   try {
-    const backendStatus = statusFilter === 'ALL' ? 'ACTIVE' : statusFilter;
     const res = await requestContractJson<PortfolioDecisionsResponseData>('portfolio-decisions', {
       queryParams: {
-        status: backendStatus,
+        status: statusFilter === 'ALL' ? undefined : statusFilter,
       },
       init: { method: 'GET' },
     });
@@ -1931,13 +1970,19 @@ export async function getDecisionDashboardData(
   statusFilter: 'ALL' | 'ACTIVE' | 'AT_RISK' = 'ALL',
 ): Promise<DecisionDashboardData> {
   try {
-    const [overview, decisionsResponse] = await Promise.all([
+    const allDecisionsPromise = getPortfolioDecisions('ALL');
+    const [overview, summaryResponse, decisionsResponse] = await Promise.all([
       getPortfolioOverview(),
-      getPortfolioDecisions(statusFilter),
+      allDecisionsPromise,
+      statusFilter === 'ALL' ? allDecisionsPromise : getPortfolioDecisions(statusFilter),
     ]);
+
     return {
       overview,
-      decisions: decisionsResponse,
+      decisions: {
+        decisions: decisionsResponse.decisions,
+        summary: summaryResponse.summary,
+      },
     };
   } catch (error) {
     throw new Error(`Decision dashboard data failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -1945,30 +1990,26 @@ export async function getDecisionDashboardData(
 }
 
 export async function registerBotProvisioning(payload: RegisterBotInput): Promise<BotProvisioningCredentials> {
-  const response = await withFallback(
-    () =>
-      requestContractJson<BotRegistrationResponse>('bot-register', {
-        init: {
-          method: 'POST',
-          body: JSON.stringify({
-            botName: payload.botName,
-            exchange: payload.exchange,
-            tradingPair: payload.tradingPair,
-            description: payload.botName,
-          }),
-        },
+  const response = await requestContractJson<BotRegistrationResponse>('bot-register', {
+    init: {
+      method: 'POST',
+      body: JSON.stringify({
+        botName: payload.botName,
+        exchange: payload.exchange,
+        tradingPair: payload.tradingPair,
+        description: payload.botName,
       }),
-    async () => ({
-      botId: randomToken('bot'),
-      apiKey: randomToken('mk_live'),
-      rawSecret: randomToken('ms_live'),
-    }),
-  );
+    },
+  });
+
+  if (!response.botId || !response.apiKey || !response.rawSecret) {
+    throw new Error('Bot provisioning response is missing required fields');
+  }
 
   return {
-    botId: response.botId ?? randomToken('bot'),
-    apiKey: response.apiKey ?? randomToken('mk_live'),
-    rawSecret: response.rawSecret ?? randomToken('ms_live'),
+    botId: response.botId,
+    apiKey: response.apiKey,
+    rawSecret: response.rawSecret,
   };
 }
 

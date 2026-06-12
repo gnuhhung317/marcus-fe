@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { LeaderboardRow, LeaderboardPageData, LeaderboardSortBy } from '@/lib/contracts/types';
+import { EmptyStateCard } from '@/components/shared/api-state';
+import { LeaderboardPageData, LeaderboardRow } from '@/lib/contracts/types';
 
 interface LeaderboardClientProps {
   initialData: LeaderboardPageData;
@@ -18,36 +19,49 @@ function formatPercent(value: number, showSign = true): string {
 
 function getDataSourceBadge(dataSource?: string) {
   if (!dataSource) return null;
+
   if (dataSource === 'DRY_RUN') {
     return (
-      <span className="inline-flex items-center rounded-md bg-[rgba(16,185,129,0.15)] px-1.5 py-0.5 text-[10px] font-medium text-positive uppercase tracking-[0.08em]">
+      <span className="inline-flex items-center rounded-md bg-[rgba(16,185,129,0.15)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-positive">
         OOS
       </span>
     );
   }
+
   if (dataSource === 'HISTORICAL') {
     return (
-      <span className="inline-flex items-center rounded-md bg-[rgba(245,158,11,0.15)] px-1.5 py-0.5 text-[10px] font-medium text-[rgba(245,158,11,1)] uppercase tracking-[0.08em]">
+      <span className="inline-flex items-center rounded-md bg-[rgba(245,158,11,0.15)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-[rgba(245,158,11,1)]">
         Backtest
       </span>
     );
   }
+
   return null;
 }
 
 function PodiumCard({ row, rank, variant }: { row: LeaderboardRow; rank: number; variant: 'gold' | 'silver' | 'bronze' }) {
   const isCenter = rank === 1;
-  const borderColor = variant === 'gold' ? 'border-[rgba(251,191,36,0.5)]' : variant === 'silver' ? 'border-[rgba(148,163,184,0.4)]' : 'border-[rgba(204,128,72,0.4)]';
-  const rankColor = variant === 'gold' ? 'text-[rgba(251,191,36,1)]' : variant === 'silver' ? 'text-[rgba(148,163,184,1)]' : 'text-[rgba(204,128,72,1)]';
+  const borderColor =
+    variant === 'gold'
+      ? 'border-[rgba(251,191,36,0.5)]'
+      : variant === 'silver'
+        ? 'border-[rgba(148,163,184,0.4)]'
+        : 'border-[rgba(204,128,72,0.4)]';
+  const rankColor =
+    variant === 'gold'
+      ? 'text-[rgba(251,191,36,1)]'
+      : variant === 'silver'
+        ? 'text-[rgba(148,163,184,1)]'
+        : 'text-[rgba(204,128,72,1)]';
   const heightClass = isCenter ? 'h-full' : '';
 
   return (
-    <article className={`glass-strong rounded-2xl border ${borderColor} p-6 shadow-[var(--shadow-soft)] ${heightClass} flex flex-col`}>
+    <article className={`glass-strong flex flex-col rounded-2xl border ${borderColor} p-6 shadow-[var(--shadow-soft)] ${heightClass}`}>
       <div className="flex items-center justify-between">
-        <span className={`text-xs uppercase tracking-[0.16em] ${rankColor} font-semibold`}>Rank #{rank}</span>
-        {getDataSourceBadge((row as any).dataSource)}
+        <span className={`text-xs font-semibold uppercase tracking-[0.16em] ${rankColor}`}>Rank #{rank}</span>
+        {getDataSourceBadge(row.dataSource)}
       </div>
-      <h2 className="mt-3 text-2xl font-semibold text-white line-clamp-1">{row.botName}</h2>
+      <h2 className="mt-3 line-clamp-1 text-2xl font-semibold text-white">{row.botName}</h2>
       <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
 
       <div className="mt-auto">
@@ -127,11 +141,11 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
         <tbody>
           {rows.map((row, idx) => (
             <tr key={row.botId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
-              <td className="px-4 py-3.5 text-white font-medium">#{startRank + idx}</td>
+              <td className="px-4 py-3.5 font-medium text-white">#{startRank + idx}</td>
               <td className="px-4 py-3.5 font-medium text-white">
                 <div className="flex items-center gap-2">
                   <span>{row.botName}</span>
-                  {getDataSourceBadge((row as any).dataSource)}
+                  {getDataSourceBadge(row.dataSource)}
                 </div>
               </td>
               <td className="px-4 py-3.5 text-muted">{row.creatorName}</td>
@@ -143,9 +157,9 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
               <td className="px-4 py-3.5 text-right">
                 <Link
                   href={`/terminal/bots/${row.botId}`}
-                  className="text-xs font-semibold text-white hover:text-positive transition-colors"
+                  className="text-xs font-semibold text-white transition-colors hover:text-positive"
                 >
-                  Details →
+                  {'Details ->'}
                 </Link>
               </td>
             </tr>
@@ -160,31 +174,29 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
   const [activeTab, setActiveTab] = useState<TabKey>('main');
   const [sortBy, setSortBy] = useState<SortKey>('CAGR');
 
-  // Filter rows based on tab (data source)
   const filteredRows = useMemo(() => {
     if (activeTab === 'main') {
-      // Main Leaderboard: only DRY_RUN data
-      return initialData.rows.filter(row => row.dataSource === 'DRY_RUN' || !row.dataSource);
-    } else {
-      // Proving Grounds: only HISTORICAL data
-      return initialData.rows.filter(row => row.dataSource === 'HISTORICAL');
+      return initialData.rows.filter((row) => row.dataSource === 'DRY_RUN' || !row.dataSource);
     }
-  }, [initialData.rows, activeTab]);
 
-  // Sort filtered rows
+    return initialData.rows.filter((row) => row.dataSource === 'HISTORICAL');
+  }, [activeTab, initialData.rows]);
+
   const sortedRows = useMemo(() => {
     const rows = [...filteredRows];
+
     if (sortBy === 'CAGR') {
-      rows.sort((a, b) => b.cagr - a.cagr);
+      rows.sort((left, right) => right.cagr - left.cagr);
     } else {
-      rows.sort((a, b) => b.sharpe - a.sharpe);
+      rows.sort((left, right) => right.sharpe - left.sharpe);
     }
-    // Assign ranks based on sorted order
-    return rows.map((row, idx) => ({ ...row, rank: idx + 1 }));
+
+    return rows.map((row, index) => ({ ...row, rank: index + 1 }));
   }, [filteredRows, sortBy]);
 
   const top3 = sortedRows.slice(0, 3);
   const restRows = sortedRows.slice(3);
+  const hasRows = filteredRows.length > 0;
 
   return (
     <div className="space-y-8">
@@ -205,7 +217,6 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
           </div>
         </div>
 
-        {/* Data Source Tabs */}
         <div className="flex gap-2">
           <button
             type="button"
@@ -213,7 +224,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === 'main'
                 ? 'cta-primary'
-                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
             }`}
           >
             Main Leaderboard
@@ -224,30 +235,28 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
               activeTab === 'proving-grounds'
                 ? 'cta-primary'
-                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
             }`}
           >
             Proving Grounds
           </button>
         </div>
 
-        {/* Risk Warning for Proving Grounds */}
-        {activeTab === 'proving-grounds' && (
-          <div className="bg-orange-900/20 border border-orange-500/50 rounded-xl p-4">
+        {activeTab === 'proving-grounds' ? (
+          <div className="rounded-xl border border-orange-500/50 bg-orange-900/20 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">⚠️</span>
+              <span className="text-2xl">!</span>
               <div>
                 <h3 className="font-semibold text-orange-400">Risk Warning</h3>
-                <p className="text-sm text-orange-300 mt-1">
-                  Historical backtest data does not guarantee future results. These bots have not been
-                  verified in live markets. Capital at risk.
+                <p className="mt-1 text-sm text-orange-300">
+                  Historical backtest data does not guarantee future results. These bots have not been verified in live
+                  markets. Capital at risk.
                 </p>
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
-        {/* Sort Buttons */}
         <div className="flex gap-2">
           <button
             type="button"
@@ -255,7 +264,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
               sortBy === 'CAGR'
                 ? 'cta-primary'
-                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
             }`}
           >
             Sort by CAGR
@@ -266,7 +275,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
               sortBy === 'SHARPE'
                 ? 'cta-primary'
-                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:text-white hover:bg-[rgba(148,163,184,0.08)]'
+                : 'border border-[rgba(148,163,184,0.24)] text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
             }`}
           >
             Sort by Sharpe
@@ -274,25 +283,28 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
         </div>
       </header>
 
-      {top3.length > 0 ? (
-        <PodiumSection top3={top3} />
+      {!hasRows ? (
+        <EmptyStateCard
+          title={activeTab === 'main' ? 'No main leaderboard rows yet' : 'No proving grounds rows yet'}
+          message={
+            activeTab === 'main'
+              ? 'The live leaderboard has not returned any DRY_RUN rows yet.'
+              : 'The historical leaderboard has not returned any backtest rows yet.'
+          }
+        />
       ) : (
-        <div className="glass-strong rounded-2xl border border-[var(--panel-border)] p-8 text-center">
-          <p className="text-lg font-semibold text-white">No bots available</p>
-          <p className="mt-2 text-sm text-muted">Check back later for updated rankings.</p>
-        </div>
+        <>
+          {top3.length > 0 ? <PodiumSection top3={top3} /> : null}
+
+          {restRows.length > 0 ? <DetailTable rows={restRows} startRank={4} /> : null}
+
+          <div className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
+            <span className="text-muted">
+              Showing {sortedRows.length} bots · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by {sortBy}
+            </span>
+          </div>
+        </>
       )}
-
-      {restRows.length > 0 ? (
-        <DetailTable rows={restRows} startRank={4} />
-      ) : null}
-
-      <div className="flex items-center justify-between rounded-2xl border border-[rgba(148,163,184,0.18)] bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
-        <span className="text-muted">
-          Showing {sortedRows.length} bots · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by{' '}
-          {sortBy}
-        </span>
-      </div>
     </div>
   );
 }

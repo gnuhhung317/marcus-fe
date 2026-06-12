@@ -81,10 +81,12 @@ export interface MarketplaceBot {
   drawdown: number;
 }
 
-export type MarketplaceSortBy = 'RETURN_30D' | 'DRAWDOWN' | 'WIN_RATE';
+export type MarketplaceSortBy = 'RETURN_30D' | 'DRAWDOWN' | 'SUBSCRIBERS';
 
 export interface MarketplaceQueryParams {
   search?: string;
+  asset?: string;
+  risk?: string;
   sortBy?: MarketplaceSortBy;
   page?: number;
   pageSize?: number;
@@ -420,7 +422,9 @@ export interface LeaderboardPageData {
 export type LeaderboardSortBy = 'RETURN_24H' | 'DRAWDOWN' | 'SHARPE';
 
 export interface LeaderboardQueryParams {
-  dataSource?: 'DRY_RUN' | 'HISTORICAL';
+  dataSource?: 'DRY_RUN' | 'HISTORICAL' | 'ALL';
+  market?: string;
+  asset?: string;
   sortBy?: LeaderboardSortBy;
   page?: number;
   pageSize?: number;

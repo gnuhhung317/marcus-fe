@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { EmptyStateCard, ErrorStateCard } from '@/components/shared/api-state';
 import { getMarketplacePageData } from '@/lib/contracts/client';
 import { MarketplaceQueryParams, MarketplaceSortBy } from '@/lib/contracts/types';
 
@@ -25,7 +26,10 @@ function parseMarketplaceSearchParams(searchParams?: MarketplaceSearchParams): M
 
   return {
     search: toSingleValue(searchParams?.search)?.trim() || undefined,
-    sortBy: sortBy === 'DRAWDOWN' || sortBy === 'WIN_RATE' || sortBy === 'RETURN_30D' ? (sortBy as MarketplaceSortBy) : 'RETURN_30D',
+    sortBy:
+      sortBy === 'DRAWDOWN' || sortBy === 'SUBSCRIBERS' || sortBy === 'RETURN_30D'
+        ? (sortBy as MarketplaceSortBy)
+        : 'RETURN_30D',
     page: parseInteger(toSingleValue(searchParams?.page), 1),
     pageSize: parseInteger(toSingleValue(searchParams?.pageSize), 12),
   };
@@ -54,8 +58,8 @@ function sortLabel(sortBy: MarketplaceSortBy) {
     return 'Lowest Drawdown';
   }
 
-  if (sortBy === 'WIN_RATE') {
-    return 'Highest Win Rate';
+  if (sortBy === 'SUBSCRIBERS') {
+    return 'Most Subscribers';
   }
 
   return 'Highest Return';
@@ -70,9 +74,25 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
   }
 
   const query = parseMarketplaceSearchParams(searchParams);
-  const marketplacePage = await getMarketplacePageData(query);
+
+  let marketplacePage;
+  try {
+    marketplacePage = await getMarketplacePageData(query);
+  } catch (error) {
+    return (
+      <ErrorStateCard
+        title="Marketplace unavailable"
+        message={error instanceof Error ? error.message : 'Unable to load marketplace bots right now.'}
+        actionLabel="Retry"
+        actionHref="/terminal/marketplace"
+      />
+    );
+  }
+
   const hasPrev = marketplacePage.page > 1;
-  const hasNext = marketplacePage.bots.length >= marketplacePage.pageSize;
+  const hasNext = marketplacePage.page * marketplacePage.pageSize < marketplacePage.total;
+  const start = marketplacePage.total === 0 ? 0 : (marketplacePage.page - 1) * marketplacePage.pageSize + 1;
+  const end = Math.min(marketplacePage.total, marketplacePage.page * marketplacePage.pageSize);
 
   return (
     <div className="space-y-8">
@@ -85,7 +105,10 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
           </p>
         </div>
 
-        <form method="get" className="grid gap-3 rounded-2xl border border-[var(--panel-border)] bg-surface p-4 shadow-[var(--shadow-soft)] lg:grid-cols-[1.4fr_0.85fr_0.65fr_auto]">
+        <form
+          method="get"
+          className="grid gap-3 rounded-2xl border border-[var(--panel-border)] bg-surface p-4 shadow-[var(--shadow-soft)] lg:grid-cols-[1.4fr_0.85fr_0.65fr_auto]"
+        >
           <label className="space-y-2">
             <span className="text-[11px] uppercase tracking-[0.16em] text-fg-muted">Search</span>
             <input
@@ -106,7 +129,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
             >
               <option value="RETURN_30D">Highest Return</option>
               <option value="DRAWDOWN">Lowest Drawdown</option>
-              <option value="WIN_RATE">Highest Win Rate</option>
+              <option value="SUBSCRIBERS">Most Subscribers</option>
             </select>
           </label>
 
@@ -133,15 +156,25 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-fg-muted">
         <p>
-          Showing {marketplacePage.bots.length} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
+          Showing {start}-{end} of {marketplacePage.total} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
         </p>
         <p>Page {marketplacePage.page}</p>
       </div>
 
-      <section className="grid auto-rows-fr gap-5 md:grid-cols-2 xl:grid-cols-3 items-stretch">
-        {marketplacePage.bots.length ? (
-          marketplacePage.bots.map((bot) => (
-            <article key={bot.botId} className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+      {marketplacePage.bots.length === 0 ? (
+        <EmptyStateCard
+          title="No bots match the current filters"
+          message="Try changing the search term, sort order, or page size."
+          actionLabel="Reset filters"
+          actionHref="/terminal/marketplace"
+        />
+      ) : (
+        <section className="grid auto-rows-fr items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+          {marketplacePage.bots.map((bot) => (
+            <article
+              key={bot.botId}
+              className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]"
+            >
               <div className="flex h-full flex-col">
                 <div className="flex-1 space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -186,13 +219,9 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
                 </Link>
               </div>
             </article>
-          ))
-        ) : (
-          <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-6 text-sm text-fg-muted">
-            No bots match the current filters.
-          </article>
-        )}
-      </section>
+          ))}
+        </section>
+      )}
 
       <nav className="flex items-center justify-between rounded-2xl border border-[var(--panel-border)] bg-surface px-4 py-3 text-sm shadow-[var(--shadow-soft)]">
         <span className="text-fg-muted">Page {marketplacePage.page}</span>

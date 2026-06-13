@@ -1,68 +1,33 @@
 "use client";
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Form, FormField } from '@/components/ui/form-primitive';
+import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth.schema';
 
 const REGISTER_ROUTE = '/api/auth/register';
 
 export default function RegisterForm() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [role, setRole] = useState<'TRADER' | 'DEVELOPER'>('TRADER');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const emailRef = useRef<HTMLInputElement>(null);
-  const displayNameRef = useRef<HTMLInputElement>(null);
-  const passwordRef = useRef<HTMLInputElement>(null);
-  const alertRef = useRef<HTMLDivElement>(null);
-
-  function validateForm() {
-    const trimmedEmail = email.trim();
-    const trimmedDisplayName = displayName.trim();
-    const hasEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail);
-    const hasStrongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password);
-
-    if (!trimmedDisplayName) {
-      displayNameRef.current?.focus();
-      return 'Display name is required.';
-    }
-
-    if (!hasEmail) {
-      emailRef.current?.focus();
-      return 'Please enter a valid email address.';
-    }
-
-    if (!hasStrongPassword) {
-      passwordRef.current?.focus();
-      return 'Password must be at least 8 characters and include uppercase, lowercase, and a number.';
-    }
-
-    return null;
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(data: RegisterFormValues) {
     setError(null);
     setSuccessMessage(null);
-
-    const validationError = validateForm();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setLoading(true);
 
     try {
       const res = await fetch(REGISTER_ROUTE, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ email: email.trim(), password, displayName: displayName.trim(), role }),
+        body: JSON.stringify({
+          email: data.email.trim(),
+          password: data.password,
+          displayName: data.displayName.trim(),
+          role: data.role,
+        }),
       });
 
       const payload = await res.json().catch(() => ({}));
@@ -84,102 +49,88 @@ export default function RegisterForm() {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unexpected error.';
       setError(message);
-      alertRef.current?.focus();
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-md space-y-4" noValidate>
+    <div className="mx-auto max-w-md space-y-4">
       {error ? (
         <div
-          ref={alertRef}
           role="alert"
-          tabIndex={-1}
-          className="rounded-lg border border-[var(--panel-border)] bg-[var(--negative-soft)] p-3 text-sm text-negative"
+          className="rounded-lg border border-border bg-negative-soft p-3 text-sm text-negative"
         >
           {error}
         </div>
       ) : null}
 
       {successMessage ? (
-        <div className="rounded-lg border border-[var(--panel-border)] bg-[var(--primary-soft)] p-3 text-sm text-positive">
+        <div className="rounded-lg border border-border bg-positive-soft p-3 text-sm text-positive">
           {successMessage}
         </div>
       ) : null}
 
-      <div>
-        <label htmlFor="register-email" className="block text-sm font-medium text-white">Email</label>
-        <input
-          ref={emailRef}
-          id="register-email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          type="email"
-          required
-          autoComplete="email"
-          aria-describedby="register-email-hint"
-          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
-        />
-        <p id="register-email-hint" className="mt-1 text-xs text-muted">Use a reachable email for account recovery.</p>
-      </div>
+      <Form<RegisterFormValues>
+        schema={registerSchema}
+        onSubmit={onSubmit}
+        defaultValues={{
+          email: '',
+          displayName: '',
+          password: '',
+          role: 'TRADER',
+        }}
+      >
+        {({ register, formState: { errors, isSubmitting } }) => (
+          <>
+            <FormField label="Email" error={errors.email?.message} hint="Use a reachable email for account recovery.">
+              <input
+                {...register('email')}
+                type="email"
+                autoComplete="email"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-positive/50"
+              />
+            </FormField>
 
-      <div>
-        <label htmlFor="register-role" className="block text-sm font-medium text-white">Account type</label>
-        <select
-          id="register-role"
-          value={role}
-          onChange={(e) => setRole(e.target.value as 'TRADER' | 'DEVELOPER')}
-          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
-        >
-          <option value="TRADER">Trader</option>
-          <option value="DEVELOPER">Developer</option>
-        </select>
-        <p className="mt-1 text-xs text-muted">Select developer if you plan to publish bots or integrations.</p>
-      </div>
+            <FormField label="Account type" error={errors.role?.message} hint="Select developer if you plan to publish bots or integrations.">
+              <select
+                {...register('role')}
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-positive/50"
+              >
+                <option value="TRADER">Trader</option>
+                <option value="DEVELOPER">Developer</option>
+              </select>
+            </FormField>
 
-      <div>
-        <label htmlFor="register-display-name" className="block text-sm font-medium text-white">Display name</label>
-        <input
-          ref={displayNameRef}
-          id="register-display-name"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          type="text"
-          required
-          autoComplete="name"
-          className="mt-1 block w-full rounded-md border border-[var(--panel-border)] bg-[var(--panel)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary-soft)]"
-        />
-      </div>
+            <FormField label="Display name" error={errors.displayName?.message}>
+              <input
+                {...register('displayName')}
+                type="text"
+                autoComplete="name"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-positive/50"
+              />
+            </FormField>
 
-      <div>
-        <label htmlFor="register-password" className="block text-sm font-medium text-white">Password</label>
-        <input
-          ref={passwordRef}
-          id="register-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-          aria-describedby="register-password-hint"
-          className="mt-1 block w-full rounded-md border border-[rgba(148,163,184,0.22)] bg-[rgba(15,23,42,0.72)] px-3 py-2 text-white shadow-sm outline-none transition-colors placeholder:text-muted focus:border-[rgba(16,185,129,0.52)]"
-        />
-        <p id="register-password-hint" className="mt-1 text-xs text-muted">At least 8 chars, with upper/lowercase and a number.</p>
-      </div>
+            <FormField label="Password" error={errors.password?.message} hint="At least 8 chars, with upper/lowercase and a number.">
+              <input
+                {...register('password')}
+                type="password"
+                autoComplete="new-password"
+                className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-positive/50"
+              />
+            </FormField>
 
-      <div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="inline-flex w-full items-center justify-center rounded-md cta-primary px-4 py-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? 'Creating account…' : 'Create account'}
-        </button>
-      </div>
-      <p className="text-xs text-muted">By creating an account, you agree to system access and audit policies.</p>
-    </form>
+            <div className="pt-2">
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                className="w-full"
+              >
+                Create account
+              </Button>
+            </div>
+            <p className="text-xs text-muted">By creating an account, you agree to system access and audit policies.</p>
+          </>
+        )}
+      </Form>
+    </div>
   );
 }

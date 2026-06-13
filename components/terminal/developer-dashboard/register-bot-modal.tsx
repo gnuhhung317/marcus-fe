@@ -2,48 +2,55 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { registerBotProvisioning } from '@/lib/contracts/client';
-import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useBotMutations } from '@/lib/hooks/use-bot-mutations';
+import { BotProvisioningCredentials } from '@/lib/contracts/types';
+import { registerBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
 
 interface RegisterBotModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const initialFormValues: RegisterBotInput = {
-  botName: 'MARCUS_SIGNAL_BRIDGE',
-  exchange: 'BINANCE',
-  tradingPair: 'BTC/USDT',
-};
-
 export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
   const router = useRouter();
-  const [formValues, setFormValues] = useState<RegisterBotInput>(initialFormValues);
   const [credentials, setCredentials] = useState<BotProvisioningCredentials | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   
-  // Clipboard states
   const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const { registerBot } = useBotMutations();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterBotFormValues>({
+    resolver: zodResolver(registerBotSchema),
+    defaultValues: {
+      botName: 'MARCUS_SIGNAL_BRIDGE',
+      exchange: 'BINANCE',
+      tradingPair: 'BTC/USDT',
+    },
+  });
 
   if (!isOpen) return null;
 
-  const handleFieldChange = <K extends keyof RegisterBotInput>(field: K, value: RegisterBotInput[K]) => {
-    setFormValues((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: RegisterBotFormValues) => {
     try {
       setSubmitError(null);
-      setIsSubmitting(true);
-
-      const result = await registerBotProvisioning(formValues);
-      setCredentials(result);
+      registerBot.mutate(data, {
+        onSuccess: (result) => {
+          setCredentials(result);
+        },
+        onError: () => {
+          setSubmitError('Unable to generate bot credentials. Please retry.');
+        }
+      });
     } catch {
       setSubmitError('Unable to generate bot credentials. Please retry.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -58,38 +65,40 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
       router.push(`/terminal/developer-dashboard/${credentials.botId}`);
       router.refresh();
     }
-    // Reset state & close
-    setFormValues(initialFormValues);
     setCredentials(null);
+    reset();
     onClose();
+  };
+
+  const handleClose = () => {
+    if (!credentials) {
+      reset();
+      onClose();
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop overlay */}
       <div 
         className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300"
-        onClick={credentials ? undefined : onClose} // Prevent closing by backdrop click when credentials are shown
+        onClick={handleClose}
       />
 
-      {/* Modal Container */}
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-[var(--panel-strong)] p-8 shadow-[var(--shadow-soft)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface-strong p-8 shadow-[var(--shadow-soft)] backdrop-blur-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
         
-        {/* Glow effect */}
-        <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-[var(--primary-soft)] blur-3xl pointer-events-none" />
-        <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-[var(--info-soft)] blur-3xl pointer-events-none" />
+        <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-primary-soft blur-3xl pointer-events-none" />
+        <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-info-soft blur-3xl pointer-events-none" />
 
-        {/* Header */}
-        <header className="relative flex items-center justify-between pb-5 border-b border-[var(--panel-border)]">
+        <header className="relative flex items-center justify-between pb-5 border-b border-border">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-400">Signal Gateway</span>
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-positive">Signal Gateway</span>
             <h3 className="text-xl font-bold text-white tracking-tight mt-1">
               {credentials ? 'Credentials Generated' : 'Register New Webhook Bot'}
             </h3>
           </div>
           {!credentials && (
             <button 
-              onClick={onClose}
+              onClick={handleClose}
               className="rounded-lg p-1.5 text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -99,60 +108,62 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
           )}
         </header>
 
-        {/* Content body */}
         <div className="relative mt-6 overflow-y-auto pr-1 flex-1">
           {!credentials ? (
-            /* Form View */
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div>
                 <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Bot Name</label>
                 <input
                   type="text"
-                  required
                   placeholder="e.g. BTC_BREAKOUT_BOT"
-                  className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
-                  value={formValues.botName}
-                  onChange={(e) => handleFieldChange('botName', e.target.value)}
+                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
+                  {...register('botName')}
                 />
+                {errors.botName && (
+                  <p className="mt-1 text-xs text-negative">{errors.botName.message}</p>
+                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Exchange Venue</label>
                   <select
-                    className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all"
-                    value={formValues.exchange}
-                    onChange={(e) => handleFieldChange('exchange', e.target.value as RegisterBotInput['exchange'])}
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all"
+                    {...register('exchange')}
                   >
                     <option value="BINANCE">Binance</option>
                     <option value="BYBIT">Bybit</option>
                     <option value="OKX">OKX</option>
                   </select>
+                  {errors.exchange && (
+                    <p className="mt-1 text-xs text-negative">{errors.exchange.message}</p>
+                  )}
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Trading Pair</label>
                   <input
                     type="text"
-                    required
                     placeholder="BTC/USDT"
-                    className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
-                    value={formValues.tradingPair}
-                    onChange={(e) => handleFieldChange('tradingPair', e.target.value)}
+                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
+                    {...register('tradingPair')}
                   />
+                  {errors.tradingPair && (
+                    <p className="mt-1 text-xs text-negative">{errors.tradingPair.message}</p>
+                  )}
                 </div>
               </div>
 
               {submitError && (
-                <div className="rounded-xl border border-[var(--negative-soft)] bg-[var(--negative-soft)] p-3 text-xs text-negative">
+                <div className="rounded-xl border border-[var(--semantic-negative-soft)] bg-negative-soft p-3 text-xs text-negative">
                   {submitError}
                 </div>
               )}
 
-              <div className="pt-4 border-t border-[var(--panel-border)] flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleClose}
                   className="rounded-xl px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition-colors"
                 >
                   Cancel
@@ -177,10 +188,8 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
               </div>
             </form>
           ) : (
-            /* Success & Vault display view */
             <div className="space-y-6">
-              {/* Warnings and Security */}
-              <div className="rounded-xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-4 flex gap-3">
+              <div className="rounded-xl border border-[var(--semantic-warning-soft)] bg-warning-soft p-4 flex gap-3">
                 <svg className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -192,58 +201,55 @@ export function RegisterBotModal({ isOpen, onClose }: RegisterBotModalProps) {
                 </div>
               </div>
 
-              {/* Bot ID */}
               <div className="relative group">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bot ID</span>
                   <button 
                     onClick={() => handleCopy('botId', credentials.botId)}
-                    className="text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                    className="text-[10px] font-semibold text-positive hover:text-positive transition-colors flex items-center gap-1"
                   >
                     {copiedField === 'botId' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
                   {credentials.botId}
                 </div>
               </div>
 
-              {/* Public API Key */}
               <div className="relative group">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Public API Key</span>
                   <button 
                     onClick={() => handleCopy('apiKey', credentials.apiKey)}
-                    className="text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                    className="text-[10px] font-semibold text-positive hover:text-positive transition-colors flex items-center gap-1"
                   >
                     {copiedField === 'apiKey' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-xs font-mono text-white select-all break-all pr-12">
                   {credentials.apiKey}
                 </div>
               </div>
 
-              {/* Raw Secret */}
               <div className="relative group">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Provisioning Signing Secret (rawSecret)</span>
+                  <span className="text-[10px] font-bold text-positive uppercase tracking-wider">Provisioning Signing Secret (rawSecret)</span>
                   <button 
                     onClick={() => handleCopy('rawSecret', credentials.rawSecret)}
-                    className="text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                    className="text-[10px] font-semibold text-positive hover:text-positive transition-colors flex items-center gap-1"
                   >
                     {copiedField === 'rawSecret' ? 'Copied!' : 'Copy'}
                   </button>
                 </div>
-                <div className="w-full rounded-xl border border-[var(--primary-soft)] bg-[var(--primary-soft)] px-4 py-3.5 text-xs font-mono text-positive select-all break-all pr-12">
+                <div className="w-full rounded-xl border border-[var(--primary-soft)] bg-primary-soft px-4 py-3.5 text-xs font-mono text-positive select-all break-all pr-12">
                   {credentials.rawSecret}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-white/5 flex items-center justify-end">
+              <div className="pt-4 border-t border-border flex items-center justify-end">
                 <button
                   onClick={handleDone}
-                  className="rounded-xl bg-emerald-400 px-6 py-2.5 text-xs font-bold text-black hover:bg-emerald-300 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  className="rounded-xl bg-positive px-6 py-2.5 text-xs font-bold text-black hover:bg-positive hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   Done & Connect Bot
                 </button>

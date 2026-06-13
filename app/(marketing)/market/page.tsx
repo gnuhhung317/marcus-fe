@@ -53,7 +53,7 @@ export default async function MarketPage() {
                   <td className="px-4 py-4 text-right text-muted">{row.drawdown.toFixed(2)}%</td>
                   <td className="px-4 py-4 text-right text-white">{row.sharpe.toFixed(2)}</td>
                   <td className="px-4 py-4">
-                    <span className={`rounded-full px-2 py-1 text-xs ${row.status === 'ACTIVE' ? 'bg-[rgba(34,197,94,0.15)] text-positive' : 'bg-[rgba(244,63,94,0.14)] text-negative'}`}>
+                    <span className={`rounded-full px-2 py-1 text-xs ${row.status === 'ACTIVE' ? 'bg-[rgba(34,197,94,0.15)] text-positive' : 'bg-negative/14 text-negative'}`}>
                       {row.status}
                     </span>
                   </td>

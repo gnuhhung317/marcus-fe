@@ -49,7 +49,7 @@ export function DecisionFilter({
             placeholder="Search bot name..."
             value={searchTerm}
             onChange={(e) => onSearchTermChange(e.target.value)}
-            className="w-full rounded-xl border border-[rgba(255,255,255,0.08)] bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 transition-colors focus:border-[rgba(0,190,115,0.45)] focus:bg-white/[0.04] focus:outline-none"
+            className="w-full rounded-xl border border-white/8 bg-white/[0.02] py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 transition-colors focus:border-positive/45 focus:bg-white/[0.04] focus:outline-none"
             aria-label="Search subscriptions by bot name"
           />
         </div>
@@ -63,8 +63,8 @@ export function DecisionFilter({
             aria-pressed={statusFilter === status}
             className={`rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors duration-200 ${
               statusFilter === status
-                ? 'border-[rgba(0,190,115,0.35)] bg-[rgba(0,190,115,0.08)] font-semibold text-positive'
-                : 'border-[rgba(255,255,255,0.08)] bg-white/[0.02] text-muted hover:bg-white/[0.05] hover:text-white'
+                ? 'border-positive/35 bg-positive/8 font-semibold text-positive'
+                : 'border-white/8 bg-white/[0.02] text-muted hover:bg-white/[0.05] hover:text-white'
             }`}
           >
             {status === 'ALL'

@@ -24,7 +24,7 @@ export default async function TerminalDeveloperConsolePage() {
       <section className="grid gap-5 lg:grid-cols-2">
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
           <h2 className="text-xl font-semibold text-white">Platform Connection</h2>
-          <div className="mt-4 rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.55)] p-4">
+          <div className="mt-4 rounded-xl border border-border bg-surface p-4">
             <p className="text-sm text-muted">Overall Status</p>
             <p className={`mt-2 text-3xl font-semibold ${isConnected ? 'text-positive' : 'text-negative'}`}>
               {connectivity.overallStatus}
@@ -35,7 +35,7 @@ export default async function TerminalDeveloperConsolePage() {
 
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
           <h2 className="text-xl font-semibold text-white">Signal JSON Schema</h2>
-          <pre className="mt-4 overflow-auto rounded-xl border border-[rgba(62,183,255,0.3)] bg-[rgba(6,10,18,0.75)] p-4 text-xs text-[#9ad7ff]">
+          <pre className="mt-4 overflow-auto rounded-xl border border-info/30 bg-surface-strong p-4 text-xs text-info">
 {`{
   "version": "1.2",
   "timestamp": "ISO8601",
@@ -56,9 +56,9 @@ export default async function TerminalDeveloperConsolePage() {
           <h2 className="text-xl font-semibold text-white">Recent Signals</h2>
           <p className="text-sm text-muted">{signalStream.length} records</p>
         </div>
-        <div className="mt-4 overflow-x-auto rounded-xl border border-[rgba(148,163,184,0.22)]">
+        <div className="mt-4 overflow-x-auto rounded-xl border border-border">
           <table className="min-w-full border-collapse text-left text-sm">
-            <thead className="bg-[rgba(148,163,184,0.08)] text-xs uppercase tracking-[0.12em] text-muted">
+            <thead className="bg-border/8 text-xs uppercase tracking-[0.12em] text-muted">
               <tr>
                 <th className="px-4 py-3">Signal ID</th>
                 <th className="px-4 py-3">Bot</th>
@@ -69,7 +69,7 @@ export default async function TerminalDeveloperConsolePage() {
             </thead>
             <tbody>
               {signalStream.map((signal) => (
-                <tr key={signal.signalId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
+                <tr key={signal.signalId} className="border-t border-border/18 transition-colors hover:bg-border/8">
                   <td className="px-4 py-3.5 text-white">{signal.signalId}</td>
                   <td className="px-4 py-3.5 text-muted">{signal.botId}</td>
                   <td className="px-4 py-3.5 text-white">{signal.symbol}</td>
@@ -89,7 +89,7 @@ export default async function TerminalDeveloperConsolePage() {
         </div>
         <ul className="mt-4 space-y-2 text-sm">
           {executionLogs.map((log, index) => (
-            <li key={`${log.timestamp}-${index}`} className="rounded-lg border border-[rgba(132,162,191,0.18)] bg-[rgba(6,10,18,0.5)] px-3 py-2 text-muted">
+            <li key={`${log.timestamp}-${index}`} className="rounded-lg border border-border bg-surface px-3 py-2 text-muted">
               [{log.level}] {log.source} · {log.message}
             </li>
           ))}

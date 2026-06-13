@@ -77,7 +77,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
   };
 
   return (
-    <article className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <article className="glass-strong h-full rounded-2xl border border-border p-5 shadow-[var(--shadow-soft)]">
       <div className="flex h-full flex-col">
         <div className="flex-1 space-y-4">
           <div>
@@ -91,17 +91,17 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           </div>
 
           {subscriptionBlockedMessage ? (
-            <div className="rounded-xl border border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.08)] px-4 py-3 text-sm text-negative">
+            <div className="rounded-xl border border-negative/18 bg-negative/8 px-4 py-3 text-sm text-negative">
               {subscriptionBlockedMessage}
             </div>
           ) : null}
 
-          <label className="flex items-start gap-3 rounded-xl border border-[var(--panel-border)] bg-warning-soft p-3 text-sm text-warning">
+          <label className="flex items-start gap-3 rounded-xl border border-border bg-warning-soft p-3 text-sm text-warning">
             <input
               type="checkbox"
               checked={riskConfirmed}
               onChange={(event) => setRiskConfirmed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-[var(--panel-border)] bg-surface text-positive focus:ring-0"
+              className="mt-0.5 h-4 w-4 rounded border-border bg-surface text-positive focus:ring-0"
               disabled={!canSubscribe}
             />
             <span className="leading-relaxed">
@@ -112,28 +112,28 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           {error ? <p className="text-sm text-negative">{error}</p> : null}
 
           {result ? (
-            <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-4">
+            <div className="rounded-xl border border-border bg-surface p-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-[var(--panel-border)] bg-surface-strong px-3 py-3">
+                <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Status</p>
                   <p className="mt-2 text-sm font-semibold text-fg">{result.status}</p>
                 </div>
-                <div className="rounded-lg border border-[var(--panel-border)] bg-surface-strong px-3 py-3">
+                <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
                   <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Bot</p>
                   <p className="mt-2 font-mono text-sm text-fg">{botId}</p>
                 </div>
               </div>
-              <div className="mt-3 rounded-lg border border-[var(--panel-border)] bg-surface-strong px-3 py-3">
+              <div className="mt-3 rounded-lg border border-border bg-surface-strong px-3 py-3">
                 <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Runtime token</p>
                 <p className="mt-2 break-all font-mono text-sm text-fg">{result.wsToken}</p>
               </div>
             </div>
           ) : isSubmitting ? (
-            <div className="rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-4 text-sm text-fg-muted">
+            <div className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-fg-muted">
               Requesting runtime token from the backend...
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-[var(--panel-border)] bg-surface px-4 py-4 text-sm text-fg-muted">
+            <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-4 text-sm text-fg-muted">
               Subscribe to surface the runtime token here.
             </div>
           )}
@@ -154,7 +154,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
               type="button"
               onClick={handleUnsubscribe}
               disabled={isSubmitting || !result || result.status === 'UNSUBSCRIBED' || result.status === 'UNSUBSCRIBING'}
-              className="flex-1 rounded-xl border border-[var(--panel-border)] bg-surface px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-55"
+              className="flex-1 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-55"
             >
               Unsubscribe
             </button>

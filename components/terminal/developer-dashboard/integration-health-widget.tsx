@@ -12,20 +12,20 @@ function formatTimestamp(value?: string | null) {
 
 function statusTone(status: string) {
   if (status === 'UP' || status === 'OK' || status === 'HEALTHY') {
-    return 'border-[var(--primary-soft)] bg-[var(--primary-soft)] text-positive';
+    return 'border-[var(--primary-soft)] bg-primary-soft text-positive';
   }
 
   if (status === 'DEGRADED' || status === 'WARN') {
-    return 'border-[var(--warning-soft)] bg-[var(--warning-soft)] text-warning';
+    return 'border-[var(--semantic-warning-soft)] bg-warning-soft text-warning';
   }
 
-  return 'border-[var(--negative-soft)] bg-[var(--negative-soft)] text-negative';
+  return 'border-[var(--semantic-negative-soft)] bg-negative-soft text-negative';
 }
 
 export function IntegrationHealthWidget({ health }: IntegrationHealthWidgetProps) {
   if (!health) {
     return (
-      <section className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+      <section className="glass-strong h-full rounded-2xl border border-border p-5 shadow-[var(--shadow-soft)]">
         <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-fg-muted">Integration health</h4>
         <p className="mt-2 text-sm text-fg-muted">No health telemetry from backend yet.</p>
       </section>
@@ -35,7 +35,7 @@ export function IntegrationHealthWidget({ health }: IntegrationHealthWidgetProps
   const tone = statusTone(health.overallStatus);
 
   return (
-    <section className="glass-strong h-full rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <section className="glass-strong h-full rounded-2xl border border-border p-5 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h4 className="text-xs font-semibold uppercase tracking-[0.16em] text-fg-muted">Integration health</h4>
@@ -48,11 +48,11 @@ export function IntegrationHealthWidget({ health }: IntegrationHealthWidgetProps
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3">
+        <div className="rounded-xl border border-border bg-surface p-3">
           <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Last signal</p>
           <p className="mt-1 text-sm text-fg">{formatTimestamp(health.lastSignalAt)}</p>
         </div>
-        <div className="rounded-xl border border-[var(--panel-border)] bg-surface p-3">
+        <div className="rounded-xl border border-border bg-surface p-3">
           <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Message</p>
           <p className="mt-1 text-sm text-fg">{health.message ?? '—'}</p>
         </div>

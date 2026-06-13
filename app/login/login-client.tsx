@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
+import { loginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
 
 function getErrorMessage(error?: string) {
   if (error === 'missing_credentials') {
@@ -33,22 +36,21 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
   const router = useRouter();
   const errorMessage = getErrorMessage(initialError);
 
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | undefined>(undefined);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: '',
+      password: '',
+    },
+  });
 
-    const trimmedIdentifier = identifier.trim();
-
-    if (!trimmedIdentifier || !password) {
-      setFormError('Please enter both username/email and password.');
-      return;
-    }
-
-    setIsSubmitting(true);
+  async function onSubmit(data: LoginFormValues) {
     setFormError(undefined);
 
     try {
@@ -56,7 +58,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ username: trimmedIdentifier, password }),
+        body: JSON.stringify({ username: data.username.trim(), password: data.password }),
       });
 
       const payload = await response.json().catch(() => ({}));
@@ -79,8 +81,6 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
       router.replace(initialNextPath);
     } catch (error) {
       setFormError('Login service is temporarily unavailable.');
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -97,7 +97,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
         <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr] items-stretch">
 
           {/* Left supportive brand and value proposition card */}
-          <article className="rounded-3xl border border-[rgba(148,163,184,0.16)] bg-[rgba(8,13,22,0.65)] p-8 md:p-10 backdrop-blur-xl flex flex-col justify-between shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
+          <article className="rounded-3xl border border-border/16 bg-[rgba(8,13,22,0.65)] p-8 md:p-10 backdrop-blur-xl flex flex-col justify-between shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
             <div>
               <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-semibold">Marcus Trading Ecosystem</p>
               <h1 className="mt-4 text-2xl font-semibold tracking-tight text-white md:text-3xl leading-snug">
@@ -109,7 +109,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.12)] bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
+              <div className="rounded-2xl border border-border/12 bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
                 <div className="flex items-center gap-2 text-emerald-400">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -121,7 +121,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-[rgba(148,163,184,0.12)] bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
+              <div className="rounded-2xl border border-border/12 bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
                 <div className="flex items-center gap-2 text-emerald-400">
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -136,12 +136,12 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
           </article>
 
           {/* Right actual login card */}
-          <article className="rounded-3xl border border-[rgba(148,163,184,0.22)] bg-[rgba(6,10,18,0.85)] p-8 md:p-10 shadow-[0_30px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl flex flex-col justify-center">
+          <article className="rounded-3xl border border-border/22 bg-[rgba(6,10,18,0.85)] p-8 md:p-10 shadow-[0_30px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl flex flex-col justify-center">
             <h2 className="text-2xl font-semibold tracking-tight text-white">Welcome back</h2>
             <p className="mt-2 text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
 
             {errorMessage ? (
-              <div className="mt-5 rounded-xl border border-[rgba(244,63,94,0.4)] bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2 animate-pulse">
+              <div className="mt-5 rounded-xl border border-negative/40 bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2 animate-pulse">
                 <svg className="w-5 h-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -150,7 +150,7 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
             ) : null}
 
             {formError ? (
-              <div className="mt-5 rounded-xl border border-[rgba(244,63,94,0.4)] bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2">
+              <div className="mt-5 rounded-xl border border-negative/40 bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2">
                 <svg className="w-5 h-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -158,33 +158,35 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
               </div>
             ) : null}
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
               <label className="block space-y-2">
                 <span className="text-xs uppercase tracking-[0.14em] font-medium text-muted">Username or email</span>
                 <input
-                  name="username"
+                  {...register('username')}
                   type="text"
                   required
                   autoComplete="username"
                   placeholder="duchung02st@gmail.com"
-                  value={identifier}
-                  onChange={(event) => setIdentifier(event.target.value)}
-                  className="w-full rounded-xl border border-[rgba(148,163,184,0.35)] bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-border/35 bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
                 />
+                {errors.username && (
+                  <p className="mt-1 text-xs text-negative">{errors.username.message}</p>
+                )}
               </label>
 
               <label className="block space-y-2">
                 <span className="text-xs uppercase tracking-[0.14em] font-medium text-muted">Password</span>
                 <input
-                  name="password"
+                  {...register('password')}
                   type="password"
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="w-full rounded-xl border border-[rgba(148,163,184,0.35)] bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-border/35 bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
                 />
+                {errors.password && (
+                  <p className="mt-1 text-xs text-negative">{errors.password.message}</p>
+                )}
               </label>
 
               <button

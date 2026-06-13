@@ -10,9 +10,9 @@ interface KpiCardProps {
 }
 
 const trendPresentation: Record<KpiCardProps['trend'], { symbol: string; className: string }> = {
-  up: { symbol: '↑', className: 'text-positive bg-[var(--primary-soft)]' },
-  down: { symbol: '↓', className: 'text-negative bg-[var(--negative-soft)]' },
-  neutral: { symbol: '→', className: 'text-muted bg-[var(--panel-border)]' },
+  up: { symbol: '↑', className: 'text-positive bg-primary-soft' },
+  down: { symbol: '↓', className: 'text-negative bg-negative-soft' },
+  neutral: { symbol: '→', className: 'text-muted bg-[var(--border-base)]' },
 };
 
 export function KpiCard({ label, value, delta, context, trend, data }: KpiCardProps) {
@@ -27,7 +27,7 @@ export function KpiCard({ label, value, delta, context, trend, data }: KpiCardPr
         </div>
         {data && (
           <div className="pt-1">
-            <Sparkline data={data} color={trend === 'up' ? 'var(--positive)' : trend === 'down' ? 'var(--negative)' : 'var(--fg-muted)'} />
+            <Sparkline data={data} color={trend === 'up' ? 'var(--semantic-positive)' : trend === 'down' ? 'var(--semantic-negative)' : 'var(--text-muted)'} />
           </div>
         )}
       </div>

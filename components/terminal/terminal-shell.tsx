@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 import { useFeatureFlag } from '@/lib/hooks/useFeatureFlag';
 import { SiteHeader } from '@/components/marketing/site-header';
+import { Card } from '@/components/ui/card';
 
 const terminalNav = [
   { href: '/terminal/marketplace', label: 'Marketplace', roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
@@ -12,7 +13,7 @@ const terminalNav = [
   { href: '/terminal/create-bot', label: 'Create Bot', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/paper-trading', label: 'Paper Trading', roles: ['OPERATOR', 'ADMIN'] },
   { href: '/terminal/profile', label: 'Profile', roles: ['TRADER', 'DEVELOPER', 'OPERATOR', 'ADMIN'] },
-  { href: '/terminal/developer-dashboard', label: 'Developer Dashboard', roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },
+  { href: '/terminal/developer-dashboard', label: 'Developer Dashboard', roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },      
   { href: '/terminal/developer-console', label: 'Developer Console', roles: ['OPERATOR', 'ADMIN'] },
 ] as const;
 
@@ -43,7 +44,7 @@ function getIcon(href: string) {
     case '/terminal/leaderboard':
       return (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /> 
         </svg>
       );
     case '/terminal/create-bot':
@@ -85,7 +86,7 @@ function getIcon(href: string) {
   }
 }
 
-export function TerminalShell({ children, role, username }: { children: ReactNode; role: string; username?: string }) {
+export function TerminalShell({ children, role, username }: { children: ReactNode; role: string; username?: string }) {    
   const pathname = usePathname();
   const dashboardV2Enabled = useFeatureFlag('dashboard-v2');
   const normalizedRole = role === 'USER' ? 'TRADER' : role;
@@ -115,11 +116,11 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
         href={item.href}
         className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
           active
-            ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-            : 'text-muted hover:bg-[var(--panel)] hover:text-white'
+            ? 'bg-primary-soft text-positive border-l-2 border-positive rounded-l-none pl-3'    
+            : 'text-muted hover:bg-surface hover:text-white'
         }`}
       >
-        <span className={active ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
+        <span className={active ? 'text-positive' : 'text-muted group-hover:text-white transition-colors'}>       
           {getIcon(item.href)}
         </span>
         <span>{item.label}</span>
@@ -128,79 +129,83 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
   };
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-0)] text-white">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,var(--primary-soft),transparent_50%),var(--bg-canvas)] text-white">
       <SiteHeader isAuthenticated role={normalizedRole} username={username} />
-      <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">
-        <aside className="glass flex h-fit flex-col gap-5 rounded-2xl p-4 lg:sticky lg:top-4">
-          <div className="h-px bg-[var(--panel-border)]" />
+      <div className="mx-auto grid w-full max-w-[1400px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[240px_1fr] lg:px-6">    
+        <aside className="lg:sticky lg:top-4 h-fit">
+          <Card variant="glass" className="flex flex-col gap-5 p-4">
+            <div className="h-px bg-border-base" />
 
-          {/* Dashboards Section */}
-          {isAllowedRole(normalizedRole, ['TRADER', 'OPERATOR', 'ADMIN']) && (
-            <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Dashboards</p>
-              <nav className="space-y-1">
-                <Link
-                  href="/terminal/decision"
-                  className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    pathname === '/terminal/decision'
-                      ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                        : 'text-muted hover:bg-[var(--panel)] hover:text-white'
-                  }`}
-                >
-                  <span className={pathname === '/terminal/decision' ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
-                    {getIcon('/terminal/decision')}
-                  </span>
-                  <span className="flex items-center gap-1.5 flex-1 justify-between">
-                    <span>Decision Dashboard</span>
-                    {dashboardV2Enabled && <span className="text-[9px] bg-positive-soft border border-[var(--panel-border)] text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
-                  </span>
-                </Link>
+            {/* Dashboards Section */}
+            {isAllowedRole(normalizedRole, ['TRADER', 'OPERATOR', 'ADMIN']) && (
+              <div className="space-y-2">
+                <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Dashboards</p>
+                <nav className="space-y-1">
+                  <Link
+                    href="/terminal/decision"
+                    className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      pathname === '/terminal/decision'
+                        ? 'bg-primary-soft text-positive border-l-2 border-positive rounded-l-none pl-3'
+                          : 'text-muted hover:bg-surface hover:text-white'
+                    }`}
+                  >
+                    <span className={pathname === '/terminal/decision' ? 'text-positive' : 'text-muted group-hover:text-white transition-colors'}>
+                      {getIcon('/terminal/decision')}
+                    </span>
+                    <span className="flex items-center gap-1.5 flex-1 justify-between">
+                      <span>Decision Dashboard</span>
+                      {dashboardV2Enabled && <span className="text-[9px] bg-positive-soft border border-border text-positive px-1 py-0.5 rounded font-bold font-mono">P1</span>}
+                    </span>
+                  </Link>
 
-                <Link
-                  href="/terminal/monitoring"
-                  className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
-                    pathname === '/terminal/monitoring'
-                      ? 'bg-[var(--primary-soft)] text-[var(--positive)] border-l-2 border-[var(--positive)] rounded-l-none pl-3'
-                      : 'text-muted hover:bg-[var(--panel)] hover:text-white'
-                  }`}
-                >
-                  <span className={pathname === '/terminal/monitoring' ? 'text-[var(--positive)]' : 'text-muted group-hover:text-white transition-colors'}>
-                    {getIcon('/terminal/monitoring')}
-                  </span>
-                  <span className="flex items-center gap-1.5 flex-1 justify-between">
-                    <span>Monitoring</span>
-                    <span className="text-[9px] bg-surface border border-[var(--panel-border)] text-muted px-1 py-0.5 rounded font-bold font-mono">P2</span>
-                  </span>
-                </Link>
-              </nav>
-            </div>
-          )}
+                  <Link
+                    href="/terminal/monitoring"
+                    className={`group flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+                      pathname === '/terminal/monitoring'
+                        ? 'bg-primary-soft text-positive border-l-2 border-positive rounded-l-none pl-3'
+                        : 'text-muted hover:bg-surface hover:text-white'
+                    }`}
+                  >
+                    <span className={pathname === '/terminal/monitoring' ? 'text-positive' : 'text-muted group-hover:text-white transition-colors'}>
+                      {getIcon('/terminal/monitoring')}
+                    </span>
+                    <span className="flex items-center gap-1.5 flex-1 justify-between">
+                      <span>Monitoring</span>
+                      <span className="text-[9px] bg-surface border border-border text-muted px-1 py-0.5 rounded font-bold font-mono">P2</span>
+                    </span>
+                  </Link>
+                </nav>
+              </div>
+            )}
 
-          {/* Trading Desk Section */}
-          {tradingDeskNav.length > 0 && (
-            <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Trading Desk</p>
-              <nav className="space-y-1">{tradingDeskNav.map(renderLink)}</nav>
-            </div>
-          )}
+            {/* Trading Desk Section */}
+            {tradingDeskNav.length > 0 && (
+              <div className="space-y-2">
+                <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Trading Desk</p>
+                <nav className="space-y-1">{tradingDeskNav.map(renderLink)}</nav>
+              </div>
+            )}
 
-          {/* Execution & Simulation Section */}
-          {executionNav.length > 0 && (
-            <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Execution & Sim</p>
-              <nav className="space-y-1">{executionNav.map(renderLink)}</nav>
-            </div>
-          )}
+            {/* Execution & Simulation Section */}
+            {executionNav.length > 0 && (
+              <div className="space-y-2">
+                <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Execution & Sim</p>       
+                <nav className="space-y-1">{executionNav.map(renderLink)}</nav>
+              </div>
+            )}
 
-          {/* Account Section */}
-          {accountNav.length > 0 && (
-            <div className="space-y-2">
-              <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Settings</p>
-              <nav className="space-y-1">{accountNav.map(renderLink)}</nav>
-            </div>
-          )}
+            {/* Account Section */}
+            {accountNav.length > 0 && (
+              <div className="space-y-2">
+                <p className="px-3.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">Settings</p>
+                <nav className="space-y-1">{accountNav.map(renderLink)}</nav>
+              </div>
+            )}
+          </Card>
         </aside>
-        <div className="glass-strong min-h-[84vh] rounded-2xl border border-[var(--panel-border)] p-5 md:p-7">{children}</div>
+        <Card variant="glass-strong" className="min-h-[84vh] p-5 md:p-7">
+          {children}
+        </Card>
       </div>
     </div>
   );

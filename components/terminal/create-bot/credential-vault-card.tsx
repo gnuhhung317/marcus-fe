@@ -6,7 +6,7 @@ interface CredentialVaultCardProps {
 
 function VaultValue({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-4">
+    <div className="rounded-xl border border-border bg-surface p-4">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">{label}</p>
       <p className="mt-2 break-all font-mono text-sm text-white">{value}</p>
     </div>
@@ -26,14 +26,14 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
             <VaultValue label="apiKey" value={credentials.apiKey} />
           </div>
 
-          <div className="mt-4 rounded-xl border border-[var(--primary-soft)] bg-[var(--primary-soft)] p-4">
+          <div className="mt-4 rounded-xl border border-[var(--primary-soft)] bg-primary-soft p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-positive">rawSecret</p>
             <p className="mt-2 break-all font-mono text-sm text-white">{credentials.rawSecret}</p>
             <p className="mt-2 text-xs text-muted">Store this immediately. It will not be shown again.</p>
           </div>
         </>
       ) : (
-        <div className="mt-5 rounded-xl border border-[var(--panel-border)] bg-[var(--panel)] p-4 text-sm text-muted">
+        <div className="mt-5 rounded-xl border border-border bg-surface p-4 text-sm text-muted">
           Create a bot to generate one-time credentials.
         </div>
       )}

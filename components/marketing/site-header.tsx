@@ -74,7 +74,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               <Link
                 href="/register"
                 className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                  pathname === '/register' ? 'bg-[rgba(148,163,184,0.16)] text-white' : 'text-muted hover:text-white'
+                  pathname === '/register' ? 'bg-border/16 text-white' : 'text-muted hover:text-white'
                 } ${focusClass}`}
                 aria-label="Open registration"
               >
@@ -90,7 +90,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
             </>
           ) : (
             <>
-              <span className="rounded-xl bg-[rgba(148,163,184,0.12)] px-3 py-2 text-sm text-muted">
+              <span className="rounded-xl bg-border/12 px-3 py-2 text-sm text-muted">
                 {username ?? formatRole(role)}
               </span>
               <Link
@@ -102,7 +102,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               </Link>
               <Link
                 href="/logout"
-                className={`rounded-xl border border-[rgba(148,163,184,0.3)] px-4 py-2 text-sm text-white transition-colors hover:bg-[rgba(148,163,184,0.12)] ${focusClass}`}
+                className={`rounded-xl border border-border/30 px-4 py-2 text-sm text-white transition-colors hover:bg-border/12 ${focusClass}`}
                 aria-label="Sign out"
               >
                 Sign Out
@@ -114,11 +114,11 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
         <details className="relative md:hidden">
           <summary
             aria-label="Open menu"
-            className={`list-none cursor-pointer rounded-lg border border-[rgba(148,163,184,0.24)] px-3 py-2 text-xs uppercase tracking-[0.12em] text-white ${focusClass}`}
+            className={`list-none cursor-pointer rounded-lg border border-border/24 px-3 py-2 text-xs uppercase tracking-[0.12em] text-white ${focusClass}`}
           >
             Menu
           </summary>
-          <div className="absolute right-0 mt-2 w-56 rounded-xl border border-[rgba(148,163,184,0.2)] bg-[rgba(6,10,18,0.95)] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
+          <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border/20 bg-[rgba(6,10,18,0.95)] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
             <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
               {navItems.map((item) => {
                 const active = pathname === item.href;
@@ -128,17 +128,17 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                      active ? 'bg-[rgba(148,163,184,0.16)] text-white' : 'text-muted hover:bg-[rgba(148,163,184,0.08)] hover:text-white'
+                      active ? 'bg-border/16 text-white' : 'text-muted hover:bg-border/8 hover:text-white'
                     } ${focusClass}`}
                   >
                     {item.label}
                   </Link>
                 );
               })}
-              <div className="my-2 h-px bg-[rgba(148,163,184,0.18)]" />
+              <div className="my-2 h-px bg-border/18" />
               {!isAuthenticated ? (
                 <>
-                  <Link href="/register" className={`rounded-lg px-3 py-2 text-sm text-white hover:bg-[rgba(148,163,184,0.08)] ${focusClass}`} aria-label="Open registration">
+                  <Link href="/register" className={`rounded-lg px-3 py-2 text-sm text-white hover:bg-border/8 ${focusClass}`} aria-label="Open registration">
                     Sign Up
                   </Link>
                   <Link href="/login?next=/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Sign in">
@@ -147,13 +147,13 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
                 </>
               ) : (
                 <>
-                  <span className="rounded-lg bg-[rgba(148,163,184,0.12)] px-3 py-2 text-xs text-muted">
+                  <span className="rounded-lg bg-border/12 px-3 py-2 text-xs text-muted">
                   {username ?? formatRole(role)}
                   </span>
                   <Link href="/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Go to dashboard">
                     Dashboard
                   </Link>
-                  <Link href="/logout" className={`rounded-lg border border-[rgba(148,163,184,0.3)] px-3 py-2 text-sm text-white hover:bg-[rgba(148,163,184,0.08)] ${focusClass}`} aria-label="Sign out">
+                  <Link href="/logout" className={`rounded-lg border border-border/30 px-3 py-2 text-sm text-white hover:bg-border/8 ${focusClass}`} aria-label="Sign out">
                     Sign Out
                   </Link>
                 </>

@@ -12,29 +12,29 @@ function formatTimestamp(value?: string | null) {
 }
 
 function statusTone(status?: string | null) {
-  if (!status) return 'border-[var(--panel-border)] bg-surface text-fg-muted';
+  if (!status) return 'border-border bg-surface text-fg-muted';
   if (['ACKNOWLEDGED', 'DELIVERED', 'SUCCESS'].includes(status)) {
-    return 'border-[var(--primary-soft)] bg-[var(--primary-soft)] text-positive';
+    return 'border-[var(--primary-soft)] bg-primary-soft text-positive';
   }
   if (['FAILED', 'ERROR'].includes(status)) {
-    return 'border-[var(--negative-soft)] bg-[var(--negative-soft)] text-negative';
+    return 'border-[var(--semantic-negative-soft)] bg-negative-soft text-negative';
   }
-  return 'border-[var(--panel-border)] bg-surface text-fg';
+  return 'border-border bg-surface text-fg';
 }
 
 export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps) {
   if (!signals.length) {
     return (
-      <div className="glass-strong rounded-2xl border border-[var(--panel-border)] p-6 text-center text-sm text-fg-muted">
+      <div className="glass-strong rounded-2xl border border-border p-6 text-center text-sm text-fg-muted">
         No signals received for this bot yet.
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[var(--panel-border)] bg-surface">
+    <div className="overflow-hidden rounded-2xl border border-border bg-surface">
       <table className="min-w-full border-collapse text-left text-xs">
-        <thead className="border-b border-[var(--panel-border)] bg-surface-strong uppercase tracking-[0.14em] text-fg-muted">
+        <thead className="border-b border-border bg-surface-strong uppercase tracking-[0.14em] text-fg-muted">
           <tr>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">Action</th>
@@ -42,11 +42,11 @@ export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps)
             <th className="px-4 py-3 text-right">Status</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--panel-border)]">
+        <tbody className="divide-y divide-[var(--border-base)]">
           {signals.map((signal) => (
             <tr
               key={signal.signalId}
-              className="cursor-pointer transition-colors hover:bg-[var(--panel-border)]/20"
+              className="cursor-pointer transition-colors hover:bg-[var(--border-base)]/20"
               onClick={() => onSelect(signal)}
             >
               <td className="px-4 py-3 text-fg-muted">

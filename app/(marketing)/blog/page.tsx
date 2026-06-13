@@ -16,7 +16,7 @@ export default async function BlogPage() {
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Latest Alert</p>
           <h2 className="mt-4 text-xl font-semibold text-white">{featuredPost?.title ?? 'Market alert is being updated'}</h2>
           <p className="mt-2 text-sm text-muted">{featuredPost?.excerpt ?? 'Pulling latest intelligence from backend feed.'}</p>
-          <button className="mt-6 rounded-lg border border-[rgba(148,163,184,0.45)] px-4 py-2 text-sm text-white transition-colors hover:bg-[rgba(148,163,184,0.12)]">
+          <button className="mt-6 rounded-lg border border-border/45 px-4 py-2 text-sm text-white transition-colors hover:bg-border/12">
             Read intelligence
           </button>
         </div>

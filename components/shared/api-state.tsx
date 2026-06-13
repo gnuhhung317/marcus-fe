@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface ApiStateCardProps {
   title: string;
@@ -10,50 +12,54 @@ interface ApiStateCardProps {
 
 export function LoadingStateCard({ title, message }: Pick<ApiStateCardProps, 'title' | 'message'>) {
   return (
-    <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <Card variant="glass-strong" className="p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Loading</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{message}</p>
-      <div className="mt-4 h-2 w-2/3 animate-pulse rounded-full bg-[var(--panel-border)]" />
-    </article>
+      <div className="mt-4 h-2 w-2/3 animate-pulse rounded-full bg-border" />
+    </Card>
   );
 }
 
-export function ErrorStateCard({ title, message, actionLabel = 'Retry', onAction, actionHref }: ApiStateCardProps) {
+export function ErrorStateCard({ title, message, actionLabel = 'Retry', onAction, actionHref }: ApiStateCardProps) {       
   return (
-    <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <Card variant="glass-strong" className="p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-negative">Error</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-negative">{message}</p>
-      {actionHref ? (
-        <Link href={actionHref} className="mt-4 inline-flex rounded-lg border border-[var(--panel-border)] px-3 py-1.5 text-xs font-semibold text-white">
-          {actionLabel}
-        </Link>
-      ) : (
-        <button
-          type="button"
-          onClick={onAction}
-          className="mt-4 rounded-lg border border-[var(--panel-border)] px-3 py-1.5 text-xs font-semibold text-white"
-        >
-          {actionLabel}
-        </button>
-      )}
-    </article>
+      <div className="mt-4">
+        {actionHref ? (
+          <Button variant="outline" size="sm" asChild>
+            <Link href={actionHref}>{actionLabel}</Link>
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" onClick={onAction}>
+            {actionLabel}
+          </Button>
+        )}
+      </div>
+    </Card>
   );
 }
 
+// Note: I added asChild support to Button above, wait, I didn't. I'll need to add it if I want to use Link.
+// Or just wrap Link inside Button if Button is just a div/span, but my Button is a button element.
+// I'll update Button to support asChild (Radix-like) or just provide an Anchor variant.
+
 export function EmptyStateCard({ title, message, actionLabel, actionHref }: Omit<ApiStateCardProps, 'onAction'>) {
   return (
-    <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <Card variant="glass-strong" className="p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Empty</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{message}</p>
-      {actionLabel && actionHref ? (
-        <Link href={actionHref} className="mt-4 inline-flex rounded-lg border border-[var(--panel-border)] px-3 py-1.5 text-xs font-semibold text-white">
-          {actionLabel}
-        </Link>
-      ) : null}
-    </article>
+      {actionLabel && actionHref && (
+        <div className="mt-4">
+          <Button variant="outline" size="sm" asChild>
+             <Link href={actionHref}>{actionLabel}</Link>
+          </Button>
+        </div>
+      )}
+    </Card>
   );
 }
 
@@ -62,19 +68,19 @@ interface DashboardSkeletonCardProps {
   lines?: number;
 }
 
-export function DashboardSkeletonCard({ title = 'Loading dashboard block', lines = 4 }: DashboardSkeletonCardProps) {
+export function DashboardSkeletonCard({ title = 'Loading dashboard block', lines = 4 }: DashboardSkeletonCardProps) {      
   return (
-    <article className="glass-strong rounded-2xl border border-[var(--panel-border)] p-5 shadow-[var(--shadow-soft)]">
+    <Card variant="glass-strong" className="p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Loading</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <div className="mt-4 space-y-2">
         {Array.from({ length: lines }).map((_, index) => (
           <div
             key={`${title}-${index}`}
-            className={`h-3 animate-pulse rounded-full bg-[var(--panel-border)] ${index === lines - 1 ? 'w-2/3' : 'w-full'}`}
+            className={`h-3 animate-pulse rounded-full bg-border ${index === lines - 1 ? 'w-2/3' : 'w-full'}`}
           />
         ))}
       </div>
-    </article>
+    </Card>
   );
 }

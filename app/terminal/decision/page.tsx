@@ -88,7 +88,7 @@ function DecisionDashboardContent() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 border-b border-[rgba(148,163,184,0.12)] pb-6 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-2">
           <p className="text-xs uppercase tracking-[0.18em] text-muted">Trader decision center</p>
           <h1 className="text-3xl font-bold tracking-tight text-white font-display">Decision Dashboard</h1>
@@ -96,13 +96,13 @@ function DecisionDashboardContent() {
             Review at-risk bots first, keep healthy subscriptions in view, and act without losing context.
           </p>
           <div className="flex flex-wrap gap-2 pt-2 text-xs">
-            <span className="rounded-full border border-[rgba(244,63,94,0.18)] bg-[rgba(244,63,94,0.08)] px-3 py-1 text-negative">
+            <span className="rounded-full border border-negative/18 bg-negative/8 px-3 py-1 text-negative">
               {summary.highRiskCount} high risk
             </span>
-            <span className="rounded-full border border-[rgba(245,158,11,0.2)] bg-[rgba(245,158,11,0.08)] px-3 py-1 text-warning">
+            <span className="rounded-full border border-warning/20 bg-warning/8 px-3 py-1 text-warning">
               {summary.reviewNeededCount} need review
             </span>
-            <span className="rounded-full border border-[rgba(0,190,115,0.18)] bg-[rgba(0,190,115,0.08)] px-3 py-1 text-positive">
+            <span className="rounded-full border border-positive/18 bg-positive/8 px-3 py-1 text-positive">
               {summary.activeCount} active
             </span>
           </div>
@@ -113,8 +113,8 @@ function DecisionDashboardContent() {
           disabled={isRefreshing}
           className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
             isRefreshing
-              ? 'cursor-not-allowed border-[rgba(255,255,255,0.08)] bg-white/[0.03] text-muted'
-              : 'border-[rgba(0,190,115,0.3)] bg-[rgba(0,190,115,0.06)] text-positive hover:bg-[rgba(0,190,115,0.1)]'
+              ? 'cursor-not-allowed border-white/8 bg-white/[0.03] text-muted'
+              : 'border-positive/30 bg-positive/6 text-positive hover:bg-positive/10'
           }`}
         >
           {isRefreshing ? (
@@ -158,7 +158,7 @@ function DecisionDashboardContent() {
         />
       </div>
 
-      <div className="border-t border-[rgba(148,163,184,0.08)] pt-6 text-center font-mono text-xs text-slate-500">
+      <div className="border-t border-border/8 pt-6 text-center font-mono text-xs text-slate-500">
         Last updated: {new Date(data.overview.lastUpdated).toLocaleTimeString()}
       </div>
     </div>
@@ -176,7 +176,7 @@ export default function DecisionDashboardPage() {
 function DecisionDashboardSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="flex justify-between border-b border-[rgba(148,163,184,0.12)] pb-6">
+      <div className="flex justify-between border-b border-border pb-6">
         <div className="space-y-2">
           <div className="h-8 w-48 rounded-lg bg-slate-800 animate-pulse" />
           <div className="h-4 w-72 rounded-lg bg-slate-800/60 animate-pulse" />

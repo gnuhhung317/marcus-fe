@@ -136,7 +136,7 @@ export function SubscriptionCardsContainer({
       />
 
       {feedback ? (
-        <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-white/[0.03] p-4">
+        <div className="rounded-xl border border-white/8 bg-white/[0.03] p-4">
           <p className={`text-sm font-medium ${feedback.tone === 'success' ? 'text-positive' : 'text-negative'}`}>
             {feedback.message}
           </p>
@@ -224,7 +224,7 @@ export function SubscriptionCardsContainer({
           onClick={() => setConfirmingBot(null)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[var(--panel-strong)] p-6 shadow-[var(--shadow-soft)]"
+            className="w-full max-w-lg rounded-2xl border border-white/8 bg-surface-strong p-6 shadow-[var(--shadow-soft)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-unsubscribe-title"
@@ -243,7 +243,7 @@ export function SubscriptionCardsContainer({
                 type="button"
                 onClick={() => setConfirmingBot(null)}
                 ref={cancelButtonRef}
-                className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
+                className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
               >
                 Cancel
               </button>
@@ -251,7 +251,7 @@ export function SubscriptionCardsContainer({
                 type="button"
                 onClick={() => void executeUnsubscribe()}
                 disabled={busyBotId === confirmingBot.botId}
-                className="rounded-xl border border-[rgba(244,63,94,0.2)] bg-[rgba(244,63,94,0.12)] px-4 py-2 text-sm font-semibold text-negative transition-colors hover:bg-[rgba(244,63,94,0.16)] disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl border border-negative/20 bg-negative/12 px-4 py-2 text-sm font-semibold text-negative transition-colors hover:bg-negative/16 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {busyBotId === confirmingBot.botId ? 'Unsubscribing...' : 'Unsubscribe'}
               </button>

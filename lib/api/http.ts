@@ -202,12 +202,15 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
     let errorMessage = `API request failed: ${response.status} ${normalizedPath}`;
     try {
       const errorJson = await response.json();
-      if (errorJson && errorJson.message) {
-        errorMessage = errorJson.message;
+      if (errorJson && (errorJson.message || errorJson.error)) {
+        errorMessage = errorJson.message || errorJson.error;
       }
     } catch (e) {
       // Ignore if body is not JSON or parsing fails
     }
+    
+    // Explicit warning for AI/Developer debugging
+    console.warn(`[API ERROR] ${response.status} ${normalizedPath}:`, errorMessage);
     throw new Error(errorMessage);
   }
 

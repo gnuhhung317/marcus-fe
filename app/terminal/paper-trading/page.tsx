@@ -11,6 +11,10 @@ import {
   resumePaperSession,
 } from '@/lib/contracts/client';
 import { PaperOrderResult, PaperTradingPageData } from '@/lib/contracts/types';
+import { SessionMetricsCard } from '@/components/terminal/paper-trading/session-metrics-card';
+import { PreTradeChecks } from '@/components/terminal/paper-trading/pre-trade-checks';
+import { SignalTerminalTable } from '@/components/terminal/paper-trading/signal-terminal-table';
+import { OrderExecutionForm } from '@/components/terminal/paper-trading/order-execution-form';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('en-US', {
@@ -33,6 +37,7 @@ export default function TerminalPaperTradingPage() {
       router.replace('/terminal');
     }
   }, [router]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [assetPair, setAssetPair] = useState('BTC/USDT');
@@ -89,9 +94,7 @@ export default function TerminalPaperTradingPage() {
   const canSubmitOrder = checks.every((check) => check.pass);
 
   const handlePauseResume = async () => {
-    if (!session) {
-      return;
-    }
+    if (!session) return;
 
     setIsMutating(true);
     setErrorMessage(null);
@@ -162,7 +165,7 @@ export default function TerminalPaperTradingPage() {
             type="button"
             onClick={handlePauseResume}
             disabled={isMutating}
-            className="rounded-xl border border-[rgba(148,163,184,0.32)] px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-55"
+            className="rounded-xl border border-border/32 px-4 py-2 text-sm text-white disabled:cursor-not-allowed disabled:opacity-55 transition-all hover:bg-white/5 active:scale-95"
           >
             {session.status === 'RUNNING' ? 'Pause Session' : 'Resume Session'}
           </button>
@@ -170,7 +173,7 @@ export default function TerminalPaperTradingPage() {
             type="button"
             onClick={handleExecuteOrder}
             disabled={isMutating || !canSubmitOrder}
-            className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-55"
+            className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-55 active:scale-95 transition-all"
           >
             Execute Order
           </button>
@@ -178,139 +181,38 @@ export default function TerminalPaperTradingPage() {
       </header>
 
       {errorMessage ? <ErrorStateCard title="Paper action failed" message={errorMessage} onAction={() => void loadPaperData()} /> : null}
+      
       {orderMessage ? (
-        <article className="rounded-xl border border-[rgba(16,185,129,0.36)] bg-[rgba(6,78,59,0.34)] px-4 py-3 text-sm text-[rgba(209,250,229,0.96)]">
+        <article className="rounded-xl border border-positive/30 bg-positive/10 px-4 py-3 text-sm text-positive">
           Order {orderMessage.orderId} accepted · {orderMessage.filledQuantity.toFixed(4)} filled @ {formatCurrency(orderMessage.avgFillPrice)}
         </article>
       ) : null}
 
       <section className="grid gap-5 lg:grid-cols-[340px_1fr]">
-        <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-xl font-semibold text-white">Session Metrics</h2>
-          <div className="mt-4 space-y-3 text-sm">
-            <div className="flex items-center justify-between rounded-xl bg-[rgba(6,10,18,0.6)] px-3 py-2">
-              <span className="text-muted">Virtual Balance</span>
-              <span className="font-semibold text-white">{formatCurrency(session.virtualBalance)}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-[rgba(6,10,18,0.6)] px-3 py-2">
-              <span className="text-muted">Open PnL</span>
-              <span className={`font-semibold ${session.openPnl >= 0 ? 'text-positive' : 'text-negative'}`}>
-                {session.openPnl >= 0 ? '+' : ''}
-                {formatCurrency(session.openPnl)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-[rgba(6,10,18,0.6)] px-3 py-2">
-              <span className="text-muted">Buying Power</span>
-              <span className="font-semibold text-white">{formatCurrency(session.buyingPower)}</span>
-            </div>
-            <div className="flex items-center justify-between rounded-xl bg-[rgba(6,10,18,0.6)] px-3 py-2">
-              <span className="text-muted">Latest Signal Count</span>
-              <span className="font-semibold text-white">{signals.length}</span>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-xl border border-[rgba(148,163,184,0.22)] bg-[rgba(6,10,18,0.56)] p-4">
-            <p className="text-xs uppercase tracking-[0.14em] text-muted">Pre-Trade Checks</p>
-            <ul className="mt-3 space-y-2 text-sm">
-              {checks.map((check) => (
-                <li key={check.label} className={check.pass ? 'text-[rgba(167,243,208,0.95)]' : 'text-[rgba(254,226,226,0.95)]'}>
-                  {check.pass ? 'PASS' : 'BLOCK'} · {check.label}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </article>
+        <div className="space-y-5">
+          <SessionMetricsCard session={session} signalCount={signals.length} />
+          <PreTradeChecks checks={checks} />
+        </div>
 
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
           <h2 className="text-xl font-semibold text-white">Signal Terminal</h2>
-          <div className="mt-4 overflow-x-auto rounded-xl border border-[rgba(148,163,184,0.22)]">
-            <table className="min-w-full border-collapse text-left text-sm">
-              <thead className="bg-[rgba(148,163,184,0.08)] text-xs uppercase tracking-[0.12em] text-muted">
-                <tr>
-                  <th className="px-4 py-3">Time</th>
-                  <th className="px-4 py-3">Pair</th>
-                  <th className="px-4 py-3">Side</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3 text-right">Confidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {signals.length ? signals.map((signal) => (
-                  <tr key={signal.signalId} className="border-t border-[rgba(148,163,184,0.18)] transition-colors hover:bg-[rgba(148,163,184,0.08)]">
-                    <td className="px-4 py-3.5 text-muted">
-                      {Number.isNaN(Date.parse(signal.generatedAt))
-                        ? signal.generatedAt
-                        : new Date(signal.generatedAt).toLocaleTimeString()}
-                    </td>
-                    <td className="px-4 py-3.5 text-white">{signal.assetPair}</td>
-                    <td className="px-4 py-3.5 text-white">{signal.side}</td>
-                    <td className="px-4 py-3.5 text-muted"><LifecycleBadge status={signal.status} /></td>
-                    <td className="px-4 py-3.5 text-right text-white">{(signal.confidence * 100).toFixed(1)}%</td>
-                  </tr>
-                )) : (
-                  <tr className="border-t border-[rgba(148,163,184,0.18)]">
-                    <td colSpan={5} className="px-4 py-4">
-                      <EmptyStateCard title="No incoming paper signals" message="No signals were returned for the selected session window." />
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+          
+          <SignalTerminalTable signals={signals} />
 
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            <label className="text-sm text-muted">
-              Asset
-              <input
-                className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
-                value={assetPair}
-                onChange={(event) => setAssetPair(event.target.value)}
-              />
-            </label>
-            <label className="text-sm text-muted">
-              Quantity
-              <input
-                className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
-                value={quantity}
-                onChange={(event) => setQuantity(event.target.value)}
-              />
-            </label>
-            <label className="text-sm text-muted">
-              Estimated Price
-              <input
-                className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
-                value={estimatedPrice}
-                onChange={(event) => setEstimatedPrice(event.target.value)}
-              />
-            </label>
-            <label className="text-sm text-muted">
-              Side
-              <select
-                className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
-                value={side}
-                onChange={(event) => setSide(event.target.value as 'BUY' | 'SELL')}
-              >
-                <option value="BUY">BUY</option>
-                <option value="SELL">SELL</option>
-              </select>
-            </label>
-            <label className="text-sm text-muted md:col-span-2">
-              Reference Signal
-              <select
-                className="mt-2 w-full rounded-xl border border-[rgba(132,162,191,0.2)] bg-[rgba(6,10,18,0.6)] px-3 py-2 text-white"
-                value={selectedSignalId}
-                onChange={(event) => setSelectedSignalId(event.target.value)}
-              >
-                <option value="">No signal selected</option>
-                {signals.map((signal) => (
-                  <option key={signal.signalId} value={signal.signalId}>
-                    {signal.assetPair} · {(signal.confidence * 100).toFixed(1)}% · {signal.signalId}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="text-sm text-muted md:col-span-2">Estimated order notional: {formatCurrency(notional)}</p>
-          </div>
+          <OrderExecutionForm 
+            assetPair={assetPair}
+            setAssetPair={setAssetPair}
+            quantity={quantity}
+            setQuantity={setQuantity}
+            estimatedPrice={estimatedPrice}
+            setEstimatedPrice={setEstimatedPrice}
+            side={side}
+            setSide={setSide}
+            selectedSignalId={selectedSignalId}
+            setSelectedSignalId={setSelectedSignalId}
+            signals={signals}
+            estimatedNotional={formatCurrency(notional)}
+          />
         </article>
       </section>
     </div>

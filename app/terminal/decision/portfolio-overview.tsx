@@ -93,7 +93,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
           <p className="mt-1 text-sm text-fg-muted">Triage risk first, then scan capital and quality signals.</p>
         </div>
         {mounted && (
-          <div className={`flex items-center gap-1.5 rounded-full border border-[var(--panel-border)] px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>
+          <div className={`flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>
             <span className="relative flex h-2 w-2">
               <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${pulseColor}`}></span>
               <span className={`relative inline-flex h-2 w-2 rounded-full ${pulseColor}`}></span>
@@ -107,7 +107,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
         {statItems.map((item) => (
           <div
             key={item.label}
-            className="glass-strong h-full min-h-[118px] rounded-xl border border-[var(--panel-border)] p-4 shadow-[var(--shadow-soft)] transition-colors duration-200 hover:border-[var(--primary-soft)]"
+            className="glass-strong h-full min-h-[118px] rounded-xl border border-border p-4 shadow-[var(--shadow-soft)] transition-colors duration-200 hover:border-[var(--primary-soft)]"
           >
             <div className="flex h-full flex-col">
               <div className="flex-1 space-y-2">
@@ -121,10 +121,10 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs text-fg-muted">
-        <span className="rounded-full border border-[var(--panel-border)] bg-surface px-3 py-1">
+        <span className="rounded-full border border-border bg-surface px-3 py-1">
           Active bots: <span className="font-semibold text-fg">{overview.activeBotsCount}</span>
         </span>
-        <span className="rounded-full border border-[var(--panel-border)] bg-surface px-3 py-1">
+        <span className="rounded-full border border-border bg-surface px-3 py-1">
           Synced at: <span className="font-semibold text-fg">{lastUpdatedText}</span>
         </span>
       </div>

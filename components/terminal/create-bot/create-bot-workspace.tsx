@@ -3,36 +3,32 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { registerBotProvisioning } from '@/lib/contracts/client';
-import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
+import { BotProvisioningCredentials } from '@/lib/contracts/types';
+import { RegisterBotFormValues } from '@/lib/validations/bot.schema';
 import { CreateBotHeader } from './create-bot-header';
 import { CredentialVaultCard } from './credential-vault-card';
 import { DeploySnippetCard } from './deploy-snippet-card';
 import { ProvisioningFlowPanel } from './provisioning-flow-panel';
 import { RegisterBotFormCard } from './register-bot-form-card';
 
-const initialFormValues: RegisterBotInput = {
-  botName: 'MARCUS_SIGNAL_BRIDGE',
-  exchange: 'BINANCE',
-  tradingPair: 'BTC/USDT',
-};
-
 export function CreateBotWorkspace() {
-  const [formValues, setFormValues] = useState<RegisterBotInput>(initialFormValues);
   const [credentials, setCredentials] = useState<BotProvisioningCredentials | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [lastFormValues, setLastFormValues] = useState<RegisterBotFormValues | null>(null);
 
-  const handleFieldChange = <K extends keyof RegisterBotInput>(field: K, value: RegisterBotInput[K]) => {
-    setFormValues((previous) => ({ ...previous, [field]: value }));
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (values: RegisterBotFormValues) => {
     try {
       setSubmitError(null);
       setCredentials(null);
       setIsSubmitting(true);
+      setLastFormValues(values);
 
-      const result = await registerBotProvisioning(formValues);
+      const result = await registerBotProvisioning({
+        botName: values.botName,
+        exchange: values.exchange,
+        tradingPair: values.tradingPair,
+      });
       setCredentials(result);
     } catch {
       setSubmitError('Unable to generate bot credentials. Please retry.');
@@ -51,15 +47,13 @@ export function CreateBotWorkspace() {
         <div className="space-y-5">
           {!credentials ? (
             <RegisterBotFormCard
-              values={formValues}
               isSubmitting={isSubmitting}
               submitError={submitError}
-              onFieldChange={handleFieldChange}
               onSubmit={handleSubmit}
             />
           ) : (
             <>
-              <div className="flex gap-3 rounded-xl border border-[var(--warning-soft)] bg-[var(--warning-soft)] p-4">
+              <div className="flex gap-3 rounded-xl border border-[var(--semantic-warning-soft)] bg-warning-soft p-4">
                 <svg className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
@@ -74,7 +68,9 @@ export function CreateBotWorkspace() {
 
               <CredentialVaultCard credentials={credentials} />
 
-              <DeploySnippetCard formValues={formValues} credentials={credentials} />
+              {lastFormValues && (
+                <DeploySnippetCard formValues={lastFormValues} credentials={credentials} />
+              )}
 
               <div className="flex justify-end pt-4">
                 <Link

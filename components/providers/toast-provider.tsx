@@ -24,9 +24,9 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null);
 
 function toneClassName(tone: ToastTone) {
-  if (tone === 'success') return 'border-[var(--positive)] bg-[var(--positive-soft)] text-positive';
-  if (tone === 'error') return 'border-[var(--negative)] bg-[var(--negative-soft)] text-negative';
-  return 'border-[var(--line)] bg-[var(--panel)] text-white';
+  if (tone === 'success') return 'border-[var(--semantic-positive)] bg-positive-soft text-positive';
+  if (tone === 'error') return 'border-[var(--semantic-negative)] bg-negative-soft text-negative';
+  return 'border-border-line bg-surface text-white';
 }
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {

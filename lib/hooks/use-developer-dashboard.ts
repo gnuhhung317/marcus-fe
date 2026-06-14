@@ -8,7 +8,11 @@ export const developerDashboardKeys = {
   detail: (botId: string) => [...developerDashboardKeys.all, botId] as const,
 };
 
-export function useDeveloperDashboard(botId?: string, initialData?: DeveloperDashboardPageData) {
+export function useDeveloperDashboard(
+  botId?: string,
+  initialData?: DeveloperDashboardPageData,
+  options?: { enabled?: boolean }
+) {
   const queryClient = useQueryClient();
   const isFleet = !botId;
 
@@ -17,6 +21,7 @@ export function useDeveloperDashboard(botId?: string, initialData?: DeveloperDas
     queryFn: () => getDeveloperDashboardPageData(botId),
     initialData,
     refetchInterval: isFleet ? 10000 : 5000,
+    ...options,
   });
 
   const optimisticallyUpdateBotStatus = (changedBotId: string, status: DeveloperBotStatus) => {

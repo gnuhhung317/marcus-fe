@@ -16,6 +16,9 @@ interface PortfolioOverviewResponse {
   totalEquity?: number;
   aggregateOpenPnL?: number;
   lastUpdated?: string;
+  freshAccountsCount?: number;
+  staleAccountsCount?: number;
+  dataFreshness?: string;
 }
 
 interface BotDecisionCardResponse {
@@ -66,6 +69,9 @@ export async function getPortfolioOverview(): Promise<PortfolioOverview> {
       totalEquity: res.totalEquity ?? 0,
       aggregateOpenPnL: res.aggregateOpenPnL ?? 0,
       lastUpdated: res.lastUpdated ?? new Date().toISOString(),
+      freshAccountsCount: res.freshAccountsCount ?? 0,
+      staleAccountsCount: res.staleAccountsCount ?? 0,
+      dataFreshness: res.dataFreshness ?? 'STALE',
     };
   } catch (error) {
     throw new Error(`Portfolio overview failed: ${error instanceof Error ? error.message : String(error)}`);

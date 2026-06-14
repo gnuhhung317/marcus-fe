@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getDeveloperDashboardPageData } from '@/lib/contracts/client';
-import { BotConsoleClient } from '@/components/terminal/developer-dashboard/bot-console-client';
+import { DeveloperDashboardClient } from '@/components/terminal/developer-dashboard/developer-dashboard-client';
 
 interface DeveloperBotConsolePageProps {
   params: {
@@ -26,5 +26,5 @@ export default async function DeveloperBotConsolePage({ params }: DeveloperBotCo
     redirect('/terminal/developer-dashboard');
   }
 
-  return <BotConsoleClient initialData={initialData} botId={params.botId} />;
+  return <DeveloperDashboardClient initialData={initialData} initialBotId={params.botId} />;
 }

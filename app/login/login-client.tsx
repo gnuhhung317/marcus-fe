@@ -1,13 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
+import { clearBrowserAccessToken, setBrowserAccessToken } from '@/lib/api/http';
 
 function getErrorMessage(error?: string) {
   if (error === 'missing_credentials') {
@@ -28,15 +28,21 @@ function getErrorMessage(error?: string) {
 interface LoginClientProps {
   initialNextPath: string;
   initialError?: string;
+  initialLoggedOut?: boolean;
 }
 
 const LOGIN_ROUTE = '/api/auth/login';
 
-export default function LoginClient({ initialNextPath, initialError }: LoginClientProps) {
-  const router = useRouter();
+export default function LoginClient({ initialNextPath, initialError, initialLoggedOut }: LoginClientProps) {
   const errorMessage = getErrorMessage(initialError);
 
   const [formError, setFormError] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (initialLoggedOut) {
+      clearBrowserAccessToken();
+    }
+  }, [initialLoggedOut]);
 
   const {
     register,
@@ -78,7 +84,8 @@ export default function LoginClient({ initialNextPath, initialError }: LoginClie
         return;
       }
 
-      router.replace(initialNextPath);
+      setBrowserAccessToken(payload.accessToken);
+      window.location.replace(initialNextPath);
     } catch (error) {
       setFormError('Login service is temporarily unavailable.');
     }

@@ -9,3 +9,6 @@ coverage
 .env*
 .vscode
 *.txt
+test-results/
+*.tsbuildinfo
+

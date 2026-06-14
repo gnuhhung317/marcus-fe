@@ -11,9 +11,10 @@ import { useUrlFilters } from '@/lib/hooks/use-url-filters';
 interface FleetGridViewProps {
   bots: DeveloperBotSummary[];
   onBotStatusChange?: (botId: string, status: DeveloperBotStatus) => void;
+  onSelect?: (botId: string) => void;
 }
 
-export function FleetGridView({ bots, onBotStatusChange }: FleetGridViewProps) {
+export function FleetGridView({ bots, onBotStatusChange, onSelect }: FleetGridViewProps) {
   const { getFilter, resetFilters } = useUrlFilters();
   
   const searchQuery = getFilter('q', '');
@@ -60,7 +61,7 @@ export function FleetGridView({ bots, onBotStatusChange }: FleetGridViewProps) {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {filteredBots.map((bot) => (
-              <BotGridCard key={bot.botId} bot={bot} onStatusChange={onBotStatusChange} />
+              <BotGridCard key={bot.botId} bot={bot} onStatusChange={onBotStatusChange} onSelect={onSelect} />
             ))}
           </div>
         )}

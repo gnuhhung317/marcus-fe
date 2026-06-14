@@ -3,47 +3,41 @@ import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const search = request.nextUrl.search;
 
   // Construct base URL from headers to respect dynamic hostnames/IPs
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
-  const proto = request.headers.get('x-forwarded-proto') || 'http';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.');
+  const proto = isLocalhost ? 'http' : 'https';
   const baseUrl = `${proto}://${host}`;
 
-  // Extract auth tokens from cookies
+  // Read auth cookies — presence check only, no validation/refresh here.
+  // Token expiry & refresh is handled client-side via /api/auth/refresh.
   const accessToken = request.cookies.get('marcus_access_token')?.value;
   const role = request.cookies.get('marcus_role')?.value;
   const normalizedRole = role === 'USER' ? 'TRADER' : role;
 
-  // Public routes (no auth required)
+  const matchesRoute = (route: string) => pathname === route || pathname.startsWith(`${route}/`);
+
   const publicRoutes = ['/', '/login', '/register', '/logout'];
-  const marketingRoutes = ['(marketing)'];
+  const isPublicRoute = publicRoutes.some(matchesRoute);
 
-  // Check if current path is public
-  const isPublicRoute = publicRoutes.some((route) => pathname === route || pathname.startsWith(route));
-  const isMarketingRoute = marketingRoutes.some((route) => pathname.includes(route));
-
-  // Routes that require authentication
   const protectedRoutes = ['/terminal', '/developer-console'];
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+  const isProtectedRoute = protectedRoutes.some(matchesRoute);
 
-  // Case 1: User is NOT authenticated
+  // Not authenticated → only allow public routes
   if (!accessToken || !normalizedRole) {
-    // Allow access to public routes and marketing
-    if (isPublicRoute || isMarketingRoute) {
+    if (isPublicRoute) {
       return NextResponse.next();
     }
-
-    // Redirect to login if trying to access protected route
     if (isProtectedRoute) {
-      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(pathname)}`, baseUrl));
+      const nextPath = `${pathname}${search}`;
+      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextPath)}`, baseUrl));
     }
-
-    // For root "/" or marketing paths, continue
     return NextResponse.next();
   }
 
-  // Case 2: User IS authenticated
-  // GUEST role can only access marketing and login
+  // GUEST can only access marketing pages
   if (normalizedRole === 'GUEST') {
     if (isProtectedRoute) {
       return NextResponse.redirect(new URL('/', baseUrl));
@@ -51,36 +45,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // TRADER, DEVELOPER, OPERATOR, ADMIN can access terminal
-  if (normalizedRole === 'TRADER' || normalizedRole === 'DEVELOPER' || normalizedRole === 'OPERATOR' || normalizedRole === 'ADMIN') {
-    // Redirect to terminal/marketplace if accessing root or marketing after login
-    if (pathname === '/' || isMarketingRoute) {
-      return NextResponse.redirect(new URL('/terminal/marketplace', baseUrl));
-    }
-
-    // Allow access to terminal routes
-    if (isProtectedRoute) {
-      return NextResponse.next();
-    }
-
-    return NextResponse.next();
+  // Authenticated users: redirect root → terminal
+  if (pathname === '/') {
+    return NextResponse.redirect(new URL('/terminal/marketplace', baseUrl));
   }
 
-  // Default: continue as-is
   return NextResponse.next();
 }
 
-// Configure which routes the middleware should run on
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)',
   ],
 };

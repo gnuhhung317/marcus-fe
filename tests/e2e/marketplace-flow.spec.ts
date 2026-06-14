@@ -9,9 +9,9 @@ test('Marketplace → Bot Detail → Subscribe → Dashboard', async ({ page }) 
   await page.goto('/register');
   await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
 
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Display name').fill(displayName);
-  await page.getByLabel('Password').fill(password);
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[autocomplete="name"]').fill(displayName);
+  await page.locator('input[type="password"]').fill(password);
   await page.getByRole('button', { name: 'Create account' }).click();
 
   await page.waitForFunction(() => window.location.pathname.startsWith('/login') || window.location.pathname.startsWith('/terminal'), {
@@ -20,7 +20,7 @@ test('Marketplace → Bot Detail → Subscribe → Dashboard', async ({ page }) 
 
   const currentPath = await page.evaluate(() => window.location.pathname);
   if (currentPath.startsWith('/login')) {
-    await expect(page.getByRole('heading', { name: 'Sign in to continue' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
     await page.getByLabel('Username or email').fill(email);
     await page.getByLabel('Password').fill(password);
     await Promise.all([

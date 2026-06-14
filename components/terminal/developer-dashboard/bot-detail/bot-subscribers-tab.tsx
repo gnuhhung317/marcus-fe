@@ -1,6 +1,5 @@
 import { DeveloperSubscriptionSummary } from '@/lib/contracts/types';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 interface BotSubscribersTabProps {
   subscriptions: DeveloperSubscriptionSummary[];
@@ -14,12 +13,14 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
 
   return (
     <section className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-main">Subscribers</h2>
-          <p className="mt-1 text-sm text-muted">Active subscriptions and connection health.</p>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">Active Subscribers</h2>
+          <p className="mt-1 text-xs text-slate-400 font-sans">Active subscriptions and connection health.</p>
         </div>
-        <Badge variant="outline">{subscriberCount}</Badge>
+        <span className="rounded-lg border border-border bg-surface px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+          {subscriberCount} Sessions
+        </span>
       </div>
 
       {isSwitching ? (
@@ -28,7 +29,7 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
           <div className="h-12 animate-pulse rounded-xl bg-surface" />
         </div>
       ) : subscriptions.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-sm text-muted">        
+        <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-xs text-slate-400 font-sans">        
           No active subscriber sessions found.
         </div>
       ) : (
@@ -39,35 +40,42 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
               { label: 'Connected', value: connectedCount },
               { label: 'Active', value: activeCount },
             ].map((item) => (
-              <Card key={item.label} variant="glass-strong" className="p-3">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-muted">{item.label}</p>
-                <p className="mt-2 text-lg font-semibold text-main">{item.value}</p>
-              </Card>
+              <div key={item.label} className="rounded-xl border border-border bg-surface p-3 font-mono">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">{item.label}</p>
+                <p className="mt-2 text-lg font-bold text-white tracking-tight">{item.value}</p>
+              </div>
             ))}
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-border">
-            <table className="min-w-full border-collapse text-left text-sm">
-              <thead className="bg-surface text-xs uppercase tracking-[0.14em] text-muted">
+          <div className="overflow-hidden rounded-xl border border-border bg-surface font-mono">
+            <table className="min-w-full border-collapse text-left text-[11px] leading-relaxed">
+              <thead className="border-b border-border bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-slate-500 font-sans">
                 <tr>
                   <th className="px-4 py-3">Subscriber</th>
                   <th className="px-4 py-3 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody>
-                {subscriptions.map((sub, index) => (
-                  <tr key={`${sub.botId}-${index}`} className="border-t border-border text-muted">
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-sm">Subscriber #{index + 1}</span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Badge variant={sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'success' : 'default'} className="gap-1.5">
-                        <span className={cn("h-1.5 w-1.5 rounded-full", sub.status === 'ACTIVE' || sub.status === 'CONNECTED' ? 'bg-positive' : 'bg-muted')} />
-                        {sub.status}
-                      </Badge>
-                    </td>
-                  </tr>
-                ))}
+              <tbody className="divide-y divide-border/60">
+                {subscriptions.map((sub, index) => {
+                  const isActive = sub.status === 'ACTIVE' || sub.status === 'CONNECTED';
+                  return (
+                    <tr key={`${sub.botId}-${index}`} className="text-slate-300">
+                      <td className="px-4 py-3 font-medium font-sans">
+                        Subscriber #{index + 1}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
+                          isActive 
+                            ? 'border-positive/20 bg-positive/10 text-positive' 
+                            : 'border-border bg-surface text-slate-400'
+                        }`}>
+                          <span className={cn("h-1.5 w-1.5 rounded-full", isActive ? 'bg-positive' : 'bg-slate-400')} />
+                          {sub.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -76,6 +84,3 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
     </section>
   );
 }
-
-// Fixed import for cn in local context if needed, but it should be from @/lib/utils
-import { cn } from '@/lib/utils';

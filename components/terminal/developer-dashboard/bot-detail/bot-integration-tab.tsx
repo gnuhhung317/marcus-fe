@@ -1,38 +1,39 @@
 import { BotIntegrationHealth } from '@/lib/contracts/types';
-import { Badge } from '@/components/ui/badge';
 import { IntegrationHealthWidget } from '../integration-health-widget';
 
 interface BotIntegrationTabProps {
   integrationHealth: BotIntegrationHealth | null;
 }
 
-function integrationTone(status?: string | null): "success" | "warning" | "error" | "default" {
-  const normalized = String(status ?? '').toUpperCase();
-  if (normalized === 'UP') return 'success';
-  if (normalized === 'DEGRADED') return 'warning';
-  if (normalized === 'DOWN') return 'error';
-  return 'default';
-}
-
 export function BotIntegrationTab({ integrationHealth }: BotIntegrationTabProps) {
+  const isUp = integrationHealth?.overallStatus === 'UP';
+  const isDegraded = integrationHealth?.overallStatus === 'DEGRADED';
+
   return (
     <section className="space-y-4">
-      <div className="flex items-end justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-main">Integration health</h2>
-          <p className="mt-1 text-sm text-muted">Operational summary for the webhook and runtime bridge.</p>      
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">Integration Health</h2>
+          <p className="mt-1 text-xs text-slate-400 font-sans">Operational summary for the webhook and runtime bridge.</p>      
         </div>
         {integrationHealth && (
-          <Badge variant={integrationTone(integrationHealth.overallStatus)}>
+          <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider font-mono ${
+            isUp 
+              ? 'border-positive/20 bg-positive/10 text-positive' 
+              : isDegraded 
+                ? 'border-warning/20 bg-warning/10 text-warning' 
+                : 'border-negative/20 bg-negative/10 text-negative'
+          }`}>
+            <span className={`h-1.5 w-1.5 rounded-full ${isUp ? 'bg-positive' : isDegraded ? 'bg-warning' : 'bg-negative'}`} />
             {integrationHealth.overallStatus}
-          </Badge>
+          </span>
         )}
       </div>
 
       {integrationHealth ? (
         <IntegrationHealthWidget health={integrationHealth} />
       ) : (
-        <div className="rounded-2xl border border-dashed border-border bg-surface p-6 text-sm text-muted">        
+        <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-xs text-slate-400 font-sans">        
           Integration health is not available for this bot yet.
         </div>
       )}

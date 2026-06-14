@@ -2,24 +2,34 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getDecisionDashboardData } from '@/lib/contracts/client';
-import { PortfolioOverviewStats } from './portfolio-overview';
-import { SubscriptionCardsContainer } from './subscription-cards';
+import { getDecisionDashboardData, getDashboardPageData } from '@/lib/contracts/client';
+import { PortfolioMetrics } from '@/components/terminal/decision/portfolio-metrics';
+import { EquityOverview } from '@/components/terminal/decision/equity-overview';
+import { SubscriptionList } from '@/components/terminal/decision/subscription-list';
 import { ErrorStateCard } from '@/components/shared/api-state';
+
+interface DashboardState {
+  decisionData: Awaited<ReturnType<typeof getDecisionDashboardData>>;
+  dashboardData: Awaited<ReturnType<typeof getDashboardPageData>>;
+}
 
 function DecisionDashboardContent() {
   const router = useRouter();
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'AT_RISK'>('ALL');
-  const [data, setData] = useState<Awaited<ReturnType<typeof getDecisionDashboardData>> | null>(null);
+  const [data, setData] = useState<DashboardState | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadData = async (filter: 'ALL' | 'ACTIVE' | 'AT_RISK') => {
     try {
-      const freshData = await getDecisionDashboardData(filter);
-      setData(freshData);
-      return freshData;
+      const [decisionData, dashboardData] = await Promise.all([
+        getDecisionDashboardData(filter),
+        getDashboardPageData(),
+      ]);
+      const state = { decisionData, dashboardData };
+      setData(state);
+      return state;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load decision dashboard data');
       return null;
@@ -84,82 +94,73 @@ function DecisionDashboardContent() {
 
   if (!data) return null;
 
-  const summary = data.decisions.summary;
+  const { overview, decisions } = data.decisionData;
+  const { summary } = decisions;
+  const { performanceSeries, allocations } = data.dashboardData;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-2">
+    <div className="space-y-6">
+      {/* Header section */}
+      <div className="flex flex-col gap-4 border-b border-white/5 pb-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1">
           <p className="text-xs uppercase tracking-[0.18em] text-muted">Trader decision center</p>
-          <h1 className="text-3xl font-bold tracking-tight text-white font-display">Decision Dashboard</h1>
-          <p className="max-w-2xl text-sm text-muted">
-            Review at-risk bots first, keep healthy subscriptions in view, and act without losing context.
+          <h1 className="text-2xl font-bold tracking-tight text-white font-display">Decision Dashboard</h1>
+          <p className="max-w-2xl text-xs text-muted">
+            Triage at-risk subscriptions first, analyze asset allocations, and verify performance curves.
           </p>
-          <div className="flex flex-wrap gap-2 pt-2 text-xs">
-            <span className="rounded-full border border-negative/18 bg-negative/8 px-3 py-1 text-negative">
-              {summary.highRiskCount} high risk
-            </span>
-            <span className="rounded-full border border-warning/20 bg-warning/8 px-3 py-1 text-warning">
-              {summary.reviewNeededCount} need review
-            </span>
-            <span className="rounded-full border border-positive/18 bg-positive/8 px-3 py-1 text-positive">
-              {summary.activeCount} active
-            </span>
-          </div>
         </div>
 
         <button
           onClick={() => void handleRefresh()}
           disabled={isRefreshing}
-          className={`inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition-colors ${
+          className={`inline-flex items-center justify-center gap-2 rounded border px-3 py-1.5 text-xs font-semibold transition-colors ${
             isRefreshing
-              ? 'cursor-not-allowed border-white/8 bg-white/[0.03] text-muted'
-              : 'border-positive/30 bg-positive/6 text-positive hover:bg-positive/10'
+              ? 'cursor-not-allowed border-white/5 bg-white/[0.01] text-muted'
+              : 'border-positive/20 bg-positive/5 text-positive hover:bg-positive/10'
           }`}
         >
           {isRefreshing ? (
             <>
-              <svg className="h-4 w-4 animate-spin text-muted" fill="none" viewBox="0 0 24 24">
+              <svg className="h-3 w-3 animate-spin text-muted" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>
-              <span>Refreshing...</span>
+              <span>Syncing...</span>
             </>
           ) : (
             <>
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89H18" />
               </svg>
-              <span>Refresh</span>
+              <span>Sync Telemetry</span>
             </>
           )}
         </button>
       </div>
 
-      <PortfolioOverviewStats overview={data.overview} />
+      {/* KPI stats bar */}
+      <PortfolioMetrics overview={overview} />
 
-      <div className="space-y-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-white font-display">Subscription Triage</h2>
-            <p className="mt-1 text-sm text-muted">Urgent decisions first, stable bots below.</p>
-          </div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">
-            Total subscriptions: <span className="font-semibold text-white">{summary.totalCount}</span>
-          </p>
+      {/* Performance & Capital allocation splits */}
+      <EquityOverview
+        performanceSeries={performanceSeries}
+        allocations={allocations}
+      />
+
+      {/* Main triage table */}
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">Subscription Triage</h3>
+          <p className="text-xs text-muted mt-1">Review live subscriptions, filter status, and process alerts.</p>
         </div>
-
-        <SubscriptionCardsContainer
-          cards={data.decisions.decisions}
+        
+        <SubscriptionList
+          cards={decisions.decisions}
           statusFilter={statusFilter}
           onStatusFilterChange={handleStatusFilterChange}
           onRefreshRequested={handleRefresh}
           summary={summary}
         />
-      </div>
-
-      <div className="border-t border-border/8 pt-6 text-center font-mono text-xs text-slate-500">
-        Last updated: {new Date(data.overview.lastUpdated).toLocaleTimeString()}
       </div>
     </div>
   );
@@ -175,31 +176,27 @@ export default function DecisionDashboardPage() {
 
 function DecisionDashboardSkeleton() {
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between border-b border-border pb-6">
-        <div className="space-y-2">
-          <div className="h-8 w-48 rounded-lg bg-slate-800 animate-pulse" />
-          <div className="h-4 w-72 rounded-lg bg-slate-800/60 animate-pulse" />
+    <div className="space-y-6">
+      <div className="flex justify-between border-b border-white/5 pb-5">
+        <div className="space-y-2 animate-pulse">
+          <div className="h-6 w-40 rounded bg-slate-800" />
+          <div className="h-3 w-64 rounded bg-slate-800/60" />
         </div>
-        <div className="h-10 w-24 rounded-xl bg-slate-800 animate-pulse" />
+        <div className="h-8 w-24 rounded bg-slate-800 animate-pulse" />
       </div>
 
-      <div className="space-y-4">
-        <div className="h-6 w-40 rounded-lg bg-slate-800 animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="space-y-4 animate-pulse">
+        <div className="h-4 w-32 rounded bg-slate-800" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl border border-slate-800/80 bg-slate-800/40 p-4 animate-pulse" />
+            <div key={i} className="h-16 rounded border border-white/5 bg-slate-800/20 p-3" />
           ))}
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="h-6 w-40 rounded-lg bg-slate-800 animate-pulse" />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="h-40 rounded-2xl border border-slate-800/80 bg-slate-800/40 p-6 animate-pulse" />
-          ))}
-        </div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-10 animate-pulse">
+        <div className="h-64 rounded border border-white/5 bg-slate-800/20 lg:col-span-6" />
+        <div className="h-64 rounded border border-white/5 bg-slate-800/20 lg:col-span-4" />
       </div>
     </div>
   );

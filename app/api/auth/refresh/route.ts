@@ -12,8 +12,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'missing_refresh_token' }, { status: 401 });
   }
 
-  const xForwardedProto = request.headers.get('x-forwarded-proto');
-  const isSecure = request.url.startsWith('https://') || xForwardedProto === 'https';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.');
+  const isSecure = !isLocalhost;
 
   try {
     const session = await refreshWithToken({ refreshToken });
@@ -51,7 +52,8 @@ export async function POST(request: Request) {
       httpOnly: false,
       sameSite: 'lax',
       secure: isSecure,
-      maxAge: session.accessTokenExpiresInSeconds,
+      // Role cookie lasts as long as the new refresh token
+      maxAge: session.refreshTokenExpiresInSeconds,
       path: '/',
     });
 
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
       httpOnly: false,
       sameSite: 'lax',
       secure: isSecure,
-      maxAge: session.accessTokenExpiresInSeconds,
+      maxAge: session.refreshTokenExpiresInSeconds,
       path: '/',
     });
 

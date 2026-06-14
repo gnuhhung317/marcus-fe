@@ -10,8 +10,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Invalid request payload.' }, { status: 400 });
   }
 
-  const xForwardedProto = request.headers.get('x-forwarded-proto');
-  const isSecure = request.url.startsWith('https://') || xForwardedProto === 'https';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || '';
+  const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.');
+  const isSecure = !isLocalhost;
 
   try {
     const apiBaseUrl = getApiBaseUrl();
@@ -47,7 +48,9 @@ export async function POST(request: Request) {
         httpOnly: false,
         sameSite: 'lax',
         secure: isSecure,
-        maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
+        // Role cookie lasts as long as the refresh token so middleware
+        // keeps the user authenticated even after the access token expires.
+        maxAge: Number(body?.refreshTokenExpiresInSeconds ?? 604800),
         path: '/',
       });
 
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
         httpOnly: false,
         sameSite: 'lax',
         secure: isSecure,
-        maxAge: Number(body?.accessTokenExpiresInSeconds ?? 3600),
+        maxAge: Number(body?.refreshTokenExpiresInSeconds ?? 604800),
         path: '/',
       });
     }

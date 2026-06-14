@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { ColorType, createChart, LineSeries, LineStyle, Time } from 'lightweight-charts';
+import { createChart, LineSeries, LineStyle, Time } from 'lightweight-charts';
+import { chartLayoutOptions, historicalLineOptions, oosLineOptions } from '@/lib/configs/chart-configs';
 
 interface DataPoint {
   timestamp: string;
@@ -19,7 +20,7 @@ function toChartTime(timestamp: string): Time {
   if (Number.isNaN(parsed)) {
     return timestamp.slice(0, 10) as Time;
   }
-  return new Date(parsed).toISOString().slice(0, 10) as Time;
+  return Math.floor(parsed / 1000) as Time;
 }
 
 export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps) {
@@ -32,53 +33,47 @@ export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps
     }
 
     const chart = createChart(container, {
-      autoSize: true,
-      height: 320,
-      layout: {
-        background: { type: ColorType.Solid, color: 'transparent' },
-        textColor: '#9ca3af',
-      },
-      grid: {
-        vertLines: { color: 'rgba(148,163,184,0.12)' },
-        horzLines: { color: 'rgba(148,163,184,0.12)' },
-      },
-      rightPriceScale: {
-        borderColor: 'rgba(148,163,184,0.18)',
-      },
-      timeScale: {
-        borderColor: 'rgba(148,163,184,0.18)',
-        timeVisible: true,
-      },
+      ...chartLayoutOptions,
       localization: {
         priceFormatter: (price: number) => `${price.toFixed(2)}%`,
       },
-      crosshair: {
-        vertLine: { color: 'rgba(16,185,129,0.45)' },
-        horzLine: { color: 'rgba(16,185,129,0.35)' },
-      },
     });
 
-    const historical = data
-      .filter((point) => point.phase !== 'OUT_OF_SAMPLE')
-      .map((point) => ({ time: toChartTime(point.timestamp), value: point.value }));
+    const prepareSeriesData = (points: DataPoint[]) => {
+      const formatted = points
+        .map(point => ({
+          time: toChartTime(point.timestamp),
+          value: point.value,
+          rawTime: Date.parse(point.timestamp),
+        }))
+        .filter(point => !Number.isNaN(point.rawTime))
+        .sort((a, b) => a.rawTime - b.rawTime);
+
+      const unique: { time: Time; value: number }[] = [];
+      const seenTimes = new Set<number | string>();
+      for (const item of formatted) {
+        const timeVal = typeof item.time === 'number' ? item.time : String(item.time);
+        if (!seenTimes.has(timeVal)) {
+          seenTimes.add(timeVal);
+          unique.push({
+            time: item.time,
+            value: item.value,
+          });
+        }
+      }
+      return unique;
+    };
+
+    const historical = prepareSeriesData(data.filter((point) => point.phase !== 'OUT_OF_SAMPLE'));
     const oosStartIndex = data.findIndex((point) => point.phase === 'OUT_OF_SAMPLE');
     const oosSource = oosStartIndex > 0 ? data.slice(oosStartIndex - 1) : data.filter((point) => point.phase === 'OUT_OF_SAMPLE');
-    const outOfSample = oosSource.map((point) => ({ time: toChartTime(point.timestamp), value: point.value }));
+    const outOfSample = prepareSeriesData(oosSource);
 
-    const historicalSeries = chart.addSeries(LineSeries, {
-      color: '#94a3b8',
-      lineWidth: 2,
-      priceLineVisible: false,
-      lastValueVisible: false,
-    });
+    const historicalSeries = chart.addSeries(LineSeries, historicalLineOptions);
     historicalSeries.setData(historical);
 
     if (outOfSample.length > 1) {
-      const oosSeries = chart.addSeries(LineSeries, {
-        color: '#10b981',
-        lineWidth: 3,
-        priceLineVisible: false,
-      });
+      const oosSeries = chart.addSeries(LineSeries, oosLineOptions);
       oosSeries.setData(outOfSample);
     }
 
@@ -102,7 +97,7 @@ export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps
 
   if (!data || data.length < 2) {
     return (
-      <div className="flex h-80 items-center justify-center rounded-lg border border-[rgba(132,162,191,0.18)] bg-white/5 text-sm text-muted">
+      <div className="panel flex h-80 items-center justify-center text-sm text-muted">
         Insufficient data for performance chart
       </div>
     );

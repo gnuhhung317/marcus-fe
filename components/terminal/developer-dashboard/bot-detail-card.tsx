@@ -9,7 +9,6 @@ import {
   DeveloperSignalItem,
   DeveloperSubscriptionSummary,
 } from '@/lib/contracts/types';
-import { Card } from '@/components/ui/card';
 import { EditBotModal } from './edit-bot-modal';
 import { DeleteBotModal } from './delete-bot-modal';
 import { SignalDetailDrawer } from './signal-detail-drawer';
@@ -31,9 +30,10 @@ interface BotDetailCardProps {
   signals: DeveloperSignalItem[];
   isSwitching?: boolean;
   onStatusChange?: (botId: string, status: DeveloperBotStatus) => void;
+  onBackToFleet?: () => void;
 }
 
-export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false, onStatusChange }: BotDetailCardProps) {
+export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, isSwitching = false, onStatusChange, onBackToFleet }: BotDetailCardProps) {
   const {
     activeTab,
     setActiveTab,
@@ -50,8 +50,8 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
 
   return (
-    <Card variant="glass-strong" className="flex h-full flex-col overflow-hidden shadow-[var(--shadow-soft)]">
-      {isSwitching && <div className="h-1 w-full animate-pulse bg-primary-soft" />}
+    <div className="flex h-full flex-col overflow-hidden border border-border bg-surface">
+      {isSwitching && <div className="h-0.5 w-full animate-pulse bg-primary" />}
 
       <BotDetailHeader 
         bot={bot} 
@@ -59,11 +59,12 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
         integrationHealth={integrationHealth}
         onEdit={() => setIsEditModalOpen(true)}
         onDelete={() => setIsDeleteModalOpen(true)}
+        onBackToFleet={onBackToFleet}
       />
 
       {statusError && (
-        <div className="mx-6 mt-4 rounded-xl border border-border bg-negative-soft px-4 py-3 text-sm text-negative sm:mx-8">
-          {statusError}
+        <div className="mx-6 mt-4 rounded-lg border border-negative/20 bg-negative/5 px-4 py-3 font-mono text-[11px] text-negative sm:mx-8">
+          ERROR: {statusError}
         </div>
       )}
 
@@ -128,6 +129,6 @@ export function BotDetailCard({ bot, subscriptions, integrationHealth, signals, 
         bot={bot}
         activeSubscribersCount={subscriptions.filter((s) => s.status === 'ACTIVE' || s.status === 'CONNECTED').length}     
       />
-    </Card>
+    </div>
   );
 }

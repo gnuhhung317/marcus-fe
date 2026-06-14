@@ -106,6 +106,32 @@ const defaultConnectivity = {
 // --- Service Functions ---
 
 export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePageData> {
+  // Check user role from cookie (browser or server)
+  let role: string | undefined;
+  if (typeof window !== 'undefined') {
+    const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
+    role = match ? decodeURIComponent(match[1]) : undefined;
+  } else {
+    try {
+      const { cookies } = await import('next/headers');
+      role = cookies().get('marcus_role')?.value;
+    } catch {
+      role = undefined;
+    }
+  }
+
+  // If user is not OPERATOR, ADMIN, or TRADER, bypass backend calls to avoid unauthorized errors
+  if (role !== 'OPERATOR' && role !== 'ADMIN' && role !== 'TRADER') {
+    return {
+      connectivity: {
+        overallStatus: 'UNKNOWN',
+        checkedAt: new Date().toISOString(),
+      },
+      signalStream: [],
+      executionLogs: [],
+    };
+  }
+
   const [connectivityResponse, signalResponse, executionResponse] = await Promise.all([
     requestContractJson<ConnectivityHealthResponse>('system-connectivity'),
     requestContractJson<SignalItemResponse[]>('system-signals', {
@@ -115,6 +141,7 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
       queryParams: { limit: 10 },
     }),
   ]);
+
 
   const connectivity = {
     overallStatus: connectivityResponse?.overallStatus ?? defaultConnectivity.overallStatus,
@@ -163,12 +190,32 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     : '';
 
   if (!selectedBotId) {
+    const globalSignalsResponse = await requestContractJson<SignalItemResponse[]>('system-signals', { queryParams: { limit: 50 } }).catch(() => []);
+    const signals: DeveloperSignalItem[] = (globalSignalsResponse ?? []).map((item, index) => ({
+      signalId: item.signalId ?? `sig_${index + 1}`,
+      botId: item.botId ?? '',
+      exchangeSlug: item.exchangeSlug ?? null,
+      symbol: item.symbol ?? null,
+      action: item.action ?? null,
+      price: item.price ?? null,
+      status: item.status ?? null,
+      generatedTimestamp: item.generatedTimestamp ?? null,
+      leverage: item.leverage ?? null,
+      marketType: item.marketType ?? null,
+      reduceOnly: item.reduceOnly ?? null,
+      size: item.size ?? null,
+      tp: item.tp ?? null,
+      sl: item.sl ?? null,
+      metadata: item.metadata ?? null,
+      rawPayload: item.rawPayload ?? null,
+    }));
+
     return {
       bots: resolvedBots,
       activeBot: null,
       subscriptions: [],
       integrationHealth: null,
-      signals: [],
+      signals,
     };
   }
 

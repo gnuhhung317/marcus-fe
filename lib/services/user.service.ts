@@ -74,6 +74,9 @@ interface DashboardOverviewResponse {
   openPnl?: number;
   winRate?: number;
   activeBots?: number;
+  freshAccountsCount?: number;
+  staleAccountsCount?: number;
+  dataFreshness?: string;
 }
 
 interface ExchangeAllocationItemResponse {
@@ -340,7 +343,7 @@ export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActi
   return (response.items ?? []).map((activity, index) => mapLoginActivity(activity, index));
 }
 
-export async function getDashboardPageData(): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
+export async function getDashboardPageData(range: string = '7D'): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
   const [overview, allocationItems, tradeLogPage, equitySeriesResponse] = await Promise.all([
     requestContractJson<DashboardOverviewResponse>('dashboard-overview'),
     requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'),
@@ -348,7 +351,7 @@ export async function getDashboardPageData(): Promise<DashboardPageData & { perf
       queryParams: { page: 0, size: 8 },
     }),
     requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
-      queryParams: { range: '1W' },
+      queryParams: { range },
     }),
   ]);
 

@@ -4,6 +4,7 @@ const ACCESS_TOKEN_COOKIE = 'marcus_access_token';
 const REFRESH_TOKEN_COOKIE = 'marcus_refresh_token';
 
 let browserRefreshInFlight: Promise<string | undefined> | null = null;
+let browserAccessTokenCache: string | undefined;
 
 export interface AuthRefreshRequest {
   refreshToken: string;
@@ -54,6 +55,22 @@ function readBrowserStorage(name: string): string | undefined {
   }
 }
 
+function writeBrowserStorage(name: string, value?: string) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    if (value) {
+      window.localStorage.setItem(name, value);
+    } else {
+      window.localStorage.removeItem(name);
+    }
+  } catch {
+    // Ignore storage failures and fall back to cookie/server reads.
+  }
+}
+
 async function readServerCookie(name: string): Promise<string | undefined> {
   if (typeof window !== 'undefined') {
     return undefined;
@@ -67,15 +84,30 @@ async function readServerCookie(name: string): Promise<string | undefined> {
   }
 }
 
+export function setBrowserAccessToken(accessToken?: string) {
+  browserAccessTokenCache = accessToken || undefined;
+  writeBrowserStorage(ACCESS_TOKEN_COOKIE, browserAccessTokenCache);
+}
+
+export function clearBrowserAccessToken() {
+  setBrowserAccessToken(undefined);
+}
+
 async function resolveAccessToken(): Promise<string | undefined> {
-  const browserToken = readBrowserCookie(ACCESS_TOKEN_COOKIE);
-  if (browserToken) {
-    return browserToken;
+  if (browserAccessTokenCache) {
+    return browserAccessTokenCache;
   }
 
   const storageToken = readBrowserStorage(ACCESS_TOKEN_COOKIE);
   if (storageToken) {
+    browserAccessTokenCache = storageToken;
     return storageToken;
+  }
+
+  const browserToken = readBrowserCookie(ACCESS_TOKEN_COOKIE);
+  if (browserToken) {
+    browserAccessTokenCache = browserToken;
+    return browserToken;
   }
 
   return readServerCookie(ACCESS_TOKEN_COOKIE);
@@ -125,6 +157,9 @@ async function refreshSessionInBrowser(): Promise<string | undefined> {
     }
 
     const payload = (await response.json()) as { accessToken?: string };
+    if (payload.accessToken) {
+      setBrowserAccessToken(payload.accessToken);
+    }
     return payload.accessToken;
   })();
 
@@ -185,16 +220,22 @@ export async function requestJson<T>(path: string, init?: RequestInit): Promise<
   });
 
   if (response.status === 401) {
-    const refreshedAccessToken = await tryRefreshAccessToken();
+    // Only attempt to refresh token automatically on the client side.
+    // Server-side pages/layouts rely on middleware to guarantee token freshness.
+    if (typeof window !== 'undefined') {
+      const refreshedAccessToken = await tryRefreshAccessToken();
 
-    if (refreshedAccessToken) {
-      const retryHeaders = new Headers(headers);
-      retryHeaders.set('Authorization', `Bearer ${refreshedAccessToken}`);
+      if (refreshedAccessToken) {
+        const retryHeaders = new Headers(headers);
+        retryHeaders.set('Authorization', `Bearer ${refreshedAccessToken}`);
 
-      response = await executeApiRequest(normalizedPath, {
-        ...init,
-        headers: retryHeaders,
-      });
+        response = await executeApiRequest(normalizedPath, {
+          ...init,
+          headers: retryHeaders,
+        });
+      } else {
+        clearBrowserAccessToken();
+      }
     }
   }
 

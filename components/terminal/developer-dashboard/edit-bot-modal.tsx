@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { updateBotMetadata } from '@/lib/contracts/client';
@@ -37,26 +36,23 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div 
-        className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity duration-300 cursor-pointer"
+        className="absolute inset-0 bg-black/75 transition-opacity duration-300 cursor-pointer"
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-surface-strong p-8 shadow-[var(--shadow-soft)] backdrop-blur-2xl transition-all duration-300 scale-100 flex flex-col">
+      <div className="relative w-full max-w-lg overflow-hidden rounded-lg border border-border bg-surface p-8 shadow-2xl transition-all duration-300 scale-100 flex flex-col font-mono">
         
-        <div className="absolute -right-24 -top-24 h-48 w-48 rounded-full bg-primary-soft blur-3xl pointer-events-none" />
-        <div className="absolute -left-24 -bottom-24 h-48 w-48 rounded-full bg-info-soft blur-3xl pointer-events-none" />
-
-        <header className="relative flex items-center justify-between pb-5 border-b border-border">
+        <header className="relative flex items-center justify-between pb-5 border-b border-border font-sans">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-positive font-semibold">Config Management</span>
-            <h3 className="text-xl font-bold text-white tracking-tight mt-1">
+            <span className="text-[9px] font-bold uppercase tracking-wider text-positive">Config Management</span>
+            <h3 className="text-lg font-bold text-white tracking-tight mt-1">
               Edit Bot Configuration
             </h3>
           </div>
           <button 
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+            className="rounded p-1.5 text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
           >
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -73,7 +69,7 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
             exchange: (bot.exchange as any) || 'BINANCE',
             tradingPair: bot.tradingPair || 'BTC/USDT',
           }}
-          className="relative mt-6 space-y-5 flex-1"
+          className="relative mt-6 space-y-5 flex-1 font-sans"
         >
           {({ register, formState: { errors } }) => (
             <>
@@ -81,7 +77,7 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
                 <input
                   type="text"
                   placeholder="e.g. BTC_BREAKOUT_BOT"
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-positive/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
+                  className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-primary focus:outline-none transition-all font-mono"
                   {...register('botName')}
                 />
               </FormField>
@@ -90,7 +86,7 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
                 <textarea
                   placeholder="e.g. Algorithmic grid bot running custom Python webhook alerts."
                   rows={3}
-                  className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-positive/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all resize-none"
+                  className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-primary focus:outline-none transition-all resize-none"
                   {...register('description')}
                 />
               </FormField>
@@ -98,7 +94,7 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormField label="Exchange Venue" error={errors.exchange?.message}>
                   <select
-                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white focus:border-positive/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all"
+                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white focus:border-primary focus:outline-none transition-all"
                     {...register('exchange')}
                   >
                     <option value="BINANCE">Binance</option>
@@ -111,30 +107,30 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
                   <input
                     type="text"
                     placeholder="BTC/USDT"
-                    className="w-full rounded-xl border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-positive/50 focus:outline-none focus:ring-1 focus:ring-[var(--primary-soft)] transition-all font-mono"
+                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-primary focus:outline-none transition-all font-mono"
                     {...register('tradingPair')}
                   />
                 </FormField>
               </div>
 
               {mutation.isError && (
-                <div className="rounded-xl border border-negative/25 bg-negative-soft p-3 text-xs text-negative">
+                <div className="rounded border border-negative/20 bg-negative/5 p-3 text-xs text-negative font-mono">
                   {mutation.error.message}
                 </div>
               )}
 
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+              <div className="pt-4 border-t border-border flex items-center justify-end gap-3 font-sans">
                 <button
                   type="button"
                   onClick={onClose}
-                  className="rounded-xl px-5 py-2.5 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="rounded px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-6 py-2.5 text-xs font-bold text-cta-on-primary hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer"
+                  className="inline-flex items-center justify-center gap-2 rounded border border-primary bg-primary text-black px-5 py-2 text-xs font-bold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {mutation.isPending ? (
                     <>

@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import brandLogo from '@/assets/images/marcustradingvn-Photoroom.png';
 
 const navItems = [
@@ -33,7 +33,27 @@ function formatRole(role?: string): string {
 
 export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(4,7,13,0.92)]';
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    try {
+      await fetch('/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+    
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('marcus_access_token');
+      localStorage.removeItem('marcus_refresh_token');
+      localStorage.removeItem('marcus_role');
+      localStorage.removeItem('marcus_username');
+    }
+
+    router.push('/login?logged_out=1');
+    router.refresh();
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-[rgba(132,162,191,0.2)] bg-[rgba(4,7,13,0.78)] backdrop-blur-xl">
@@ -100,13 +120,13 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               >
                 Dashboard
               </Link>
-              <Link
-                href="/logout"
+              <button
+                onClick={handleLogout}
                 className={`rounded-xl border border-border/30 px-4 py-2 text-sm text-white transition-colors hover:bg-border/12 ${focusClass}`}
                 aria-label="Sign out"
               >
                 Sign Out
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -153,9 +173,13 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
                   <Link href="/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Go to dashboard">
                     Dashboard
                   </Link>
-                  <Link href="/logout" className={`rounded-lg border border-border/30 px-3 py-2 text-sm text-white hover:bg-border/8 ${focusClass}`} aria-label="Sign out">
+                  <button
+                    onClick={handleLogout}
+                    className={`rounded-lg border border-border/30 px-3 py-2 text-sm text-white hover:bg-border/8 text-left w-full ${focusClass}`}
+                    aria-label="Sign out"
+                  >
                     Sign Out
-                  </Link>
+                  </button>
                 </>
               )}
             </nav>

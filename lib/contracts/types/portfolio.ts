@@ -13,6 +13,9 @@ export interface PortfolioOverview {
   totalEquity: number;
   aggregateOpenPnL: number;
   lastUpdated: string;  // ISO timestamp
+  freshAccountsCount?: number;
+  staleAccountsCount?: number;
+  dataFreshness?: 'FRESH' | 'PARTIAL' | 'STALE' | string;
 }
 
 export interface BotDecisionCard {

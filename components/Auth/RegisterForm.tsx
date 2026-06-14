@@ -1,15 +1,14 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Form, FormField } from '@/components/ui/form-primitive';
 import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth.schema';
+import { setBrowserAccessToken } from '@/lib/api/http';
 
 const REGISTER_ROUTE = '/api/auth/register';
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -36,16 +35,20 @@ export default function RegisterForm() {
       }
 
       if (typeof payload?.next === 'string' && payload.next.startsWith('/')) {
+        if (payload?.accessToken) {
+          setBrowserAccessToken(payload.accessToken);
+        }
+
         if (payload.next.startsWith('/login')) {
           setSuccessMessage('Account created successfully. Redirecting to login...');
         }
 
-        router.push(payload.next);
+        window.location.replace(payload.next);
         return;
       }
 
       setSuccessMessage('Account created successfully. Redirecting to login...');
-      router.push('/login?registered=true&next=/terminal');
+      window.location.replace('/login?registered=true&next=/terminal');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unexpected error.';
       setError(message);

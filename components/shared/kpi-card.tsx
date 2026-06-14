@@ -19,7 +19,7 @@ export function KpiCard({ label, value, delta, context, trend, data }: KpiCardPr
   const trendStyle = trendPresentation[trend];
 
   return (
-    <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)] transition-all duration-300 hover:translate-y-[-2px] hover:border-[var(--primary-soft)]">
+    <article className="panel p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">{label}</p>

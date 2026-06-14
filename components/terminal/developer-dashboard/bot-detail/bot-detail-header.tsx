@@ -1,9 +1,7 @@
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { DeveloperBotDetail, DeveloperBotStatus, BotIntegrationHealth } from '@/lib/contracts/types';
-import { cn } from '@/lib/utils';
 
 interface BotDetailHeaderProps {
   bot: DeveloperBotDetail;
@@ -11,91 +9,102 @@ interface BotDetailHeaderProps {
   integrationHealth: BotIntegrationHealth | null;
   onEdit: () => void;
   onDelete: () => void;
+  onBackToFleet?: () => void;
 }
 
-const statusTone: Record<DeveloperBotStatus, "success" | "warning" | "error" | "default"> = {
-  ACTIVE: 'success',
-  PAUSED: 'warning',
-  DOWN: 'error',
-  DELETED: 'default',
-};
+export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, onDelete, onBackToFleet }: BotDetailHeaderProps) {
+  const isUp = integrationHealth?.overallStatus === 'UP';
+  const isDegraded = integrationHealth?.overallStatus === 'DEGRADED';
 
-function integrationTone(status?: string | null): "success" | "warning" | "error" | "default" {
-  const normalized = String(status ?? '').toUpperCase();
-  if (normalized === 'UP') return 'success';
-  if (normalized === 'DEGRADED') return 'warning';
-  if (normalized === 'DOWN') return 'error';
-  return 'default';
-}
-
-export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, onDelete }: BotDetailHeaderProps) {
   return (
     <div className="border-b border-border p-6 sm:p-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1 space-y-4">
           <Link 
             href="/terminal/developer-dashboard" 
-            className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted transition-colors hover:text-main"
+            onClick={(e) => {
+              if (onBackToFleet) {
+                e.preventDefault();
+                onBackToFleet();
+              }
+            }}
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-500 transition-colors hover:text-white"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to fleet
+            Back to Fleet
           </Link>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={statusTone[localStatus]}>
-              {localStatus === 'DELETED' ? 'Deleted' : localStatus}
-            </Badge>
+          <div className="flex flex-wrap items-center gap-2 font-mono">
+            <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+              localStatus === 'ACTIVE'
+                ? 'border-positive/20 bg-positive/10 text-positive'
+                : localStatus === 'PAUSED'
+                  ? 'border-warning/20 bg-warning/10 text-warning'
+                  : 'border-negative/20 bg-negative/10 text-negative'
+            }`}>
+              <span className={`h-1.5 w-1.5 rounded-full ${localStatus === 'ACTIVE' ? 'bg-positive' : localStatus === 'PAUSED' ? 'bg-warning' : 'bg-negative'}`} />
+              {localStatus}
+            </span>
+
             {integrationHealth && (
-              <Badge variant={integrationTone(integrationHealth.overallStatus)}>
+              <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                isUp 
+                  ? 'border-positive/20 bg-positive/10 text-positive' 
+                  : isDegraded 
+                    ? 'border-warning/20 bg-warning/10 text-warning' 
+                    : 'border-negative/20 bg-negative/10 text-negative'
+              }`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${isUp ? 'bg-positive' : isDegraded ? 'bg-warning' : 'bg-negative'}`} />
                 {integrationHealth.overallStatus}
-              </Badge>
+              </span>
             )}
-            <Badge variant="outline" className="font-mono">
-              {bot.botId}
-            </Badge>
+
+            <span className="rounded-lg border border-border bg-surface px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-slate-400">
+              ID: {bot.botId}
+            </span>
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-3xl font-semibold tracking-tight text-main sm:text-4xl">{bot.botName}</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-white uppercase sm:text-3xl">{bot.botName}</h1>
             {bot.description && (
-              <p className="line-clamp-3 max-w-3xl text-sm leading-relaxed text-muted">
+              <p className="line-clamp-2 max-w-3xl text-xs leading-relaxed text-slate-400 font-sans">
                 {bot.description}
               </p>
             )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-xl border border-border bg-surface px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Venue</p>
-              <p className="mt-2 text-sm font-semibold text-main">{bot.exchange ?? 'N/A'}</p>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4 font-mono">
+            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-sans">Venue</p>
+              <p className="mt-1 text-xs font-bold text-white uppercase">{bot.exchange ?? 'N/A'}</p>
             </div>
-            <div className="rounded-xl border border-border bg-surface px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Pair</p>
-              <p className="mt-2 font-mono text-sm font-semibold text-main">{bot.tradingPair ?? 'N/A'}</p>
+            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-sans">Pair</p>
+              <p className="mt-1 text-xs font-bold text-white uppercase">{bot.tradingPair ?? 'N/A'}</p>
             </div>
-            <div className="rounded-xl border border-border bg-surface px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Developer</p>
-              <p className="mt-2 truncate font-mono text-sm text-main">
-                {bot.developerId ? `${bot.developerId.slice(0, 8)}...` : 'N/A'}
+            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-sans">Developer ID</p>
+              <p className="mt-1 text-xs font-bold text-white">
+                {bot.developerId ? `${bot.developerId.slice(0, 12)}...` : 'N/A'}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-surface px-4 py-4">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Updated</p>
-              <p className="mt-2 text-sm font-semibold text-main">
+            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-sans">Last Updated</p>
+              <p className="mt-1 text-xs font-bold text-white font-sans">
                 {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col">
-          <Button variant="secondary" onClick={onEdit} className="gap-2">
-            <Edit className="h-4 w-4" />
-            Edit bot
+        <div className="flex shrink-0 flex-row gap-3 sm:flex-row lg:flex-col font-sans">
+          <Button variant="secondary" onClick={onEdit} className="gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer h-9 px-4">
+            <Edit className="h-3.5 w-3.5" />
+            Edit Bot
           </Button>
-          <Button variant="danger" onClick={onDelete} className="gap-2">
-            <Trash2 className="h-4 w-4" />
-            Delete bot
+          <Button variant="danger" onClick={onDelete} className="gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer h-9 px-4">
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete Bot
           </Button>
         </div>
       </div>

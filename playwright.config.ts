@@ -20,7 +20,7 @@ const config: PlaywrightTestConfig = {
     command: 'npx next dev -p 3001',
     port: 3001,
     timeout: 120_000,
-    reuseExistingServer: false,
+    reuseExistingServer: true,
     env: {
       NEXT_PUBLIC_API_BASE_URL: 'https://marcus-api.tromoi.xyz/api/v1',
       NODE_ENV: 'development',

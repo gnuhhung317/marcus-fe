@@ -3,7 +3,7 @@ import { getDashboardPageData, getDeveloperConsolePageData } from '@/lib/contrac
 import type { DashboardPageData, DeveloperConsolePageData } from '@/lib/contracts/types';
 
 export const monitoringKeys = {
-  all: ['monitoring'] as const,
+  all: (range: string) => ['monitoring', range] as const,
 };
 
 export type MonitoringSnapshot = {
@@ -11,12 +11,12 @@ export type MonitoringSnapshot = {
   ops: DeveloperConsolePageData;
 };
 
-export function useMonitoringData() {
+export function useMonitoringData(range: string = '7D') {
   const query = useQuery<MonitoringSnapshot>({
-    queryKey: monitoringKeys.all,
+    queryKey: monitoringKeys.all(range),
     queryFn: async () => {
       const [dashboard, ops] = await Promise.all([
-        getDashboardPageData(),
+        getDashboardPageData(range),
         getDeveloperConsolePageData(),
       ]);
       return { dashboard, ops };

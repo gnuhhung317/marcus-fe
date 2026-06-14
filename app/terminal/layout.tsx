@@ -8,7 +8,12 @@ export default async function TerminalLayout({ children }: { children: React.Rea
   const role = cookieStore.get('marcus_role')?.value;
   const username = cookieStore.get('marcus_username')?.value;
 
+  // Debug: log all cookie names present in this request
+  const allCookieNames = cookieStore.getAll().map((c) => c.name);
+  console.log('[TerminalLayout] cookies present:', allCookieNames, '| accessToken present:', !!accessToken, '| role:', role);
+
   if (!accessToken || !role || role === 'GUEST') {
+    console.log('[TerminalLayout] REDIRECTING to login — missing accessToken or role');
     redirect('/login?next=/terminal');
   }
 

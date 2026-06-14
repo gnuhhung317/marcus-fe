@@ -9,8 +9,8 @@ interface BotDetailTabsProps {
 const tabLabels: Record<DetailTab, string> = {
   overview: 'Overview',
   analytics: 'Analytics',
-  credentials: 'API credentials',
-  integration: 'Integration health',
+  credentials: 'Credentials',
+  integration: 'Integration',
   signals: 'Signals',
   subscribers: 'Subscribers',
 };
@@ -21,24 +21,24 @@ export function BotDetailTabs({ activeTab, setActiveTab, status }: BotDetailTabs
   return (
     <div className="px-6 sm:px-8">
       {status === 'PAUSED' && (
-        <div className="mb-6 rounded-xl border border-border bg-warning-soft px-4 py-3 text-sm text-warning">
-          This bot is stopped. Existing subscriptions remain active, but new trading signals are rejected until it is resumed.
+        <div className="mb-6 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3 font-mono text-[11px] leading-relaxed text-warning">
+          WARNING: This bot is currently PAUSED. Active client subscriptions remain connected, but outgoing execution signals are rejected until running state is restored.
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2 border-b border-border pb-0">
+      <div className="flex flex-wrap gap-1 border-b border-border font-mono">
         {tabs.map((tab) => (
           <button
             key={tab}
             type="button"
             onClick={() => setActiveTab(tab)}
-            className={`relative px-4 py-3 text-xs font-semibold uppercase tracking-[0.16em] transition-colors ${        
-              activeTab === tab ? 'text-main' : 'text-muted hover:text-main'
+            className={`relative px-4 py-3.5 text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${        
+              activeTab === tab ? 'text-white' : 'text-slate-500 hover:text-slate-300'
             }`}
           >
             {tabLabels[tab]}
             {activeTab === tab && (
-              <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-primary" />
+              <span className="absolute inset-x-0 bottom-[-1px] h-0.5 bg-primary" />
             )}
           </button>
         ))}

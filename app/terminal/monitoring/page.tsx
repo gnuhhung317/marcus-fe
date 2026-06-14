@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { useMonitoringData } from '@/lib/hooks/use-monitoring-data';
@@ -16,7 +16,8 @@ const PAGE_TITLE = 'Monitoring Dashboard';
 
 export default function MonitoringDashboardPage() {
   const router = useRouter();
-  const { data, isLoading, isRefreshing, error, refresh } = useMonitoringData();
+  const [range, setRange] = useState('7D');
+  const { data, isLoading, isRefreshing, error, refresh } = useMonitoringData(range);
 
   useEffect(() => {
     const match = document.cookie.match(/(?:^|; )marcus_role=([^;]*)/);
@@ -79,17 +80,20 @@ export default function MonitoringDashboardPage() {
         sparklineSeed={sparklineSeed} 
       />
 
-      <MonitoringPerformance 
-        dashboard={dashboard} 
-        lastUpdated={lastUpdated} 
-      />
+      <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+        <MonitoringPerformance 
+          dashboard={dashboard} 
+          lastUpdated={lastUpdated} 
+          range={range}
+          onRangeChange={setRange}
+        />
+        <MonitoringTrades 
+          dashboard={dashboard} 
+        />
+      </div>
 
       <MonitoringLogs 
         ops={ops} 
-      />
-
-      <MonitoringTrades 
-        dashboard={dashboard} 
       />
     </div>
   );

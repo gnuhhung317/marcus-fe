@@ -18,7 +18,6 @@ export default async function TerminalDeveloperConsolePage() {
       <header>
         <p className="text-xs uppercase tracking-[0.16em] text-muted">Operator Console</p>
         <h1 className="mt-3 text-4xl font-semibold text-white">Algorithm Health and API</h1>
-        <p className="mt-2 text-sm text-muted">Monitor route quality, API key vault, and signal stream latency in real time.</p>
       </header>
 
       <section className="grid gap-5 lg:grid-cols-2">

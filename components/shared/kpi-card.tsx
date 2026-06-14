@@ -1,3 +1,6 @@
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { createSparklineDefaultConfig } from '@/lib/configs/sparkline.config';
 import { Sparkline } from './sparkline';
 
 interface KpiCardProps {
@@ -9,34 +12,52 @@ interface KpiCardProps {
   data?: number[];
 }
 
-const trendPresentation: Record<KpiCardProps['trend'], { symbol: string; className: string }> = {
-  up: { symbol: '↑', className: 'text-positive bg-primary-soft' },
-  down: { symbol: '↓', className: 'text-negative bg-negative-soft' },
-  neutral: { symbol: '→', className: 'text-muted bg-[var(--border-base)]' },
+const trendPresentation = {
+  up: { symbol: '↑', variant: 'success' as const },
+  down: { symbol: '↓', variant: 'error' as const },
+  neutral: { symbol: '→', variant: 'outline' as const },
 };
 
 export function KpiCard({ label, value, delta, context, trend, data }: KpiCardProps) {
   const trendStyle = trendPresentation[trend];
+  const sparklineConfig = createSparklineDefaultConfig();
 
   return (
-    <article className="panel p-5">
+    <Card className="p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-muted">{label}</p>
-          <p className="mt-3 text-4xl font-semibold leading-none text-white tracking-tight">{value}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted">{label}</p>
+          <p className="mt-2 text-3xl font-bold leading-none tracking-tight text-main">{value}</p>
         </div>
         {data && (
           <div className="pt-1">
-            <Sparkline data={data} color={trend === 'up' ? 'var(--semantic-positive)' : trend === 'down' ? 'var(--semantic-negative)' : 'var(--text-muted)'} />
+            <Sparkline
+              data={data}
+              color={
+                trend === 'up'
+                  ? sparklineConfig.colors.positive
+                  : trend === 'down'
+                  ? sparklineConfig.colors.negative
+                  : sparklineConfig.colors.neutral
+              }
+            />
           </div>
         )}
       </div>
-      <div className="mt-5 flex items-center gap-3">
-        <span className={`inline-flex items-center rounded-lg px-2 py-1 text-[11px] font-bold ${trendStyle.className}`}>
-          {trendStyle.symbol} {delta}
-        </span>
-        <span className="text-[11px] font-medium text-muted/60 uppercase tracking-wider">{context}</span>
-      </div>
-    </article>
+      {(delta || context) && (
+        <div className="mt-4 flex items-center gap-2.5">
+          {delta && (
+            <Badge variant={trendStyle.variant} className="h-4.5 px-1.5 py-0 text-[9px] font-bold">
+              {trendStyle.symbol} {delta}
+            </Badge>
+          )}
+          {context && (
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted/50">
+              {context}
+            </span>
+          )}
+        </div>
+      )}
+    </Card>
   );
 }

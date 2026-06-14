@@ -4,6 +4,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/shared/status-dot';
 import { RiskBar } from '@/components/shared/risk-bar';
 
@@ -15,30 +18,26 @@ interface BotDecisionRowProps {
   onUnsubscribe: (botId: string) => void;
 }
 
-const reasonStyles: Record<DecisionReason, { border: string; label: string; text: string; bg: string }> = {
+const reasonStyles: Record<DecisionReason, { border: string; label: string; badge: 'success' | 'warning' | 'error' }> = {
   [DecisionReason.SOLID_PERFORMER]: {
-    border: 'border-l-[3px] border-l-[#10b981]',
+    border: 'border-l-4 border-l-positive',
     label: 'Solid',
-    text: 'text-positive',
-    bg: 'bg-positive/5',
+    badge: 'success',
   },
   [DecisionReason.NEEDS_REVIEW]: {
-    border: 'border-l-[3px] border-l-[#f59e0b]',
+    border: 'border-l-4 border-l-warning',
     label: 'Review',
-    text: 'text-warning',
-    bg: 'bg-warning/5',
+    badge: 'warning',
   },
   [DecisionReason.HIGH_RISK]: {
-    border: 'border-l-[3px] border-l-[#f43f5e]',
+    border: 'border-l-4 border-l-negative',
     label: 'High Risk',
-    text: 'text-negative',
-    bg: 'bg-negative/5',
+    badge: 'error',
   },
   [DecisionReason.SLIPPING]: {
-    border: 'border-l-[3px] border-l-[#f59e0b]/70',
+    border: 'border-l-4 border-l-warning/70',
     label: 'Slipping',
-    text: 'text-warning/80',
-    bg: 'bg-warning/3',
+    badge: 'warning',
   },
 };
 
@@ -63,17 +62,12 @@ export function BotDecisionRow({
 
   const pnlColor = card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
   const drawdownColor = card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
-  const signalSuccess = card.signalCount24h > 0
-    ? Math.round((card.successfulSignals24h / card.signalCount24h) * 100)
-    : 0;
-
   const actionDisabled = isBusy || isPending;
 
   return (
-    <div
-      className={`flex flex-col gap-4 border border-white/5 bg-[#0b0e14] p-4 transition-colors hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between ${style.border}`}
+    <Card
+      className={`flex flex-col gap-4 p-4 transition-colors hover:border-border-line sm:flex-row sm:items-center sm:justify-between ${style.border}`}
     >
-      {/* Col 1: Bot details & status */}
       <div className="flex items-center gap-3 sm:w-1/4 sm:min-w-[180px]">
         {card.botIcon ? (
           <Image
@@ -82,14 +76,14 @@ export function BotDecisionRow({
             width={28}
             height={28}
             unoptimized
-            className="h-7 w-7 rounded border border-white/10 object-cover"
+            className="h-7 w-7 rounded border border-border object-cover"
           />
         ) : (
-          <div className="h-7 w-7 rounded border border-white/10 bg-white/[0.02]" />
+          <div className="h-7 w-7 rounded border border-border bg-surface" />
         )}
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-semibold text-white">
+            <span className="truncate text-sm font-semibold text-main">
               {card.botName}
             </span>
             <StatusDot
@@ -101,29 +95,25 @@ export function BotDecisionRow({
         </div>
       </div>
 
-      {/* Col 2: Risk indicator and reason explanation */}
       <div className="flex flex-col gap-1.5 sm:w-1/3">
         <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${style.bg} ${style.text}`}>
-            {style.label}
-          </span>
-          <span className="text-xs text-muted font-mono">
+          <Badge variant={style.badge}>{style.label}</Badge>
+          <span className="text-xs font-mono text-muted">
             Risk: {(card.riskScore * 100).toFixed(0)}%
           </span>
           <div className="w-16">
             <RiskBar value={card.riskScore} max={1} />
           </div>
         </div>
-        <p className="line-clamp-2 text-xs text-muted leading-normal">
+        <p className="line-clamp-2 text-xs leading-normal text-muted">
           {card.reasonExplanation}
         </p>
       </div>
 
-      {/* Col 3: Technical Metrics (Win Rate / Drawdown) */}
       <div className="grid grid-cols-3 gap-2 sm:w-1/5 sm:min-w-[150px]">
         <div>
           <span className="block text-[9px] uppercase tracking-wider text-muted/60">Win rate</span>
-          <span className="font-mono text-xs font-semibold text-white">
+          <span className="font-mono text-xs font-semibold text-main">
             {(card.winRate * 100).toFixed(0)}%
           </span>
         </div>
@@ -135,13 +125,12 @@ export function BotDecisionRow({
         </div>
         <div>
           <span className="block text-[9px] uppercase tracking-wider text-muted/60">Signals</span>
-          <span className="font-mono text-xs text-white">
+          <span className="font-mono text-xs text-main">
             {card.successfulSignals24h}/{card.signalCount24h}
           </span>
         </div>
       </div>
 
-      {/* Col 4: PnL and floating delta */}
       <div className="flex flex-row gap-4 sm:w-1/6 sm:flex-col sm:gap-0 sm:text-right">
         <div>
           <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">PnL: </span>
@@ -157,33 +146,23 @@ export function BotDecisionRow({
         </div>
       </div>
 
-      {/* Col 5: Actions */}
-      <div className="flex items-center gap-2 border-t border-white/5 pt-3 sm:border-t-0 sm:pt-0">
-        <button
+      <div className="flex items-center gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
+        <Button
           onClick={handleKeep}
           disabled={actionDisabled}
-          className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors border ${
-            isKept
-              ? 'border-positive/20 bg-positive/5 text-positive hover:bg-positive/10'
-              : 'border-white/10 bg-white/[0.02] text-white hover:bg-white/[0.06]'
-          } disabled:opacity-50`}
+          size="sm"
+          variant="outline"
+          className={isKept ? 'border-positive/20 bg-primary-soft text-positive hover:bg-primary/10' : ''}
         >
           {isKept ? 'Kept' : 'Keep'}
-        </button>
-        <Link
-          href={`/terminal/marketplace/${card.botId}`}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-white/10 bg-white/[0.02] text-white hover:bg-white/[0.06] text-center"
-        >
-          Review
-        </Link>
-        <button
-          onClick={() => onUnsubscribe(card.botId)}
-          disabled={actionDisabled}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-negative/20 bg-negative/5 text-negative hover:bg-negative/10 disabled:opacity-50"
-        >
+        </Button>
+        <Button asChild size="sm" variant="outline">
+          <Link href={`/terminal/marketplace/${card.botId}`}>Review</Link>
+        </Button>
+        <Button onClick={() => onUnsubscribe(card.botId)} disabled={actionDisabled} size="sm" variant="danger">
           Unsubscribe
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

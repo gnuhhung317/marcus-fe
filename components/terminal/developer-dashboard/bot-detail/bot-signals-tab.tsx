@@ -1,5 +1,6 @@
 import { DeveloperSignalItem } from '@/lib/contracts/types';
 import { SignalStreamTable } from '../signal-stream-table';
+import { Badge } from '@/components/ui/badge';
 
 interface BotSignalsTabProps {
   signals: DeveloperSignalItem[];
@@ -12,12 +13,11 @@ export function BotSignalsTab({ signals, isSwitching, onSelectSignal }: BotSigna
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">Signal Feed</h2>
-          <p className="mt-1 text-xs text-slate-400 font-sans">Recent signals received for this bot. Click a row to inspect payload payload.</p>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">Signal Feed</h2>
         </div>
-        <span className="rounded-lg border border-border bg-surface px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
+        <Badge variant="outline" className="rounded-lg px-2.5 py-1 text-[9px] font-mono">
           {signals.length} Signals
-        </span>
+        </Badge>
       </div>
 
       {isSwitching ? (

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { Check, Copy } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface CopyButtonProps {
   value: string;
@@ -23,20 +26,19 @@ export function CopyButton({ value, className = '' }: CopyButtonProps) {
   };
 
   return (
-    <button
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
       onClick={handleCopy}
-      className={`inline-flex items-center justify-center rounded-lg border border-transparent p-1.5 text-fg-muted transition-colors duration-150 hover:border-border hover:bg-surface hover:text-fg focus:outline-none ${className}`}
+      className={cn('h-8 w-8 rounded-lg border border-transparent text-muted transition-colors duration-150 hover:border-border hover:bg-surface hover:text-main focus:outline-none', className)}
       title="Copy to clipboard"
     >
       {copied ? (
-        <svg className="h-4 w-4 text-positive" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
+        <Check className="h-4 w-4 text-positive" />
       ) : (
-        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-        </svg>
+        <Copy className="h-4 w-4" />
       )}
-    </button>
+    </Button>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { createChart, LineSeries, Time, AreaSeries } from 'lightweight-charts';
-import { equityChartLayoutOptions, equityLineOptions } from '@/lib/configs/equity-chart.config';
+import { createChart, AreaSeries, Time } from 'lightweight-charts';
+import { createEquityAreaOptions, createEquityChartLayoutOptions } from '@/lib/configs/equity-chart.config';
 
 interface EquityPoint {
   timestamp: string;
@@ -30,7 +30,7 @@ export function EquityChart({ data, height = 300 }: EquityChartProps) {
     if (!container || data.length < 2) return;
 
     const chart = createChart(container, {
-      ...equityChartLayoutOptions,
+      ...createEquityChartLayoutOptions(),
       height,
       localization: {
         priceFormatter: (price: number) => {
@@ -44,12 +44,12 @@ export function EquityChart({ data, height = 300 }: EquityChartProps) {
     });
 
     const formattedData = data
-      .map(point => ({
+      .map((point) => ({
         time: toChartTime(point.timestamp),
         value: point.value,
         rawTime: Date.parse(point.timestamp),
       }))
-      .filter(point => !Number.isNaN(point.rawTime))
+      .filter((point) => !Number.isNaN(point.rawTime))
       .sort((a, b) => a.rawTime - b.rawTime);
 
     const uniqueData: { time: Time; value: number }[] = [];
@@ -65,15 +65,7 @@ export function EquityChart({ data, height = 300 }: EquityChartProps) {
       }
     }
 
-    // Area series for professional trading appearance
-    const areaSeries = chart.addSeries(AreaSeries, {
-      topColor: 'rgba(16, 185, 129, 0.2)',
-      bottomColor: 'rgba(16, 185, 129, 0.0)',
-      lineColor: '#10b981',
-      lineWidth: 2,
-      priceLineVisible: false,
-    });
-
+    const areaSeries = chart.addSeries(AreaSeries, createEquityAreaOptions());
     areaSeries.setData(uniqueData);
     chart.timeScale().fitContent();
 

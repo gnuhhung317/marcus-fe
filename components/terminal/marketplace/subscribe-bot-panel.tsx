@@ -85,7 +85,6 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
         <div className="flex-1 space-y-4">
           <div>
             <h2 className="text-xl font-semibold text-main">Subscribe bot</h2>
-            <p className="mt-2 text-sm text-muted">Request deployment access and receive a runtime token for your local executor.</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -118,12 +117,10 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
             <div className="rounded-xl border border-border bg-surface p-4 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Status</p>
-                  <p className="mt-2 text-sm font-semibold text-main">{result.status}</p>
+                  <p className="text-sm font-semibold text-main uppercase tracking-wider">{result.status}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Bot</p>
-                  <p className="mt-2 font-mono text-xs text-main truncate" title={botId}>{botId}</p>
+                  <p className="font-mono text-xs text-main truncate" title={botId}>{botId}</p>
                 </div>
               </div>
               <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">

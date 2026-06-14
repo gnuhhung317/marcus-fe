@@ -82,7 +82,6 @@ export function DeveloperDashboardClient({ initialData, initialBotId }: Develope
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 mb-6">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white uppercase">Developer Dashboard</h1>
-            <p className="text-xs text-slate-400">Manage webhook signal integrations, credentials, and telemetry logs.</p>
           </div>
         </div>
         <DeveloperOnboardingState onRegister={() => setIsRegisterOpen(true)} />
@@ -103,7 +102,6 @@ export function DeveloperDashboardClient({ initialData, initialBotId }: Develope
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 mb-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white uppercase">Developer Dashboard</h1>
-          <p className="text-xs text-slate-400">Manage webhook signal integrations, credentials, and telemetry logs.</p>
         </div>
         <div className="flex items-center gap-3">
           {/* Grid / Console View Toggle */}
@@ -199,10 +197,7 @@ export function DeveloperDashboardClient({ initialData, initialBotId }: Develope
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                 </svg>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-2 font-mono">Global Fleet Overview</h3>
-                <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto mb-6">
-                  Select an active webhook bot from the registry list to view its real-time signal stream, subscriber stats, and connection keys.
-                </p>
-                <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-950/60 px-3 py-1 text-[10px] text-slate-500 font-mono">
+                <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-950/60 px-3 py-1 text-[10px] text-slate-500 font-mono mt-4">
                   <span className="w-1.5 h-1.5 rounded-full bg-positive animate-ping" />
                   Fleet status: Nominal
                 </div>

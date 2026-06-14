@@ -1,6 +1,8 @@
 import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
 import { DeveloperBotDetail, DeveloperBotStatus } from '@/lib/contracts/types';
 import { RiskBar } from '@/components/shared/risk-bar';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 interface BotOverviewTabProps {
   bot: DeveloperBotDetail;
@@ -34,65 +36,62 @@ export function BotOverviewTab({ bot, localStatus, subscriberCount, connectedCou
   const riskNumeric = riskScore === 'HIGH' ? 8 : riskScore === 'MEDIUM' ? 5 : 2;
 
   return (
-    <div className="space-y-6">
-      <section className="space-y-4">
+    <div className="space-y-8">
+      <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <div className="font-sans">
-            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Summary</h2>
-            <p className="mt-1 text-xs text-slate-400">Current active session telemetry and configuration stats.</p>     
-          </div>
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Telemetry Summary</h2>
           <LifecycleBadge status={localStatus} />
         </div>
 
-        <div className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Card className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border/40 bg-surface/40 border-none font-mono">
           {[
             { label: 'Status', value: localStatus },
             { label: 'Subscribers', value: String(subscriberCount) },
             { label: 'Connected', value: String(connectedCount) },
             { label: 'Active', value: String(activeCount) },
           ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-border bg-surface p-4 flex flex-col justify-between h-full font-mono">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{item.label}</p>
-              <p className="mt-3 text-lg font-bold text-white tracking-tight">{item.value}</p>
+            <div key={item.label} className="p-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted">{item.label}</p>
+              <p className="mt-2 text-xl font-bold tracking-tight text-main">{item.value}</p>
             </div>
           ))}
-        </div>
+        </Card>
       </section>
 
       {bot.performance && (
-        <section className="grid items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: 'Annual return', value: formatMetricPercent(bot.performance.annualReturn, true), tone: 'text-positive' },
-            { label: 'Max drawdown', value: formatDrawdownPercent(bot.performance.maxDrawdown), tone: 'text-negative' },
-            { label: 'Sharpe ratio', value: formatMetricNumber(bot.performance.sharpe), tone: 'text-white' },
-            { label: 'Win rate', value: formatMetricPercent(bot.performance.winRate), tone: 'text-white' },
-          ].map((item) => (
-            <div key={item.label} className="rounded-xl border border-border bg-surface p-4 flex flex-col justify-between h-full font-mono">
-              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">{item.label}</p>
-              <p className={`mt-3 text-lg font-bold ${item.tone} tracking-tight`}>{item.value}</p>
-            </div>
-          ))}
+        <section className="space-y-3">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">Performance Metrics</h2>
+          <Card className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border/40 bg-surface/40 border-none font-mono">
+            {[
+              { label: 'Annual return', value: formatMetricPercent(bot.performance.annualReturn, true), tone: 'text-positive' },
+              { label: 'Max drawdown', value: formatDrawdownPercent(bot.performance.maxDrawdown), tone: 'text-negative' },
+              { label: 'Sharpe ratio', value: formatMetricNumber(bot.performance.sharpe), tone: 'text-main' },
+              { label: 'Win rate', value: formatMetricPercent(bot.performance.winRate), tone: 'text-main' },
+            ].map((item) => (
+              <div key={item.label} className="p-5">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-muted">{item.label}</p>
+                <p className={`mt-2 text-xl font-bold ${item.tone} tracking-tight`}>{item.value}</p>
+              </div>
+            ))}
+          </Card>
         </section>
       )}
 
       {/* Risk Profile Section */}
-      <section className="rounded-xl border border-border bg-surface p-5">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">Risk Profile</p>
-            <p className="text-[10px] text-slate-400 mt-0.5 font-sans">
-              Dynamic risk classification based on portfolio drawdown limits.
-            </p>
+      <section className="space-y-3">
+        <h2 className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted font-mono">Risk Profile</h2>
+        <Card className="p-6 bg-surface/40 border-none">
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-xs font-medium text-muted/80">Risk exposure based on drawdown limits</span>
+            <Badge
+              variant={riskScore === 'HIGH' ? 'error' : riskScore === 'MEDIUM' ? 'warning' : 'success'}
+              className="rounded-lg px-3 py-1 text-[10px] font-bold font-mono"
+            >
+              {riskScore} RISK ({riskNumeric}/10)
+            </Badge>
           </div>
-          <span className={`text-[10px] font-bold uppercase tracking-wider font-mono ${
-            riskScore === 'HIGH' ? 'text-negative' : riskScore === 'MEDIUM' ? 'text-warning' : 'text-positive'
-          }`}>
-            {riskScore} RISK ({riskNumeric}/10)
-          </span>
-        </div>
-        <div className="mt-4">
           <RiskBar value={riskNumeric} max={10} />
-        </div>
+        </Card>
       </section>
     </div>
   );

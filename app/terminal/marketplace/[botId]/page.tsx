@@ -70,18 +70,9 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                     <Coins className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Trading Pair</p>
-                    <p className="mt-1 text-sm font-semibold text-main">{bot.tradingPair || 'N/A'}</p>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-border bg-surface-strong/40 p-4 flex items-center gap-3">
-                  <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                    <Building2 className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Exchange</p>
-                    <p className="mt-1 text-sm font-semibold text-main">{bot.exchange || 'N/A'}</p>
+                    <p className="text-sm font-bold text-main font-mono uppercase tracking-wider">
+                      {bot.exchange || 'N/A'} • {bot.tradingPair || 'N/A'}
+                    </p>
                   </div>
                 </div>
 
@@ -90,8 +81,7 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                     <Cpu className="h-4 w-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Bot ID</p>
-                    <p className="mt-1 font-mono text-sm font-semibold text-main truncate" title={bot.botId}>{bot.botId}</p>
+                    <p className="font-mono text-sm font-semibold text-main truncate" title={bot.botId}>{bot.botId}</p>
                   </div>
                 </div>
 
@@ -100,8 +90,7 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                     <Layers className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted">Routing</p>
-                    <p className="mt-1 text-sm font-semibold text-main">Subscribe to receive runtime token</p>
+                    <p className="text-sm font-semibold text-main">Runtime Routing</p>
                   </div>
                 </div>
               </div>
@@ -179,7 +168,6 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-main">Inspect Metadata</p>
-                    <p className="text-xs text-muted mt-0.5">Analyze backtest and OOS performance metrics below.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -188,7 +176,6 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-main">Obtain Access</p>
-                    <p className="text-xs text-muted mt-0.5">Subscribe via the deployment panel to unlock your runtime wsToken.</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
@@ -197,7 +184,6 @@ export default async function TerminalMarketplaceBotDetailPage({ params }: { par
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-main">Route Executor Signals</p>
-                    <p className="text-xs text-muted mt-0.5">Point your trading bot executor to this bot&apos;s ID and stream trades.</p>
                   </div>
                 </div>
               </div>

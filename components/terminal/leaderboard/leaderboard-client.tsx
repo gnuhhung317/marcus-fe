@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { EmptyStateCard } from '@/components/shared/api-state';
+import { cn } from '@/lib/utils';
 import { LeaderboardPageData, LeaderboardRow } from '@/lib/contracts/types';
 
 interface LeaderboardClientProps {
@@ -11,6 +15,7 @@ interface LeaderboardClientProps {
 
 type TabKey = 'main' | 'proving-grounds';
 type SortKey = 'CAGR' | 'SHARPE';
+type PodiumVariant = 'gold' | 'silver' | 'bronze';
 
 function formatPercent(value: number, showSign = true): string {
   const sign = showSign && value >= 0 ? '+' : '';
@@ -18,78 +23,96 @@ function formatPercent(value: number, showSign = true): string {
 }
 
 function getDataSourceBadge(dataSource?: string) {
-  if (!dataSource) return null;
-
   if (dataSource === 'DRY_RUN') {
-    return (
-      <span className="inline-flex items-center rounded-md bg-[rgba(16,185,129,0.15)] px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-positive">
-        OOS
-      </span>
-    );
+    return <Badge variant="success">OOS</Badge>;
   }
 
   if (dataSource === 'HISTORICAL') {
-    return (
-      <span className="inline-flex items-center rounded-md bg-warning/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-warning/100">
-        Backtest
-      </span>
-    );
+    return <Badge variant="warning">Backtest</Badge>;
   }
 
   return null;
 }
 
-function PodiumCard({ row, rank, variant }: { row: LeaderboardRow; rank: number; variant: 'gold' | 'silver' | 'bronze' }) {
+function getPodiumPresentation(variant: PodiumVariant) {
+  switch (variant) {
+    case 'gold':
+      return {
+        border: 'border-[hsl(var(--semantic-warning)/0.55)]',
+        label: 'text-warning',
+        badge: 'warning' as const,
+        accent: 'bg-warning/10',
+      };
+    case 'silver':
+      return {
+        border: 'border-border-line',
+        label: 'text-muted',
+        badge: 'outline' as const,
+        accent: 'bg-surface-strong',
+      };
+    case 'bronze':
+    default:
+      return {
+        border: 'border-[hsl(var(--semantic-warning)/0.28)]',
+        label: 'text-warning',
+        badge: 'warning' as const,
+        accent: 'bg-warning/5',
+      };
+  }
+}
+
+function PodiumCard({
+  row,
+  rank,
+  variant,
+}: {
+  row: LeaderboardRow;
+  rank: number;
+  variant: PodiumVariant;
+}) {
   const isCenter = rank === 1;
-  const borderColor =
-    variant === 'gold'
-      ? 'border-[rgba(251,191,36,0.5)]'
-      : variant === 'silver'
-        ? 'border-border/40'
-        : 'border-[rgba(204,128,72,0.4)]';
-  const rankColor =
-    variant === 'gold'
-      ? 'text-[rgba(251,191,36,1)]'
-      : variant === 'silver'
-        ? 'text-border/100'
-        : 'text-[rgba(204,128,72,1)]';
-  const heightClass = isCenter ? 'h-full' : '';
+  const style = getPodiumPresentation(variant);
 
   return (
-    <article className={`glass-strong flex flex-col rounded-2xl border ${borderColor} p-6 shadow-[var(--shadow-soft)] ${heightClass}`}>
-      <div className="flex items-center justify-between">
-        <span className={`text-xs font-semibold uppercase tracking-[0.16em] ${rankColor}`}>Rank #{rank}</span>
+    <Card
+      variant="glass-strong"
+      className={cn(
+        'flex h-full flex-col gap-5 p-6 shadow-soft',
+        style.border,
+        isCenter && 'min-h-[24rem] lg:translate-y-[-0.75rem]'
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <Badge variant={style.badge}>Rank #{rank}</Badge>
         {getDataSourceBadge(row.dataSource)}
       </div>
-      <h2 className="mt-3 line-clamp-1 text-2xl font-semibold text-white">{row.botName}</h2>
-      <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
 
-      <div className="mt-auto">
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.12em] text-muted">CAGR</p>
-            <p className={`mt-1 text-2xl font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
-              {formatPercent(row.cagr)}
-            </p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Drawdown</p>
-            <p className="mt-1 text-2xl font-semibold text-muted">{Math.abs(row.drawdown).toFixed(2)}%</p>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Sharpe</p>
-            <p className="mt-1 text-2xl font-semibold text-white">{row.sharpe.toFixed(2)}</p>
-          </div>
-        </div>
-
-        <Link
-          href={`/terminal/bots/${row.botId}`}
-          className="mt-6 block rounded-xl cta-primary px-4 py-2.5 text-center text-sm font-semibold"
-        >
-          View Details
-        </Link>
+      <div className={cn('rounded-2xl border border-border p-4', style.accent)}>
+        <h2 className="line-clamp-1 text-2xl font-semibold text-main">{row.botName}</h2>
+        <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
       </div>
-    </article>
+
+      <div className="mt-auto grid grid-cols-3 gap-4">
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">CAGR</p>
+          <p className={cn('mt-1 text-2xl font-semibold', row.cagr >= 0 ? 'text-positive' : 'text-negative')}>
+            {formatPercent(row.cagr)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Drawdown</p>
+          <p className="mt-1 text-2xl font-semibold text-main">{Math.abs(row.drawdown).toFixed(2)}%</p>
+        </div>
+        <div className="rounded-xl border border-border bg-surface p-3">
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Sharpe</p>
+          <p className="mt-1 text-2xl font-semibold text-main">{row.sharpe.toFixed(2)}</p>
+        </div>
+      </div>
+
+      <Button asChild className="w-full">
+        <Link href={`/terminal/bots/${row.botId}`}>View Details</Link>
+      </Button>
+    </Card>
   );
 }
 
@@ -125,9 +148,9 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
   if (rows.length === 0) return null;
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border/22">
+    <Card variant="glass-strong" className="overflow-hidden">
       <table className="w-full border-collapse text-left text-sm">
-        <thead className="bg-border/8 text-xs uppercase tracking-[0.12em] text-muted">
+        <thead className="bg-surface-strong text-xs uppercase tracking-[0.12em] text-muted">
           <tr>
             <th className="px-4 py-3">Rank</th>
             <th className="px-4 py-3">Bot</th>
@@ -135,38 +158,35 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
             <th className="px-4 py-3 text-right">CAGR</th>
             <th className="px-4 py-3 text-right">Max DD</th>
             <th className="px-4 py-3 text-right">Sharpe</th>
-            <th className="px-4 py-3"></th>
+            <th className="px-4 py-3" />
           </tr>
         </thead>
         <tbody>
           {rows.map((row, idx) => (
-            <tr key={row.botId} className="border-t border-border/18 transition-colors hover:bg-border/8">
-              <td className="px-4 py-3.5 font-medium text-white">#{startRank + idx}</td>
-              <td className="px-4 py-3.5 font-medium text-white">
+            <tr key={row.botId} className="border-t border-border transition-colors hover:bg-surface">
+              <td className="px-4 py-3.5 font-medium text-main">#{startRank + idx}</td>
+              <td className="px-4 py-3.5 font-medium text-main">
                 <div className="flex items-center gap-2">
                   <span>{row.botName}</span>
                   {getDataSourceBadge(row.dataSource)}
                 </div>
               </td>
               <td className="px-4 py-3.5 text-muted">{row.creatorName}</td>
-              <td className={`px-4 py-3.5 text-right font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
+              <td className={cn('px-4 py-3.5 text-right font-semibold', row.cagr >= 0 ? 'text-positive' : 'text-negative')}>
                 {formatPercent(row.cagr)}
               </td>
               <td className="px-4 py-3.5 text-right text-muted">{Math.abs(row.drawdown).toFixed(2)}%</td>
-              <td className="px-4 py-3.5 text-right text-white">{row.sharpe.toFixed(2)}</td>
+              <td className="px-4 py-3.5 text-right text-main">{row.sharpe.toFixed(2)}</td>
               <td className="px-4 py-3.5 text-right">
-                <Link
-                  href={`/terminal/bots/${row.botId}`}
-                  className="text-xs font-semibold text-white transition-colors hover:text-positive"
-                >
-                  {'Details ->'}
-                </Link>
+                <Button asChild variant="link" size="sm" className="px-0">
+                  <Link href={`/terminal/bots/${row.botId}`}>Details</Link>
+                </Button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-    </section>
+    </Card>
   );
 }
 
@@ -200,86 +220,62 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
   return (
     <div className="space-y-8">
-      <header className="space-y-4">
+      <header className="space-y-5 border-b border-border pb-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted">
-              {activeTab === 'main' ? 'Verified Performance' : 'Bot Discovery'}
-            </p>
-            <h1 className="mt-3 text-4xl font-semibold text-white">
+          <div className="space-y-3">
+            <h1 className="font-display text-4xl font-semibold text-main uppercase">
               {activeTab === 'main' ? 'Main Leaderboard' : 'Proving Grounds'}
             </h1>
-            <p className="mt-2 text-sm text-muted">
-              {activeTab === 'main'
-                ? 'Real-time verified metrics with live bot ranking.'
-                : 'Explore backtested bots. Not yet verified in live markets.'}
-            </p>
           </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
+        <div className="flex flex-wrap gap-2">
+          <Button
             type="button"
+            variant={activeTab === 'main' ? 'primary' : 'outline'}
             onClick={() => setActiveTab('main')}
-            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === 'main'
-                ? 'cta-primary'
-                : 'border border-border/24 text-muted hover:bg-border/8 hover:text-white'
-            }`}
           >
             Main Leaderboard
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={activeTab === 'proving-grounds' ? 'primary' : 'outline'}
             onClick={() => setActiveTab('proving-grounds')}
-            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              activeTab === 'proving-grounds'
-                ? 'cta-primary'
-                : 'border border-border/24 text-muted hover:bg-border/8 hover:text-white'
-            }`}
           >
             Proving Grounds
-          </button>
+          </Button>
         </div>
 
         {activeTab === 'proving-grounds' ? (
-          <div className="rounded-xl border border-orange-500/50 bg-orange-900/20 p-4">
+          <Card variant="glass-strong" className="border-warning/20 bg-warning/5 p-4">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">!</span>
+              <Badge variant="warning">Risk</Badge>
               <div>
-                <h3 className="font-semibold text-orange-400">Risk Warning</h3>
-                <p className="mt-1 text-sm text-orange-300">
+                <h3 className="font-semibold text-warning">Risk Warning</h3>
+                <p className="mt-1 text-sm text-muted">
                   Historical backtest data does not guarantee future results. These bots have not been verified in live
                   markets. Capital at risk.
                 </p>
               </div>
             </div>
-          </div>
+          </Card>
         ) : null}
 
-        <div className="flex gap-2">
-          <button
+        <div className="flex flex-wrap gap-2">
+          <Button
             type="button"
+            variant={sortBy === 'CAGR' ? 'primary' : 'outline'}
             onClick={() => setSortBy('CAGR')}
-            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              sortBy === 'CAGR'
-                ? 'cta-primary'
-                : 'border border-border/24 text-muted hover:bg-border/8 hover:text-white'
-            }`}
           >
             Sort by CAGR
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant={sortBy === 'SHARPE' ? 'primary' : 'outline'}
             onClick={() => setSortBy('SHARPE')}
-            className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors ${
-              sortBy === 'SHARPE'
-                ? 'cta-primary'
-                : 'border border-border/24 text-muted hover:bg-border/8 hover:text-white'
-            }`}
           >
             Sort by Sharpe
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -298,11 +294,11 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
           {restRows.length > 0 ? <DetailTable rows={restRows} startRank={4} /> : null}
 
-          <div className="flex items-center justify-between rounded-2xl border border-border/18 bg-[rgba(8,13,22,0.34)] px-4 py-3 text-sm">
+          <Card variant="glass-strong" className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
             <span className="text-muted">
               Showing {sortedRows.length} bots · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by {sortBy}
             </span>
-          </div>
+          </Card>
         </>
       )}
     </div>

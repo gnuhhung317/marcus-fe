@@ -31,7 +31,7 @@ export function SvgDonut({
   let accumulatedPercent = 0;
 
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6", className)}>
+    <div className={cn('flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6', className)}>
       <div className="relative" style={{ width: size, height: size }}>
         <svg
           width={size}
@@ -45,7 +45,7 @@ export function SvgDonut({
             cy="50"
             r={radius}
             fill="transparent"
-            stroke="rgba(255, 255, 255, 0.03)"
+            stroke="hsl(var(--border-line) / 0.35)"
             strokeWidth={thickness}
           />
           {/* Segments */}
@@ -77,7 +77,7 @@ export function SvgDonut({
         {(centerLabel || centerValue) && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             {centerValue && (
-              <span className="font-mono text-lg font-bold text-white leading-none tracking-tight">
+              <span className="font-mono text-lg font-bold leading-none tracking-tight text-main">
                 {centerValue}
               </span>
             )}
@@ -100,7 +100,7 @@ export function SvgDonut({
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: seg.color }} />
                 <span className="font-medium text-muted">{seg.label}</span>
               </div>
-              <span className="font-mono text-white font-semibold">
+              <span className="font-mono font-semibold text-main">
                 {percentage.toFixed(1)}%
               </span>
             </div>

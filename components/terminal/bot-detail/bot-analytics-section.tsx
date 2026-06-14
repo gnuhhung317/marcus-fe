@@ -69,9 +69,8 @@ export function BotAnalyticsSection({ analytics, className = '' }: BotAnalyticsS
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">Performance Charts</h3>
-            <p className="mt-1 text-xs text-muted font-sans">Decoupled backtest simulation and live trading equity performance curve panels.</p>
           </div>
-          <Badge variant="outline" className="border-positive/20 bg-positive-soft text-positive">
+          <Badge variant="success">
             Bot Performance
           </Badge>
         </div>

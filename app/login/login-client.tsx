@@ -104,14 +104,14 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
       <main className="relative z-10 flex flex-grow items-center justify-center px-4 py-12 md:py-16">
         <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr] items-stretch">
           <Card variant="glass-strong" className="flex flex-col justify-between p-8 md:p-10">
-            <div>
-              <Badge variant="success" className="border-primary/20 bg-primary-soft text-positive">
+            <div className="flex flex-col gap-4">
+              <Badge variant="success">
                 Marcus Trading Ecosystem
               </Badge>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-main md:text-3xl leading-snug">
+              <h1 className="text-2xl font-semibold leading-snug tracking-tight text-main md:text-3xl">
                 Next-Gen Algorithmic Trading
               </h1>
-              <p className="mt-4 text-sm leading-relaxed text-muted">
+              <p className="text-sm leading-relaxed text-muted">
                 Unlock professional quantitative execution, real-time portfolio intelligence, and secure API bot operations in a unified workspace.
               </p>
             </div>
@@ -140,10 +140,10 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
           </Card>
 
           <Card variant="glass-strong" className="flex flex-col justify-center p-8 md:p-10">
-            <div>
+            <div className="flex flex-col gap-2">
               <p className="text-xs uppercase tracking-[0.18em] text-positive">Terminal Access</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
-              <p className="mt-2 text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
+              <p className="text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
             </div>
 
             {errorMessage ? (
@@ -160,8 +160,8 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               </div>
             ) : null}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
-              <label className="block space-y-2">
+            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-5">
+              <label className="flex flex-col gap-2">
                 <span className="text-xs font-medium uppercase tracking-widest text-muted">Username or email</span>
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -177,7 +177,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
                 {errors.username ? <p className="mt-1 text-xs text-negative">{errors.username.message}</p> : null}
               </label>
 
-              <label className="block space-y-2">
+              <label className="flex flex-col gap-2">
                 <span className="text-xs font-medium uppercase tracking-widest text-muted">Password</span>
                 <div className="relative">
                   <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
@@ -186,7 +186,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
                     type="password"
                     required
                     autoComplete="current-password"
-                    placeholder="••••••••"
+                    placeholder="********"
                     className="h-12 pl-10"
                   />
                 </div>

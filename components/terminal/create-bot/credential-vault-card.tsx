@@ -17,7 +17,6 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
   return (
     <article className="glass rounded-2xl p-6">
       <h2 className="font-display text-2xl text-white">Credential Vault (One-Time Display)</h2>
-      <p className="mt-2 text-sm text-muted">After creation, backend returns BotRegistrationResponse payload.</p>
 
       {credentials ? (
         <>

@@ -15,7 +15,6 @@ export function CredentialPanel({ bot }: CredentialPanelProps) {
         <h2 className="text-xl font-semibold text-white">Credentials & Quick Start</h2>
         <p className="text-xs uppercase tracking-[0.18em] text-muted">REST API Access</p>
       </div>
-      <p className="mt-2 text-sm text-muted">API key is available. Raw secret is only shown at provisioning time.</p>
 
       <div className="mt-4 space-y-3 text-sm">
         <div className="rounded-xl border border-border bg-surface px-3 py-2 flex items-center justify-between gap-2 overflow-hidden">

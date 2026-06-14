@@ -92,7 +92,6 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-white">Portfolio overview</h2>
-          <p className="mt-1 text-sm text-muted">Triage risk first, then scan capital and quality signals.</p>
         </div>
         {mounted && (
           <div className={`flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>

@@ -1,5 +1,7 @@
 import { EmptyStateCard, ErrorStateCard } from '@/components/shared/api-state';
 import { getLeaderboardPageData } from '@/lib/contracts/client';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 export default async function MarketPage() {
   try {
@@ -17,19 +19,19 @@ export default async function MarketPage() {
     }
 
     return (
-      <div className="space-y-8">
+      <div className="flex flex-col gap-8">
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted">Public Bot Benchmark</p>
-            <h1 className="mt-3 font-display text-5xl text-white">Market Leaderboard</h1>
-            <p className="mt-3 text-muted">Transparent real-time ranking for institutional trading bots.</p>
+            <h1 className="font-display text-5xl text-main uppercase">Market Leaderboard</h1>
           </div>
-          <div className="glass rounded-xl px-4 py-2 text-sm text-white">{rows.length} ranked bots</div>
+          <Card variant="glass" className="px-4 py-2 text-sm text-main">
+            {rows.length} ranked bots
+          </Card>
         </header>
 
-        <section className="overflow-hidden rounded-2xl border border-[rgba(132,162,191,0.2)]">
+        <Card variant="glass-strong" className="overflow-hidden p-0">
           <table className="w-full border-collapse text-left">
-            <thead className="bg-[rgba(16,24,40,0.82)] text-xs uppercase tracking-[0.16em] text-muted">
+            <thead className="bg-surface-strong text-xs uppercase tracking-[0.16em] text-muted">
               <tr>
                 <th className="px-4 py-4">Rank</th>
                 <th className="px-4 py-4">Bot</th>
@@ -42,8 +44,8 @@ export default async function MarketPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.botId} className="border-t border-[rgba(132,162,191,0.14)] bg-[rgba(6,10,18,0.58)] text-sm text-white">
-                  <td className="px-4 py-4 font-display text-lg text-white">{String(row.rank).padStart(2, '0')}</td>
+                <tr key={row.botId} className="border-t border-border/60 bg-surface/70 text-sm text-main">
+                  <td className="px-4 py-4 font-display text-lg text-main">{String(row.rank).padStart(2, '0')}</td>
                   <td className="px-4 py-4 font-semibold">{row.botName}</td>
                   <td className="px-4 py-4 text-muted">{row.creatorName}</td>
                   <td className={`px-4 py-4 text-right font-semibold ${row.cagr >= 0 ? 'text-positive' : 'text-negative'}`}>
@@ -51,17 +53,17 @@ export default async function MarketPage() {
                     {row.cagr.toFixed(2)}%
                   </td>
                   <td className="px-4 py-4 text-right text-muted">{row.drawdown.toFixed(2)}%</td>
-                  <td className="px-4 py-4 text-right text-white">{row.sharpe.toFixed(2)}</td>
+                  <td className="px-4 py-4 text-right text-main">{row.sharpe.toFixed(2)}</td>
                   <td className="px-4 py-4">
-                    <span className={`rounded-full px-2 py-1 text-xs ${row.status === 'ACTIVE' ? 'bg-[rgba(34,197,94,0.15)] text-positive' : 'bg-negative/14 text-negative'}`}>
+                    <Badge variant={row.status === 'ACTIVE' ? 'success' : 'error'} className="text-[10px]">
                       {row.status}
-                    </span>
+                    </Badge>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </section>
+        </Card>
       </div>
     );
   } catch (error) {

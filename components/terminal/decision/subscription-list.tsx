@@ -1,30 +1,28 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { favoriteBot, unsubscribeFromBot } from '@/lib/contracts/client';
-import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
+import { BotDecisionCard } from '@/lib/contracts/types';
 import { BotDecisionRow } from './bot-decision-row';
 import { DecisionFilter } from '@/app/terminal/decision/decision-filter';
 import { EmptyStateCard } from '@/components/shared/api-state';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { DecisionStatusFilter } from '@/lib/hooks/use-portfolio-decisions';
 
 interface SubscriptionListProps {
   cards: BotDecisionCard[];
-  statusFilter: 'ALL' | 'ACTIVE' | 'AT_RISK';
-  onStatusFilterChange: (status: 'ALL' | 'ACTIVE' | 'AT_RISK') => void;
+  statusFilter: DecisionStatusFilter;
+  onStatusFilterChange: (status: DecisionStatusFilter) => void;
   onRefreshRequested: () => Promise<void> | void;
   summary: {
     totalCount: number;
     activeCount: number;
     reviewNeededCount: number;
-    highRiskCount: number;
+  highRiskCount: number;
   };
 }
-
-const attentionReasons = new Set<DecisionReason>([
-  DecisionReason.HIGH_RISK,
-  DecisionReason.NEEDS_REVIEW,
-  DecisionReason.SLIPPING,
-]);
 
 export function SubscriptionList({
   cards,
@@ -85,7 +83,7 @@ export function SubscriptionList({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <DecisionFilter
         statusFilter={statusFilter}
         onStatusFilterChange={onStatusFilterChange}
@@ -100,11 +98,10 @@ export function SubscriptionList({
       />
 
       {feedback && (
-        <div className="rounded border border-white/5 bg-[#0b0e14] px-4 py-3">
-          <p className={`text-xs font-semibold ${feedback.tone === 'success' ? 'text-positive' : 'text-negative'}`}>
-            {feedback.message}
-          </p>
-        </div>
+        <Card variant="glass-strong" className="flex items-center gap-3 px-4 py-3">
+          <Badge variant={feedback.tone === 'success' ? 'success' : 'error'}>{feedback.tone}</Badge>
+          <p className="text-xs font-semibold text-main">{feedback.message}</p>
+        </Card>
       )}
 
       {filteredCards.length === 0 ? (
@@ -125,31 +122,31 @@ export function SubscriptionList({
       )}
 
       {confirmingBot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
-          <div className="w-full max-w-md rounded border border-white/10 bg-[#0b0e14] p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
+          <Card variant="glass-strong" className="w-full max-w-md p-5">
             <h4 className="text-sm font-semibold uppercase tracking-wider text-negative">Confirm Unsubscribe</h4>
-            <p className="mt-3 text-xs text-muted leading-relaxed">
-              Are you sure you want to unsubscribe from <span className="font-semibold text-white">{confirmingBot.botName}</span>?
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              Are you sure you want to unsubscribe from <span className="font-semibold text-main">{confirmingBot.botName}</span>?
               This action will halt active executions for this bot on {confirmingBot.exchange}.
             </p>
             <div className="mt-5 flex justify-end gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setConfirmingBot(null)}
-                className="px-3 py-1.5 text-xs font-semibold rounded border border-white/10 bg-white/[0.02] text-white hover:bg-white/[0.06]"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="danger"
                 onClick={() => void handleUnsubscribe()}
                 disabled={busyBotId === confirmingBot.botId}
-                className="px-3 py-1.5 text-xs font-semibold rounded border border-negative/20 bg-negative/5 text-negative hover:bg-negative/10"
               >
                 {busyBotId === confirmingBot.botId ? 'Processing...' : 'Confirm'}
-              </button>
+              </Button>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

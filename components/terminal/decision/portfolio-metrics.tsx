@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { PortfolioOverview } from '@/lib/contracts/types';
 import { MetricStrip } from '@/components/shared/metric-strip';
 import { StatusDot } from '@/components/shared/status-dot';
+import { Badge } from '@/components/ui/badge';
 
 interface PortfolioMetricsProps {
   overview: PortfolioOverview;
@@ -95,13 +96,13 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
   const freshnessState = overview.dataFreshness ?? 'STALE';
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">
           Portfolio Telemetry
         </h2>
         {mounted && (
-          <div className="flex items-center gap-2 rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 text-xs font-mono">
+          <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-mono">
             <StatusDot status={statusValue} pulse={shouldPulse} size="sm" />
             <span className="text-muted">{statusLabel}</span>
           </div>
@@ -111,24 +112,24 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
       <MetricStrip items={metrics} />
 
       <div className="flex flex-wrap gap-2 text-xs">
-        <span className="rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 font-mono text-muted">
-          Active fleet: <span className="font-semibold text-white">{overview.activeBotsCount}</span>
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-muted">
+          Active fleet: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
         </span>
-        <span className="rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 font-mono text-muted">
-          Last sync: <span className="font-semibold text-white">{lastUpdatedText}</span>
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-muted">
+          Last sync: <span className="font-semibold text-main">{lastUpdatedText}</span>
         </span>
-        <span className={`rounded border px-2.5 py-1 font-mono ${
+        <Badge variant={
           freshnessState === 'FRESH'
-            ? 'border-positive/20 bg-positive/5 text-positive'
+            ? 'success'
             : freshnessState === 'PARTIAL'
-            ? 'border-warning/20 bg-warning/5 text-warning'
-            : 'border-negative/20 bg-negative/5 text-negative'
-        }`}>
+            ? 'warning'
+            : 'error'
+        }>
           Data state: <span className="font-semibold">{freshnessState}</span>
-        </span>
+        </Badge>
         {overview.staleAccountsCount !== undefined && overview.staleAccountsCount > 0 && (
-          <span className="rounded border border-warning/20 bg-warning/5 px-2.5 py-1 font-mono text-warning">
-            Stale accounts: <span className="font-semibold text-white">{overview.staleAccountsCount}</span>
+          <span className="rounded-full border border-warning/20 bg-warning-soft px-2.5 py-1 font-mono text-warning">
+            Stale accounts: <span className="font-semibold text-main">{overview.staleAccountsCount}</span>
           </span>
         )}
       </div>

@@ -195,9 +195,9 @@ export function TerminalShell({ children, role, username }: { children: ReactNod
             )}
           </Card>
         </aside>
-        <Card variant="glass-strong" className="min-h-[84vh] p-5 md:p-7">
+        <div className="min-h-[84vh] p-0">
           {children}
-        </Card>
+        </div>
       </div>
     </div>
   );

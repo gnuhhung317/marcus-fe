@@ -55,7 +55,6 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-muted">Profile</p>
             <h2 className="mt-3 text-2xl font-semibold text-white">Basic account information</h2>
-            <p className="mt-2 text-sm text-muted">View and update the core identity fields for this account.</p>
           </div>
           <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
             Role: {formatRoleLabel(profile.role)}

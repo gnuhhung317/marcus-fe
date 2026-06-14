@@ -158,14 +158,11 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
                     </span>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-white/5 pt-2.5 text-[9px] font-mono">
-                    <div className="flex items-center gap-1 text-slate-500">
-                      <span>Venue:</span>
-                      <span className="font-semibold text-slate-300">{bot.exchange ?? 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500">
-                      <span>Pair:</span>
-                      <span className="font-semibold text-slate-300">{bot.tradingPair ?? 'N/A'}</span>
+                  <div className="mt-3 flex items-center border-t border-white/5 pt-2.5 text-[9px] font-mono">
+                    <div className="flex items-center gap-1.5 font-semibold text-slate-300 uppercase">
+                      <span>{bot.exchange ?? 'N/A'}</span>
+                      <span className="text-slate-600 font-normal">•</span>
+                      <span>{bot.tradingPair ?? 'N/A'}</span>
                     </div>
                   </div>
                 </div>

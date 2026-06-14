@@ -27,17 +27,17 @@ export function RiskBar({
   };
 
   return (
-    <div className={cn("w-full space-y-1.5", className)}>
-      <div className="relative h-2 w-full overflow-hidden rounded-sm bg-white/[0.04]">
+    <div className={cn('flex w-full flex-col gap-1.5', className)}>
+      <div className="relative h-2 w-full overflow-hidden rounded-sm bg-surface-strong">
         <div
-          className={cn("h-full rounded-sm transition-all duration-500", getBarColor())}
+          className={cn('h-full rounded-sm transition-all duration-500', getBarColor())}
           style={{ width: `${percentage}%` }}
         />
       </div>
       {showText && (
-        <div className="flex justify-between text-[10px] font-mono text-muted/60 uppercase tracking-wider">
+        <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider text-muted">
           <span>Risk Level</span>
-          <span className="font-semibold text-white">{percentage.toFixed(0)}%</span>
+          <span className="font-semibold text-main">{percentage.toFixed(0)}%</span>
         </div>
       )}
     </div>

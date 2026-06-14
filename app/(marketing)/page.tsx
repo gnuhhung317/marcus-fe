@@ -15,7 +15,7 @@ export default async function HomePage() {
       <section className="relative z-10 mx-auto max-w-7xl px-4 pt-20 sm:px-6 lg:px-8 lg:pt-32">
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
           <div className="max-w-2xl">
-            <Badge variant="success" className="border-primary/20 bg-primary-soft text-positive">
+            <Badge variant="success">
               Engine Online · {marketOverview.activeBots} Active Bots
             </Badge>
             <h1 className="mt-8 font-display text-5xl leading-[1.08] text-main md:text-7xl">

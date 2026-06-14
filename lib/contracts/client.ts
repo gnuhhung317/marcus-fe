@@ -7,7 +7,6 @@ export * from '../services/user.service';
 export * from '../services/portfolio.service';
 export * from '../services/market.service';
 export * from '../services/academy.service';
-export * from '../services/trading.service';
 export * from '../services/developer.service';
 
 export async function getContractSnapshot() {

@@ -4,8 +4,13 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { AlertCircle, ArrowRight, LockKeyhole, Mail, ShieldCheck, Zap } from 'lucide-react';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
 import { clearBrowserAccessToken, setBrowserAccessToken } from '@/lib/api/http';
 
@@ -35,7 +40,6 @@ const LOGIN_ROUTE = '/api/auth/login';
 
 export default function LoginClient({ initialNextPath, initialError, initialLoggedOut }: LoginClientProps) {
   const errorMessage = getErrorMessage(initialError);
-
   const [formError, setFormError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -92,142 +96,121 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col justify-between overflow-hidden shell-grid bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16),transparent_46%),radial-gradient(circle_at_80%_10%,rgba(56,189,248,0.12),transparent_34%),#050810] text-white animate-fade-in">
-      {/* Background radial glow */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(148,163,184,0.12),transparent_55%)]" />
+    <div className="relative min-h-screen overflow-hidden shell-grid bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.14),transparent_46%),radial-gradient(circle_at_80%_10%,hsl(var(--info)/0.10),transparent_34%),hsl(var(--background))] text-main">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--foreground)/0.08),transparent_55%)]" />
 
-      {/* Embedded Header */}
       <SiteHeader isAuthenticated={false} />
 
-      {/* Main Form container vertically centered */}
-      <main className="relative z-10 flex-grow flex items-center justify-center px-4 py-12 md:py-16">
+      <main className="relative z-10 flex flex-grow items-center justify-center px-4 py-12 md:py-16">
         <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr] items-stretch">
-
-          {/* Left supportive brand and value proposition card */}
-          <article className="rounded-3xl border border-border/16 bg-[rgba(8,13,22,0.65)] p-8 md:p-10 backdrop-blur-xl flex flex-col justify-between shadow-[0_24px_60px_rgba(0,0,0,0.4)]">
+          <Card variant="glass-strong" className="flex flex-col justify-between p-8 md:p-10">
             <div>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-semibold">Marcus Trading Ecosystem</p>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-white md:text-3xl leading-snug">
+              <Badge variant="success" className="border-primary/20 bg-primary-soft text-positive">
+                Marcus Trading Ecosystem
+              </Badge>
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight text-main md:text-3xl leading-snug">
                 Next-Gen Algorithmic Trading
               </h1>
-              <p className="mt-4 text-sm text-muted leading-relaxed">
+              <p className="mt-4 text-sm leading-relaxed text-muted">
                 Unlock professional quantitative execution, real-time portfolio intelligence, and secure API bot operations in a unified workspace.
               </p>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl border border-border/12 bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
-                <div className="flex items-center gap-2 text-emerald-400">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  <p className="text-xs uppercase tracking-[0.14em] font-semibold text-white">Institutional Security</p>
+              <div className="rounded-2xl border border-border/60 bg-surface/70 p-5 transition-colors duration-300 hover:border-primary/25">
+                <div className="flex items-center gap-2 text-positive">
+                  <ShieldCheck className="h-5 w-5" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">Institutional Security</p>
                 </div>
-                <p className="mt-2 text-xs text-muted leading-relaxed">
+                <p className="mt-2 text-xs leading-relaxed text-muted">
                   Enterprise session encryption, secure MFA authorization, and isolated API-key bots safeguard your trades.
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-border/12 bg-[rgba(10,15,30,0.45)] p-5 hover:border-[rgba(16,185,129,0.25)] transition-all duration-300">
-                <div className="flex items-center gap-2 text-emerald-400">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <p className="text-xs uppercase tracking-[0.14em] font-semibold text-white">Low-Latency Execution</p>
+              <div className="rounded-2xl border border-border/60 bg-surface/70 p-5 transition-colors duration-300 hover:border-primary/25">
+                <div className="flex items-center gap-2 text-info">
+                  <Zap className="h-5 w-5" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">Low-Latency Execution</p>
                 </div>
-                <p className="mt-2 text-xs text-muted leading-relaxed">
+                <p className="mt-2 text-xs leading-relaxed text-muted">
                   Execute bots with direct-to-exchange routing, zero execution lags, and live telemetry.
                 </p>
               </div>
             </div>
-          </article>
+          </Card>
 
-          {/* Right actual login card */}
-          <article className="rounded-3xl border border-border bg-canvas/90 p-8 md:p-10 shadow-2xl backdrop-blur-xl flex flex-col justify-center">
-            <h2 className="text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
-            <p className="mt-2 text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
+          <Card variant="glass-strong" className="flex flex-col justify-center p-8 md:p-10">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-positive">Terminal Access</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
+              <p className="mt-2 text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
+            </div>
 
             {errorMessage ? (
-              <div className="mt-5 rounded-xl border border-negative bg-negative-soft px-4 py-3 text-sm text-main flex items-center gap-2 animate-pulse">
-                <svg className="w-5 h-5 shrink-0 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+              <div className="mt-5 flex items-start gap-2 rounded-xl border border-negative/30 bg-negative-soft px-4 py-3 text-sm text-main">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-negative" />
                 <span>{errorMessage}</span>
               </div>
             ) : null}
 
             {formError ? (
-              <div className="mt-5 rounded-xl border border-negative bg-negative-soft px-4 py-3 text-sm text-main flex items-center gap-2">
-                <svg className="w-5 h-5 shrink-0 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                </svg>
+              <div className="mt-5 flex items-start gap-2 rounded-xl border border-negative/30 bg-negative-soft px-4 py-3 text-sm text-main">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-negative" />
                 <span>{formError}</span>
               </div>
             ) : null}
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
               <label className="block space-y-2">
-                <span className="text-xs uppercase tracking-widest font-medium text-muted">Username or email</span>
-                <input
-                  {...register('username')}
-                  type="text"
-                  required
-                  autoComplete="username"
-                  placeholder="duchung02st@gmail.com"
-                  className="w-full rounded-xl border border-border bg-canvas px-4 py-3 text-sm text-main outline-none transition-all duration-200 placeholder:text-muted focus:border-positive focus:ring-1 focus:ring-positive/20"
-                />
-                {errors.username && (
-                  <p className="mt-1 text-xs text-negative">{errors.username.message}</p>
-                )}
+                <span className="text-xs font-medium uppercase tracking-widest text-muted">Username or email</span>
+                <div className="relative">
+                  <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                  <Input
+                    {...register('username')}
+                    type="text"
+                    required
+                    autoComplete="username"
+                    placeholder="duchung02st@gmail.com"
+                    className="h-12 pl-10"
+                  />
+                </div>
+                {errors.username ? <p className="mt-1 text-xs text-negative">{errors.username.message}</p> : null}
               </label>
 
               <label className="block space-y-2">
-                <span className="text-xs uppercase tracking-widest font-medium text-muted">Password</span>
-                <input
-                  {...register('password')}
-                  type="password"
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••"
-                  className="w-full rounded-xl border border-border bg-canvas px-4 py-3 text-sm text-main outline-none transition-all duration-200 placeholder:text-muted focus:border-positive focus:ring-1 focus:ring-positive/20"
-                />
-                {errors.password && (
-                  <p className="mt-1 text-xs text-negative">{errors.password.message}</p>
-                )}
+                <span className="text-xs font-medium uppercase tracking-widest text-muted">Password</span>
+                <div className="relative">
+                  <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                  <Input
+                    {...register('password')}
+                    type="password"
+                    required
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    className="h-12 pl-10"
+                  />
+                </div>
+                {errors.password ? <p className="mt-1 text-xs text-negative">{errors.password.message}</p> : null}
               </label>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-xl cta-primary px-4 py-3.5 text-sm font-semibold active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 shadow-lg hover:shadow-xl cursor-pointer"
-              >
+              <Button type="submit" className="h-12 w-full" isLoading={isSubmitting}>
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
-              </button>
+                <ArrowRight className="h-4 w-4" />
+              </Button>
             </form>
 
-            <p className="mt-6 text-xs text-muted text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-              <span>Don&apos;t have an account? <Link href="/register" className="text-positive hover:text-positive-soft transition-colors font-medium">Sign up</Link></span>
+            <p className="mt-6 flex flex-col items-center justify-center gap-2 text-center text-xs text-muted sm:flex-row sm:gap-3">
+              <span>
+                Don&apos;t have an account?{' '}
+                <Button asChild variant="link" className="h-auto p-0 text-positive">
+                  <Link href="/register">Sign up</Link>
+                </Button>
+              </span>
             </p>
-          </article>
+          </Card>
         </section>
       </main>
 
-      {/* Embedded Footer */}
-      <SiteFooter />
-    </div>
-  );
-}
-
-      <SiteFooter />
-    </div>
-  );
-}
-</p>
-          </article>
-        </section>
-      </main>
-
-      {/* Embedded Footer */}
       <SiteFooter />
     </div>
   );

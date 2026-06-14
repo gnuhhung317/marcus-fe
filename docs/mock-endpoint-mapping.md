@@ -27,9 +27,6 @@ The following routes are marked `status: 'available'`:
 - `GET /bots/{botId}/analytics/metrics`
 - `GET /bots/{botId}/analytics/performance-series`
 - `GET /bots/{botId}/trades`
-- `GET /paper/session`
-- `GET /paper/signals`
-- `POST /paper/orders`
 - `GET /users/me`
 - `GET /users/me/api-keys`
 - `GET /signals`
@@ -106,17 +103,6 @@ The terminal app uses real backend endpoints with fallback mock data.
 - Mock fallback:
   - `botTrades`
   - fallback series and metrics when endpoint payload is missing or unavailable
-
-#### Paper trading
-- Real endpoints:
-  - `GET /paper/session`
-  - `GET /paper/signals`
-  - `POST /paper/orders`
-  - `POST /paper/session/pause`
-  - `POST /paper/session/resume`
-- Mock fallback:
-  - fallback session data and signal list
-  - fallback paper order response data
 
 #### Developer console
 - Real endpoints:

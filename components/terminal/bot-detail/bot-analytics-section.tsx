@@ -1,7 +1,9 @@
 'use client';
 
-import { PerformanceChart } from '@/components/shared/performance-chart';
+import { SplitPerformanceChart } from '@/components/shared/split-performance-chart';
 import { BotAnalyticsData } from '@/lib/contracts/types';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface BotAnalyticsSectionProps {
   analytics?: BotAnalyticsData | null;
@@ -13,63 +15,70 @@ export function BotAnalyticsSection({ analytics, className = '' }: BotAnalyticsS
 
   if (!analytics || !hasChartData) {
     return (
-      <section className={`rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] ${className}`}>
+      <Card className={`p-5 bg-surface border-border shadow-soft ${className}`}>
         <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-surface p-6 text-center">
-          <p className="text-sm font-semibold text-white">No live/OOS performance yet</p>
-          <p className="text-xs text-slate-400">
-            Analytics will appear after the bot has enough historical and out-of-sample runtime data.
+          <p className="text-sm font-semibold text-main">No live/OOS performance yet</p>
+          <p className="text-xs text-muted">
+            Analytics will appear after the bot has enough historical and live/dry run runtime data.
           </p>
         </div>
-      </section>
+      </Card>
     );
   }
 
   return (
     <section className={`space-y-5 ${className}`}>
       <div className="grid items-stretch gap-4 lg:grid-cols-3">
-        {analytics.metricBlocks.map((block) => (
-          <article key={block.title} className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)] flex flex-col justify-between">
-            <div className="flex-1">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">{block.title}</h3>
-              <div className="mt-5 space-y-3 font-mono">
-                <div className="flex items-center justify-between rounded-lg border border-border bg-surface-strong px-3 py-2.5">
-                  <span className="text-xs text-slate-400 font-sans">Annual return</span>
-                  <span className="text-sm font-bold text-positive">{block.annualReturn}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border border-border bg-surface-strong px-3 py-2.5">
-                  <span className="text-xs text-slate-400 font-sans">Drawdown</span>
-                  <span className="text-sm font-bold text-negative">{block.maxDrawdown}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg border border-border bg-surface-strong px-3 py-2.5">
-                  <span className="text-xs text-slate-400 font-sans">Sharpe ratio</span>
-                  <span className="text-sm font-bold text-white">{block.sharpe}</span>
+        {analytics.metricBlocks.map((block) => {
+          const displayTitle = block.title === 'Out-of-sample' ? 'Live / Dry Run' : block.title;
+          return (
+            <Card key={block.title} className="p-5 bg-surface border-border shadow-soft flex flex-col justify-between">
+              <div className="flex-1">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">{displayTitle}</h3>
+                <div className="mt-5 space-y-3 font-mono">
+                  {[
+                    { label: 'Annual return', value: block.sampleSizeDays || block.sampleSizeTrades ? block.annualReturn : 'N/A', tone: block.annualReturn.startsWith('-') ? 'text-negative' : 'text-positive' },
+                    { label: 'Drawdown', value: block.sampleSizeDays || block.sampleSizeTrades ? block.maxDrawdown : 'N/A', tone: 'text-negative' },
+                    { label: 'Sharpe ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.sharpe : 'N/A', tone: 'text-main' },
+                    { label: 'Sortino ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.sortino : 'N/A', tone: 'text-main' },
+                    { label: 'Calmar ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.calmar : 'N/A', tone: 'text-main' },
+                    { label: 'Profit factor', value: block.sampleSizeDays || block.sampleSizeTrades ? block.profitFactor : 'N/A', tone: 'text-main' },
+                    { label: 'Win rate', value: block.sampleSizeTrades ? block.winRate : 'N/A', tone: 'text-main' },
+                    { label: 'Sample days', value: String(block.sampleSizeDays), tone: 'text-muted' },
+                    { label: 'Closed trades', value: String(block.sampleSizeTrades), tone: 'text-muted' },
+                  ].map((item) => (
+                    <div key={item.label} className="flex items-center justify-between rounded-lg border border-border bg-surface-strong px-3 py-2.5">
+                      <span className="text-xs text-muted font-sans">{item.label}</span>
+                      <span className={`text-sm font-bold ${item.tone}`}>{item.value}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {block.title === 'Out-of-sample' && block.warning ? (
-              <p className="mt-4 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2.5 text-xs text-warning" title={block.warning}>
-                {block.warning}
-              </p>
-            ) : null}
-          </article>
-        ))}
+              {block.title === 'Out-of-sample' && block.warning ? (
+                <div className="mt-4 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2.5 text-xs text-warning" title={block.warning}>
+                  {block.warning}
+                </div>
+              ) : null}
+            </Card>
+          );
+        })}
       </div>
 
-      <article className="rounded-xl border border-border bg-surface p-5 shadow-[var(--shadow-soft)]">
+      <Card className="p-5 bg-surface border-border shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">Performance Chart</h3>
-            <p className="mt-1 text-xs text-slate-400 font-sans">Normalized bot-level return with historical and out-of-sample phases.</p>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">Performance Charts</h3>
+            <p className="mt-1 text-xs text-muted font-sans">Decoupled backtest simulation and live trading equity performance curve panels.</p>
           </div>
-          <span className="rounded-lg border border-positive/20 bg-positive/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-positive font-mono">
+          <Badge variant="outline" className="border-positive/20 bg-positive-soft text-positive">
             Bot Performance
-          </span>
+          </Badge>
         </div>
         <div className="mt-6 border-t border-border/40 pt-6">
-          <PerformanceChart data={analytics.performanceSeries} splitTimestamp={analytics.splitTimestamp} />
+          <SplitPerformanceChart data={analytics.performanceSeries} splitTimestamp={analytics.splitTimestamp} />
         </div>
-      </article>
+      </Card>
     </section>
   );
 }

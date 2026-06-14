@@ -5,6 +5,9 @@ import { subscribeToBot, unsubscribeFromBot } from '@/lib/contracts/client';
 import { SubscriptionResult } from '@/lib/contracts/types';
 import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
 import { useToast } from '@/components/providers/toast-provider';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface SubscribeBotPanelProps {
   botId: string;
@@ -77,12 +80,12 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
   };
 
   return (
-    <article className="glass-strong h-full rounded-2xl border border-border p-5 shadow-[var(--shadow-soft)]">
+    <Card className="h-full p-5 bg-surface border-border shadow-soft">
       <div className="flex h-full flex-col">
         <div className="flex-1 space-y-4">
           <div>
-            <h2 className="text-xl font-semibold text-fg">Subscribe bot</h2>
-            <p className="mt-2 text-sm text-fg-muted">Request deployment access and receive a runtime token for your local executor.</p>
+            <h2 className="text-xl font-semibold text-main">Subscribe bot</h2>
+            <p className="mt-2 text-sm text-muted">Request deployment access and receive a runtime token for your local executor.</p>
           </div>
 
           <div className="flex flex-wrap gap-2">
@@ -91,20 +94,20 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           </div>
 
           {subscriptionBlockedMessage ? (
-            <div className="rounded-xl border border-negative/18 bg-negative/8 px-4 py-3 text-sm text-negative">
+            <div className="rounded-xl border border-negative/20 bg-negative-soft px-4 py-3 text-sm text-negative">
               {subscriptionBlockedMessage}
             </div>
           ) : null}
 
-          <label className="flex items-start gap-3 rounded-xl border border-border bg-warning-soft p-3 text-sm text-warning">
+          <label className="flex items-start gap-3 rounded-xl border border-border bg-warning-soft p-3 text-sm text-warning cursor-pointer">
             <input
               type="checkbox"
               checked={riskConfirmed}
               onChange={(event) => setRiskConfirmed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-border bg-surface text-positive focus:ring-0"
+              className="mt-0.5 h-4 w-4 rounded border-border bg-surface text-positive focus:ring-0 cursor-pointer"
               disabled={!canSubscribe}
             />
-            <span className="leading-relaxed">
+            <span className="leading-relaxed select-none">
               I understand this strategy can lose capital and past performance does not guarantee future returns.
             </span>
           </label>
@@ -112,28 +115,28 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           {error ? <p className="text-sm text-negative">{error}</p> : null}
 
           {result ? (
-            <div className="rounded-xl border border-border bg-surface p-4">
+            <div className="rounded-xl border border-border bg-surface p-4 space-y-3">
               <div className="grid gap-3 sm:grid-cols-2">
                 <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Status</p>
-                  <p className="mt-2 text-sm font-semibold text-fg">{result.status}</p>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Status</p>
+                  <p className="mt-2 text-sm font-semibold text-main">{result.status}</p>
                 </div>
                 <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Bot</p>
-                  <p className="mt-2 font-mono text-sm text-fg">{botId}</p>
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Bot</p>
+                  <p className="mt-2 font-mono text-xs text-main truncate" title={botId}>{botId}</p>
                 </div>
               </div>
-              <div className="mt-3 rounded-lg border border-border bg-surface-strong px-3 py-3">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Runtime token</p>
-                <p className="mt-2 break-all font-mono text-sm text-fg">{result.wsToken}</p>
+              <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Runtime token</p>
+                <p className="mt-2 break-all font-mono text-sm text-main">{result.wsToken}</p>
               </div>
             </div>
           ) : isSubmitting ? (
-            <div className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-fg-muted">
+            <div className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted">
               Requesting runtime token from the backend...
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-4 text-sm text-fg-muted">
+            <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-4 text-sm text-muted">
               Subscribe to surface the runtime token here.
             </div>
           )}
@@ -141,26 +144,30 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
 
         <div className="mt-auto space-y-3 pt-5">
           <div className="flex flex-col gap-3 sm:flex-row">
-            <button
+            <Button
               type="button"
               onClick={handleSubscribe}
-              disabled={isSubmitting || !riskConfirmed || !canSubscribe}
-              className="flex-1 rounded-xl cta-primary px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60"
+              disabled={!riskConfirmed || !canSubscribe}
+              isLoading={isSubmitting}
+              variant="primary"
+              className="flex-1"
             >
-              {isSubmitting ? 'Subscribing...' : 'Subscribe bot'}
-            </button>
+              Subscribe bot
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={handleUnsubscribe}
-              disabled={isSubmitting || !result || result.status === 'UNSUBSCRIBED' || result.status === 'UNSUBSCRIBING'}
-              className="flex-1 rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-strong disabled:cursor-not-allowed disabled:opacity-55"
+              disabled={!result || result.status === 'UNSUBSCRIBED' || result.status === 'UNSUBSCRIBING'}
+              isLoading={isSubmitting}
+              variant="outline"
+              className="flex-1"
             >
               Unsubscribe
-            </button>
+            </Button>
           </div>
         </div>
       </div>
-    </article>
+    </Card>
   );
 }

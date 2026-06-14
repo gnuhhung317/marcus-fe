@@ -62,11 +62,11 @@ export default async function HomePage() {
               <p className="mt-2">Collecting marcus-sdk...</p>
               <p>Successfully installed marcus-sdk-4.2.0</p>
               <p className="mt-4 text-positive">$ marcus deploy bot.py --env prod</p>
-              <p className="mt-2 text-white/70">[<span className="text-positive">OK</span>] Validating schema parameters...</p>
-              <p className="text-white/70">[<span className="text-positive">OK</span>] Connecting to execution cloud...</p>
-              <p className="text-white/70">[<span className="text-positive">OK</span>] Provisioning isolation container...</p>
+              <p className="mt-2 text-muted">[<span className="text-positive">OK</span>] Validating schema parameters...</p>
+              <p className="text-muted">[<span className="text-positive">OK</span>] Connecting to execution cloud...</p>
+              <p className="text-muted">[<span className="text-positive">OK</span>] Provisioning isolation container...</p>
               <div className="mt-6 border-l-2 border-positive pl-4">
-                <p className="text-white">Bot Deployed Successfully</p>
+                <p className="text-main">Bot Deployed Successfully</p>
                 <p className="mt-1 text-xs text-muted">Routing ID: mrx_8f72a911</p>
                 <p className="text-xs text-muted">Latency: 1.2ms (Direct-To-Venue)</p>
               </div>
@@ -102,7 +102,7 @@ export default async function HomePage() {
       {/* 3-Step Lifecycle Flow */}
       <section className="relative z-10 mx-auto mt-32 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-display text-3xl text-white sm:text-5xl">Quant Lifecycle</h2>
+          <h2 className="font-display text-3xl text-main sm:text-5xl">Quant Lifecycle</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">
             From ideation to high-frequency cloud execution.
           </p>
@@ -115,11 +115,11 @@ export default async function HomePage() {
               1
             </div>
             <div className="mb-6 inline-block rounded-lg bg-surface p-3">
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-6 w-6 text-main" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
-            <h3 className="font-display text-2xl text-white">Learn & Backtest</h3>
+            <h3 className="font-display text-2xl text-main">Learn & Backtest</h3>
             <p className="mt-4 text-muted leading-relaxed">
               Access the Academy for institutional quant bots. Run historical backtests on years of tick data, in-browser, within seconds.
             </p>
@@ -131,11 +131,11 @@ export default async function HomePage() {
               2
             </div>
             <div className="mb-6 inline-block rounded-lg bg-surface p-3">
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-6 w-6 text-main" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
             </div>
-            <h3 className="font-display text-2xl text-white">Build & Simulate</h3>
+            <h3 className="font-display text-2xl text-main">Build & Simulate</h3>
             <p className="mt-4 text-muted leading-relaxed">
               Use our Python SDK or visual editor to construct logic. Forward-test in a live paper-trading environment without real capital risk.
             </p>
@@ -147,11 +147,11 @@ export default async function HomePage() {
               3
             </div>
             <div className="mb-6 inline-block rounded-lg bg-surface p-3">
-              <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg className="h-6 w-6 text-main" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
               </svg>
             </div>
-            <h3 className="font-display text-2xl text-white">Deploy & Scale</h3>
+            <h3 className="font-display text-2xl text-main">Deploy & Scale</h3>
             <p className="mt-4 text-muted leading-relaxed">
               Securely connect API keys. Deploy 24/7 dedicated cloud executors for minimum latency routing alongside exchanges.
             </p>
@@ -162,18 +162,18 @@ export default async function HomePage() {
       {/* Community Hub Footer Segment */}
       <section className="relative z-10 mx-auto mt-32 max-w-3xl px-4 text-center sm:px-6 lg:px-8">
         <div className="glass rounded-3xl p-10 sm:p-16">
-          <h2 className="font-display text-3xl text-white">Join The Hub</h2>
+          <h2 className="font-display text-3xl text-main">Join The Hub</h2>
           <p className="mx-auto mt-4 max-w-lg text-muted">
             Connect with quantitative developers, share bots, and get priority support from the Marcus engineering team.
           </p>
           <div className="mt-8 flex justify-center gap-4">
-            <a href="#" className="inline-flex items-center gap-2 rounded-xl bg-info px-6 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90">
+            <a href="#" className="inline-flex items-center gap-2 rounded-xl bg-info px-6 py-3 text-sm font-bold text-main transition-opacity hover:opacity-90">
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
               </svg>
               Discord Server
             </a>
-            <a href="#" className="inline-flex items-center gap-2 rounded-xl border border-border-line bg-surface px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-surface-strong">
+            <a href="#" className="inline-flex items-center gap-2 rounded-xl border border-border-line bg-surface px-6 py-3 text-sm font-bold text-main transition-colors hover:bg-surface-strong">
               Developer Forums
             </a>
           </div>
@@ -181,4 +181,8 @@ export default async function HomePage() {
       </section>
     </div>
   );
+}
+  );
+}
+;
 }

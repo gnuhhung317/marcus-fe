@@ -28,6 +28,12 @@ export interface BotMetricBlock {
   annualReturn: string;
   maxDrawdown: string;
   sharpe: string;
+  sortino: string;
+  calmar: string;
+  profitFactor: string;
+  winRate: string;
+  sampleSizeDays: number;
+  sampleSizeTrades: number;
   warning?: string | null;
 }
 
@@ -56,9 +62,9 @@ export interface MarketplaceBot {
   botId: string;
   name: string;
   tags: string[];
-  pnl30d: number;
-  winRate: number;
-  drawdown: number;
+  pnl30d: number | null;
+  winRate: number | null;
+  drawdown: number | null;
 }
 
 export type MarketplaceSortBy = 'RETURN_30D' | 'DRAWDOWN' | 'SUBSCRIBERS';

@@ -32,9 +32,9 @@ interface BotSummaryResponse {
   exchange?: string;
   asset?: string;
   risk?: string;
-  annualReturn?: number;
-  maxDrawdown?: number;
-  winRate?: number;
+  annualReturn?: number | null;
+  maxDrawdown?: number | null;
+  winRate?: number | null;
   subscribers?: number;
 }
 
@@ -85,7 +85,9 @@ interface BotAnalyticsMetricBlockResponse {
   sortino?: number;
   calmar?: number;
   profitFactor?: number;
+  winRate?: number;
   sampleSizeDays?: number;
+  sampleSizeTrades?: number;
   statisticalSignificanceWarning?: string | null;
 }
 
@@ -123,9 +125,10 @@ interface TradeLogPageResponse {
 // --- Mapping Helpers ---
 
 function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
-  const annualReturnPct = (bot.annualReturn ?? 0) * 100;
-  const maxDrawdownPct = Math.abs(bot.maxDrawdown ?? 0) * 100;
-  const winRatePct = (bot.winRate ?? 0) * 100;
+  const hasPerformanceData = bot.annualReturn != null || bot.maxDrawdown != null || bot.winRate != null;
+  const annualReturnPct = bot.annualReturn == null ? null : bot.annualReturn * 100;
+  const maxDrawdownPct = bot.maxDrawdown == null ? null : Math.abs(bot.maxDrawdown) * 100;
+  const winRatePct = bot.winRate == null ? null : bot.winRate * 100;
 
   const tags: string[] = [];
   if (bot.asset) {
@@ -148,9 +151,9 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
     botId: bot.botId,
     name: bot.botName ?? 'Unnamed Bot',
     tags: tags,
-    pnl30d: annualReturnPct,
-    winRate: winRatePct,
-    drawdown: maxDrawdownPct,
+    pnl30d: hasPerformanceData ? annualReturnPct : null,
+    winRate: hasPerformanceData ? winRatePct : null,
+    drawdown: hasPerformanceData ? maxDrawdownPct : null,
   };
 }
 
@@ -229,6 +232,12 @@ function mapMetricBlock(title: BotMetricBlock['title'], block: BotAnalyticsMetri
     annualReturn: formatSignedPercent(toNumber(block.annualReturn, 0) * 100, 2),
     maxDrawdown: formatSignedPercent(toNumber(block.maxDrawdown, 0) * 100, 2),
     sharpe: formatRatio(toNumber(block.sharpe, 0), 2),
+    sortino: formatRatio(toNumber(block.sortino, 0), 2),
+    calmar: formatRatio(toNumber(block.calmar, 0), 2),
+    profitFactor: formatRatio(toNumber(block.profitFactor, 0), 2),
+    winRate: `${(toNumber(block.winRate, 0) * 100).toFixed(2)}%`,
+    sampleSizeDays: Math.max(0, Math.round(toNumber(block.sampleSizeDays, 0))),
+    sampleSizeTrades: Math.max(0, Math.round(toNumber(block.sampleSizeTrades, 0))),
     warning: block.statisticalSignificanceWarning ?? null,
   };
 }
@@ -387,12 +396,15 @@ export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): P
   const analytics = mapBotAnalyticsData(metricsResponse, seriesResponse);
 
   const metrics = [
-    { label: 'Average return', value: formatSignedPercent(toNumber(totalMetrics.annualReturn, 0) * 100, 2) },
+    { label: 'Annual return', value: formatSignedPercent(toNumber(totalMetrics.annualReturn, 0) * 100, 2) },
     { label: 'Maximum drawdown', value: formatSignedPercent(toNumber(totalMetrics.maxDrawdown, 0) * 100, 2) },
     { label: 'Sharpe ratio', value: formatRatio(toNumber(totalMetrics.sharpe, 0), 2) },
     { label: 'Sortino ratio', value: formatRatio(toNumber(totalMetrics.sortino, 0), 2) },
     { label: 'Calmar ratio', value: formatRatio(toNumber(totalMetrics.calmar, 0), 2) },
     { label: 'Profit factor', value: formatRatio(toNumber(totalMetrics.profitFactor, 0), 2) },
+    { label: 'Win rate', value: `${(toNumber(totalMetrics.winRate, 0) * 100).toFixed(2)}%` },
+    { label: 'Sample days', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeDays, 0)))) },
+    { label: 'Closed trades', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeTrades, 0)))) },
   ];
 
   const trades = (tradeLogPage.items ?? [])

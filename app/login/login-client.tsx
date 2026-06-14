@@ -143,13 +143,13 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
           </article>
 
           {/* Right actual login card */}
-          <article className="rounded-3xl border border-border/22 bg-[rgba(6,10,18,0.85)] p-8 md:p-10 shadow-[0_30px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl flex flex-col justify-center">
-            <h2 className="text-2xl font-semibold tracking-tight text-white">Welcome back</h2>
+          <article className="rounded-3xl border border-border bg-canvas/90 p-8 md:p-10 shadow-2xl backdrop-blur-xl flex flex-col justify-center">
+            <h2 className="text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
             <p className="mt-2 text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
 
             {errorMessage ? (
-              <div className="mt-5 rounded-xl border border-negative/40 bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2 animate-pulse">
-                <svg className="w-5 h-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <div className="mt-5 rounded-xl border border-negative bg-negative-soft px-4 py-3 text-sm text-main flex items-center gap-2 animate-pulse">
+                <svg className="w-5 h-5 shrink-0 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <span>{errorMessage}</span>
@@ -157,8 +157,8 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
             ) : null}
 
             {formError ? (
-              <div className="mt-5 rounded-xl border border-negative/40 bg-[rgba(127,29,29,0.35)] px-4 py-3 text-sm text-red-200 flex items-center gap-2">
-                <svg className="w-5 h-5 shrink-0 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <div className="mt-5 rounded-xl border border-negative bg-negative-soft px-4 py-3 text-sm text-main flex items-center gap-2">
+                <svg className="w-5 h-5 shrink-0 text-negative" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <span>{formError}</span>
@@ -167,14 +167,14 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-5">
               <label className="block space-y-2">
-                <span className="text-xs uppercase tracking-[0.14em] font-medium text-muted">Username or email</span>
+                <span className="text-xs uppercase tracking-widest font-medium text-muted">Username or email</span>
                 <input
                   {...register('username')}
                   type="text"
                   required
                   autoComplete="username"
                   placeholder="duchung02st@gmail.com"
-                  className="w-full rounded-xl border border-border/35 bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-border bg-canvas px-4 py-3 text-sm text-main outline-none transition-all duration-200 placeholder:text-muted focus:border-positive focus:ring-1 focus:ring-positive/20"
                 />
                 {errors.username && (
                   <p className="mt-1 text-xs text-negative">{errors.username.message}</p>
@@ -182,14 +182,14 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               </label>
 
               <label className="block space-y-2">
-                <span className="text-xs uppercase tracking-[0.14em] font-medium text-muted">Password</span>
+                <span className="text-xs uppercase tracking-widest font-medium text-muted">Password</span>
                 <input
                   {...register('password')}
                   type="password"
                   required
                   autoComplete="current-password"
                   placeholder="••••••••"
-                  className="w-full rounded-xl border border-border/35 bg-[#060a12] px-4 py-3 text-sm text-white outline-none transition-all duration-200 placeholder:text-muted focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-border bg-canvas px-4 py-3 text-sm text-main outline-none transition-all duration-200 placeholder:text-muted focus:border-positive focus:ring-1 focus:ring-positive/20"
                 />
                 {errors.password && (
                   <p className="mt-1 text-xs text-negative">{errors.password.message}</p>
@@ -199,15 +199,30 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full rounded-xl cta-primary px-4 py-3.5 text-sm font-semibold active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 shadow-[0_4px_12px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_16px_rgba(16,185,129,0.5)] cursor-pointer"
+                className="w-full rounded-xl cta-primary px-4 py-3.5 text-sm font-semibold active:scale-[0.98] transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-70 shadow-lg hover:shadow-xl cursor-pointer"
               >
                 {isSubmitting ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
 
             <p className="mt-6 text-xs text-muted text-center flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-              <span>Don&apos;t have an account? <Link href="/register" className="text-emerald-400 hover:text-emerald-300 transition-colors font-medium">Sign up</Link></span>
+              <span>Don&apos;t have an account? <Link href="/register" className="text-positive hover:text-positive-soft transition-colors font-medium">Sign up</Link></span>
             </p>
+          </article>
+        </section>
+      </main>
+
+      {/* Embedded Footer */}
+      <SiteFooter />
+    </div>
+  );
+}
+
+      <SiteFooter />
+    </div>
+  );
+}
+</p>
           </article>
         </section>
       </main>

@@ -1,5 +1,7 @@
 'use client';
 
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { subscribeToBot, unsubscribeFromBot } from '@/lib/contracts/client';
 import { SubscriptionResult } from '@/lib/contracts/types';
@@ -7,7 +9,6 @@ import { LifecycleBadge } from '@/components/shared/lifecycle-badge';
 import { useToast } from '@/components/providers/toast-provider';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 
 interface SubscribeBotPanelProps {
   botId: string;
@@ -15,19 +16,57 @@ interface SubscribeBotPanelProps {
 }
 
 export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) {
+  const router = useRouter();
+  const { pushToast } = useToast();
   const [result, setResult] = useState<SubscriptionResult | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [riskConfirmed, setRiskConfirmed] = useState(false);
-  const { pushToast } = useToast();
 
-  const canSubscribe = (botStatus ?? 'ACTIVE') === 'ACTIVE';
-  const subscriptionBlockedMessage =
-    botStatus && botStatus !== 'ACTIVE'
-      ? `This bot is currently ${botStatus.toLowerCase()} and cannot accept new subscriptions.`
-      : null;
+  const normalizedStatus = (botStatus ?? 'ACTIVE').toUpperCase();
+  const canSubscribe = normalizedStatus === 'ACTIVE';
+  const subscriptionBlockedMessage = canSubscribe
+    ? null
+    : `This bot is currently ${normalizedStatus.toLowerCase()} and cannot accept new subscriptions.`;
 
-  const handleSubscribe = async () => {
+  const subscribeMutation = useMutation<SubscriptionResult, Error>({
+    mutationFn: () => subscribeToBot(botId),
+    onSuccess: (response) => {
+      setResult(response);
+      setError(null);
+      pushToast({ title: 'Subscription requested', message: 'Runtime token is now available.', tone: 'success' });
+      router.refresh();
+    },
+    onError: () => {
+      setError('Unable to subscribe right now. Please retry.');
+      pushToast({ title: 'Subscription failed', message: 'Please retry in a few seconds.', tone: 'error' });
+    },
+  });
+
+  const unsubscribeMutation = useMutation<SubscriptionResult, Error, void, { previousResult: SubscriptionResult | null }>({
+    mutationFn: () => unsubscribeFromBot(botId),
+    onMutate: async () => {
+      const previousResult = result;
+      setError(null);
+      setResult(
+        previousResult ? { ...previousResult, status: 'UNSUBSCRIBING' } : { botId, wsToken: '', status: 'UNSUBSCRIBING' }
+      );
+      return { previousResult };
+    },
+    onSuccess: (response) => {
+      setResult(response);
+      pushToast({ title: 'Unsubscribed', message: 'The bot subscription has been stopped.', tone: 'success' });
+      router.refresh();
+    },
+    onError: (_error, _variables, context) => {
+      setResult(context?.previousResult ?? null);
+      setError('Unable to unsubscribe right now. Please retry.');
+      pushToast({ title: 'Unsubscribe failed', message: 'Your current subscription remains unchanged.', tone: 'error' });
+    },
+  });
+
+  const isSubmitting = subscribeMutation.isPending || unsubscribeMutation.isPending;
+
+  const handleSubscribe = () => {
     if (!canSubscribe) {
       setError(subscriptionBlockedMessage ?? 'This bot is not available for subscription.');
       return;
@@ -38,49 +77,22 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
       return;
     }
 
-    setIsSubmitting(true);
     setError(null);
-    const previousResult = result;
-
-    try {
-      const response = await subscribeToBot(botId);
-      setResult(response);
-      pushToast({ title: 'Subscription requested', message: 'Runtime token is now available.', tone: 'success' });
-    } catch {
-      setResult(previousResult);
-      setError('Unable to subscribe right now. Please retry.');
-      pushToast({ title: 'Subscription failed', message: 'Please retry in a few seconds.', tone: 'error' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    subscribeMutation.mutate();
   };
 
-  const handleUnsubscribe = async () => {
+  const handleUnsubscribe = () => {
     const confirmed = window.confirm('Unsubscribe this bot now? You can subscribe again later.');
     if (!confirmed) {
       return;
     }
 
-    setIsSubmitting(true);
     setError(null);
-    const previousResult = result;
-    setResult((prev) => (prev ? { ...prev, status: 'UNSUBSCRIBING' } : { botId, wsToken: '', status: 'UNSUBSCRIBING' }));
-
-    try {
-      const response = await unsubscribeFromBot(botId);
-      setResult(response);
-      pushToast({ title: 'Unsubscribed', message: 'The bot subscription has been stopped.', tone: 'success' });
-    } catch {
-      setResult(previousResult);
-      setError('Unable to unsubscribe right now. Please retry.');
-      pushToast({ title: 'Unsubscribe failed', message: 'Your current subscription remains unchanged.', tone: 'error' });
-    } finally {
-      setIsSubmitting(false);
-    }
+    unsubscribeMutation.mutate();
   };
 
   return (
-    <Card className="h-full p-5 bg-surface border-border shadow-soft">
+    <Card className="h-full p-5">
       <div className="flex h-full flex-col">
         <div className="flex-1 space-y-4">
           <div>
@@ -88,7 +100,7 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <LifecycleBadge status={botStatus ?? 'ACTIVE'} mode="LIVE" />
+            <LifecycleBadge status={normalizedStatus} mode="LIVE" />
             {result ? <LifecycleBadge status={result.status} /> : null}
           </div>
 
@@ -98,15 +110,15 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
             </div>
           ) : null}
 
-          <label className="flex items-start gap-3 rounded-xl border border-border bg-warning-soft p-3 text-sm text-warning cursor-pointer">
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-border bg-warning-soft p-3 text-sm text-warning">
             <input
               type="checkbox"
               checked={riskConfirmed}
               onChange={(event) => setRiskConfirmed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-border bg-surface text-positive focus:ring-0 cursor-pointer"
+              className="mt-0.5 h-4 w-4 cursor-pointer rounded border-border bg-surface text-positive focus:ring-0"
               disabled={!canSubscribe}
             />
-            <span className="leading-relaxed select-none">
+            <span className="select-none leading-relaxed">
               I understand this strategy can lose capital and past performance does not guarantee future returns.
             </span>
           </label>
@@ -114,26 +126,30 @@ export function SubscribeBotPanel({ botId, botStatus }: SubscribeBotPanelProps) 
           {error ? <p className="text-sm text-negative">{error}</p> : null}
 
           {result ? (
-            <div className="rounded-xl border border-border bg-surface p-4 space-y-3">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="text-sm font-semibold text-main uppercase tracking-wider">{result.status}</p>
+            <div className="overflow-hidden rounded-xl border border-border/40 bg-surface/40">
+              <div className="grid divide-y divide-border/40 sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+                <div className="px-3 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Status</p>
+                  <p className="mt-1 text-sm font-semibold uppercase tracking-wider text-main">{result.status}</p>
                 </div>
-                <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
-                  <p className="font-mono text-xs text-main truncate" title={botId}>{botId}</p>
+                <div className="px-3 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Bot ID</p>
+                  <p className="mt-1 truncate font-mono text-xs text-main" title={botId}>
+                    {botId}
+                  </p>
                 </div>
               </div>
-              <div className="rounded-lg border border-border bg-surface-strong px-3 py-3">
+              <div className="border-t border-border/40 px-3 py-3">
                 <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Runtime token</p>
                 <p className="mt-2 break-all font-mono text-sm text-main">{result.wsToken}</p>
               </div>
             </div>
           ) : isSubmitting ? (
-            <div className="rounded-xl border border-border bg-surface px-4 py-4 text-sm text-muted">
+            <div className="rounded-xl border border-border/40 bg-surface/40 px-4 py-4 text-sm text-muted">
               Requesting runtime token from the backend...
             </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-border bg-surface px-4 py-4 text-sm text-muted">
+            <div className="rounded-xl border border-dashed border-border/40 bg-surface/40 px-4 py-4 text-sm text-muted">
               Subscribe to surface the runtime token here.
             </div>
           )}

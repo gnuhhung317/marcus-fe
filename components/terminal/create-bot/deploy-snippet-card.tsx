@@ -27,9 +27,9 @@ Content-Type: application/json
 
   return (
     <article className="glass rounded-2xl p-6">
-      <h2 className="font-display text-2xl text-white">Deploy Integration Snippet</h2>
+      <h2 className="font-display text-2xl text-main">Deploy Integration Snippet</h2>
 
-      <pre className="mt-4 overflow-auto rounded-xl border border-border bg-surface p-4 text-xs text-white">
+      <pre className="mt-4 overflow-auto rounded-xl border border-border bg-surface p-4 text-xs text-main">
         {snippet}
       </pre>
     </article>

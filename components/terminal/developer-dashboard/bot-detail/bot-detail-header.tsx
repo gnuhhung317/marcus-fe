@@ -71,19 +71,20 @@ export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, o
             )}
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 font-mono">
-            <div className="rounded-xl border border-border bg-surface px-4 py-3 flex items-center gap-2">
-              <p className="text-xs font-bold text-main uppercase">
-                {bot.exchange ?? 'N/A'} <span className="text-muted font-normal mx-1">•</span> {bot.tradingPair ?? 'N/A'}
+          <div className="grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 font-mono sm:grid-cols-2 xl:grid-cols-3">
+            <div className="px-4 py-3">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Venue • Pair</p>
+              <p className="mt-1 text-xs font-bold text-main">
+                {bot.exchange ?? 'N/A'} • {bot.tradingPair ?? 'N/A'}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+            <div className="border-t border-border/40 px-4 py-3 sm:border-l sm:border-t-0">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Developer ID</p>
               <p className="mt-1 text-xs font-bold text-main">
                 {bot.developerId ? `${bot.developerId.slice(0, 12)}...` : 'N/A'}
               </p>
             </div>
-            <div className="rounded-xl border border-border bg-surface px-4 py-3">
+            <div className="border-t border-border/40 px-4 py-3 xl:border-l xl:border-t-0">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Last Updated</p>
               <p className="mt-1 text-xs font-bold text-main font-sans">
                 {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}

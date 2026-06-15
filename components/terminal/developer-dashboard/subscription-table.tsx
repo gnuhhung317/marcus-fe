@@ -8,13 +8,13 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
   return (
     <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Subscriptions</h2>
+        <h2 className="text-xl font-semibold text-main">Subscriptions</h2>
         <p className="text-sm text-muted">{subscriptions.length} active</p>
       </div>
 
-      <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+      <div className="mt-4 overflow-x-auto rounded-xl border border-border/40">
         <table className="min-w-full border-collapse text-left text-sm">
-          <thead className="bg-[var(--border-base)] text-xs uppercase tracking-[0.12em] text-muted">
+          <thead className="bg-surface-strong text-xs uppercase tracking-[0.12em] text-muted">
             <tr>
               <th className="px-4 py-3">Bot</th>
               <th className="px-4 py-3">Subscriber</th>
@@ -25,11 +25,11 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
             {subscriptions.map((sub, index) => (
               <tr
                 key={`${sub.botId}-${index}`}
-                className="group border-t border-border hover:bg-[var(--border-base)] transition-colors"
+                className="group border-t border-border/40 hover:bg-surface-strong transition-colors"
               >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2 max-w-[150px]">
-                    <span className="text-white font-mono text-xs truncate" title={sub.botId}>
+                    <span className="text-main font-mono text-xs truncate" title={sub.botId}>
                       {sub.botId}
                     </span>
                   </div>
@@ -40,8 +40,8 @@ export function SubscriptionTable({ subscriptions }: SubscriptionTableProps) {
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                     sub.status === 'ACTIVE' || sub.status === 'CONNECTED'
-                      ? 'bg-primary-soft text-emerald-300 border border-[var(--primary-soft)]'
-                      : 'bg-[var(--border-base)] text-slate-300 border border-border'
+                      ? 'bg-primary-soft text-positive border border-primary-soft'
+                      : 'bg-surface-strong text-muted border border-border/40'
                   }`}>
                     {sub.status}
                   </span>

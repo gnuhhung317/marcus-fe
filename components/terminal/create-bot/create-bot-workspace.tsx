@@ -59,8 +59,8 @@ export function CreateBotWorkspace() {
                 </svg>
                 <div className="space-y-1">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-warning">Warning: One-Time Secret</h4>
-                  <p className="text-[11px] leading-relaxed text-slate-400">
-                    For security reasons, your **Signing Secret** will not be accessible once you navigate away from this page.
+                  <p className="text-[11px] leading-relaxed text-muted">
+                    For security reasons, your Signing Secret will not be accessible once you navigate away from this page.
                     Please copy and store it securely immediately.
                   </p>
                 </div>
@@ -78,7 +78,7 @@ export function CreateBotWorkspace() {
                   className="inline-flex items-center justify-center gap-2 rounded-xl cta-primary px-6 py-3 text-sm font-bold text-cta-on-primary transition-all duration-200 hover:scale-[1.02] hover:brightness-105 active:scale-[0.98]"
                 >
                   Done & View Bot Console
-                  <svg className="h-4 w-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="h-4 w-4 text-background" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                   </svg>
                 </Link>

@@ -15,37 +15,37 @@ export function DeveloperOnboardingState({ onRegister }: DeveloperOnboardingStat
         </svg>
       </div>
 
-      <h2 className="text-xl font-bold text-white tracking-tight mb-2 uppercase">No Bots Provisioned</h2>
-      <p className="text-xs text-slate-400 max-w-lg mb-8 leading-relaxed">
+      <h2 className="text-xl font-bold text-main tracking-tight mb-2 uppercase">No Bots Provisioned</h2>
+      <p className="text-xs text-muted max-w-lg mb-8 leading-relaxed">
         Connect your automated trading system, scripts, or TradingView Pine Script alerts to the Marcus Trading signal router. Provision a new bot to receive your API credentials.
       </p>
 
       {/* Onboarding Steps Timeline */}
-      <div className="grid gap-6 md:grid-cols-3 max-w-3xl w-full text-left mb-10 border-t border-white/5 pt-8 font-mono">
+      <div className="grid gap-6 md:grid-cols-3 max-w-3xl w-full text-left mb-10 border-t border-border/40 pt-8 font-mono">
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-positive/10 text-[9px] font-bold text-positive border border-positive/20">1</span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Bot Metadata</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-main">Bot Metadata</h3>
           </div>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+          <p className="text-[11px] text-muted leading-relaxed font-sans">
             Specify your exchange venue (Binance, Bybit, etc.) and custom execution pair.
           </p>
         </div>
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-positive/10 text-[9px] font-bold text-positive border border-positive/20">2</span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Issue Secrets</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-main">Issue Secrets</h3>
           </div>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+          <p className="text-[11px] text-muted leading-relaxed font-sans">
             Retrieve a cryptographically signed API key and display secret.
           </p>
         </div>
         <div className="space-y-2">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-positive/10 text-[9px] font-bold text-positive border border-positive/20">3</span>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-white">Post Signals</h3>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-main">Post Signals</h3>
           </div>
-          <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
+          <p className="text-[11px] text-muted leading-relaxed font-sans">
             Configure your algorithmic strategy to stream JSON signals to our webhooks.
           </p>
         </div>

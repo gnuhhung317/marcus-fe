@@ -36,38 +36,36 @@ interface DeveloperBotListProps {
 export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterClick }: DeveloperBotListProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredBots = bots.filter((bot) =>
-    bot.botName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    bot.botId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (bot.tradingPair && bot.tradingPair.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    (bot.exchange && bot.exchange.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredBots = bots.filter(
+    (bot) =>
+      bot.botName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      bot.botId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (bot.tradingPair && bot.tradingPair.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (bot.exchange && bot.exchange.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
-    <article className="rounded-xl border border-border bg-surface p-5 flex flex-col">
-      <div className="flex items-center justify-between border-b border-border pb-4 mb-4">
+    <article className="flex flex-col rounded-xl border border-border bg-surface p-5">
+      <div className="mb-4 flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h2 className="text-sm font-bold text-white tracking-wide uppercase">Bot Registry</h2>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-slate-500 mt-0.5 font-mono">
-            {bots.length} provisioned
-          </p>
+          <h2 className="text-sm font-bold tracking-wide uppercase text-main">Bot Registry</h2>
+          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{bots.length} provisioned</p>
         </div>
         <button
           type="button"
           onClick={onRegisterClick}
-          className="inline-flex items-center justify-center rounded-lg border border-border bg-surface-strong p-1.5 text-slate-400 hover:text-white transition-colors cursor-pointer hover:border-slate-700"
+          className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border bg-surface-strong p-1.5 text-muted transition-colors hover:border-border/60 hover:text-main"
           title="Register New Bot"
         >
-          <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+          <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </button>
       </div>
 
-      {/* Search Input */}
       <div className="relative mb-4">
-        <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <svg className="w-4.5 h-4.5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+          <svg className="h-4.5 w-4.5 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </span>
@@ -76,57 +74,55 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Filter registry..."
-          className="w-full rounded-xl border border-border bg-surface-strong py-2 pl-9 pr-8 text-xs text-white placeholder:text-slate-600 outline-none transition-all focus:border-white/20"
+          className="w-full rounded-xl border border-border bg-surface-strong py-2 pl-9 pr-8 text-xs text-main placeholder:text-muted outline-none transition-all focus:border-border/60"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-white"
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted transition-colors hover:text-main"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
 
-      {/* Bot List Container */}
-      <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[var(--border-base)] scrollbar-track-transparent">
-        {/* Global Fleet Row */}
+      <div className="max-h-[600px] space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-[var(--border-base)] scrollbar-track-transparent">
         <button
           type="button"
           onClick={() => onSelectBot?.(undefined)}
-          className={`w-full text-left rounded-xl border p-3.5 transition-all duration-200 cursor-pointer ${
+          className={`w-full cursor-pointer rounded-xl border p-3.5 text-left transition-all duration-200 ${
             activeBotId === undefined
               ? 'border-positive/30 bg-positive/5'
-              : 'border-border bg-surface hover:bg-surface-strong hover:border-slate-700'
+              : 'border-border bg-surface hover:border-border/60 hover:bg-surface-strong'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
             <div>
-              <p className={`text-xs font-bold transition-colors ${activeBotId === undefined ? 'text-positive' : 'text-slate-300'}`}>
+              <p className={`text-xs font-bold transition-colors ${activeBotId === undefined ? 'text-positive' : 'text-main'}`}>
                 Global Fleet Overview
               </p>
-              <p className="mt-1 text-[10px] text-slate-500 font-mono">Aggregated telemetry & routed logs</p>
+              <p className="mt-1 font-mono text-[10px] text-muted">Aggregated telemetry & routed logs</p>
             </div>
-            <span className="flex-shrink-0 flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900 px-2 py-0.5 text-[9px] font-bold text-slate-400 font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" />
+            <span className="flex-shrink-0 flex items-center gap-1.5 rounded-full border border-border/40 bg-surface-strong px-2 py-0.5 font-mono text-[9px] font-bold text-muted">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted" />
               FLEET
             </span>
           </div>
         </button>
 
         {filteredBots.length === 0 ? (
-          <div className="py-8 text-center rounded-xl border border-dashed border-border bg-surface-strong">
-            <p className="text-xs text-slate-500">No bots matching &quot;{searchQuery}&quot;</p>
+          <div className="rounded-xl border border-dashed border-border bg-surface-strong py-8 text-center">
+            <p className="text-xs text-muted">No bots matching &quot;{searchQuery}&quot;</p>
           </div>
         ) : (
           filteredBots.map((bot) => {
             const isActive = bot.botId === activeBotId;
             const style = statusColors[bot.status] || {
               bg: 'bg-surface border-border',
-              text: 'text-slate-400',
-              dot: 'bg-slate-400',
+              text: 'text-muted',
+              dot: 'bg-muted',
             };
 
             return (
@@ -134,34 +130,34 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
                 key={bot.botId}
                 type="button"
                 onClick={() => onSelectBot?.(bot.botId)}
-                className="w-full text-left outline-none block"
+                className="block w-full text-left outline-none"
               >
                 <div
                   className={`cursor-pointer rounded-xl border p-3.5 transition-all duration-200 ${
                     isActive
                       ? 'border-positive/30 bg-positive/5'
-                      : 'border-border bg-surface hover:bg-surface-strong hover:border-slate-700'
+                      : 'border-border bg-surface hover:border-border/60 hover:bg-surface-strong'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className={`truncate text-xs font-bold transition-colors ${isActive ? 'text-white' : 'text-slate-300'}`}>
+                      <p className={`truncate text-xs font-bold transition-colors ${isActive ? 'text-main' : 'text-main'}`}>
                         {bot.botName}
                       </p>
-                      <p className="mt-1 truncate font-mono text-[9px] text-slate-500" title={bot.botId}>
+                      <p className="mt-1 truncate font-mono text-[9px] text-muted" title={bot.botId}>
                         {bot.botId}
                       </p>
                     </div>
                     <span className={`flex-shrink-0 flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-bold ${style.bg} ${style.text} font-mono`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                       {bot.status}
                     </span>
                   </div>
 
-                  <div className="mt-3 flex items-center border-t border-white/5 pt-2.5 text-[9px] font-mono">
-                    <div className="flex items-center gap-1.5 font-semibold text-slate-300 uppercase">
+                  <div className="mt-3 flex items-center border-t border-border/40 pt-2.5 font-mono text-[9px]">
+                    <div className="flex items-center gap-1.5 font-semibold uppercase text-main">
                       <span>{bot.exchange ?? 'N/A'}</span>
-                      <span className="text-slate-600 font-normal">•</span>
+                      <span className="font-normal text-muted">•</span>
                       <span>{bot.tradingPair ?? 'N/A'}</span>
                     </div>
                   </div>

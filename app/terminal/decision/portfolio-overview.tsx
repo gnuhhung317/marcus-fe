@@ -65,7 +65,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
       label: 'Total equity',
       value: `$${formatNumber(overview.totalEquity, 2)}`,
       detail: 'Base capital + floating profit',
-      colorClass: 'text-white',
+      colorClass: 'text-main',
     },
     {
       label: 'Open PnL',
@@ -91,7 +91,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-white">Portfolio overview</h2>
+          <h2 className="text-lg font-semibold text-main">Portfolio overview</h2>
         </div>
         {mounted && (
           <div className={`flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>
@@ -113,7 +113,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
             <div className="flex h-full flex-col">
               <div className="flex-1 space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{item.label}</p>
-                <p className={`font-mono text-2xl font-semibold tracking-tight ${item.colorClass || 'text-white'}`}>{item.value}</p>
+                <p className={`font-mono text-2xl font-semibold tracking-tight ${item.colorClass || 'text-main'}`}>{item.value}</p>
               </div>
               <p className="text-xs text-muted">{item.detail}</p>
             </div>
@@ -123,13 +123,13 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
 
       <div className="flex flex-wrap gap-2 text-xs text-muted">
         <span className="rounded-full border border-border bg-surface px-3 py-1">
-          Active bots: <span className="font-semibold text-white">{overview.activeBotsCount}</span>
+          Active bots: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
         </span>
         <span className="rounded-full border border-border bg-surface px-3 py-1">
-          Synced at: <span className="font-semibold text-white">{lastUpdatedText}</span>
+          Synced at: <span className="font-semibold text-main">{lastUpdatedText}</span>
         </span>
         <span className={`rounded-full border px-3 py-1 ${freshnessState === 'FRESH' ? 'border-positive/20 bg-positive/8 text-positive' : freshnessState === 'PARTIAL' ? 'border-warning/20 bg-warning/8 text-warning' : 'border-negative/20 bg-negative/8 text-negative'}`}>
-          Data: <span className="font-semibold text-white">{freshnessState}</span>
+          Data: <span className="font-semibold text-main">{freshnessState}</span>
         </span>
         {hasStaleAccounts && (
           <span className="rounded-full border border-warning/20 bg-warning/8 px-3 py-1 text-warning">

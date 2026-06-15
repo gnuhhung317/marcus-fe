@@ -25,11 +25,11 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
 
       {isSwitching ? (
         <div className="space-y-3">
-          <div className="h-20 animate-pulse rounded-xl bg-surface" />
-          <div className="h-12 animate-pulse rounded-xl bg-surface" />
+          <div className="h-20 animate-pulse rounded-xl bg-surface/40" />
+          <div className="h-12 animate-pulse rounded-xl bg-surface/40" />
         </div>
       ) : subscriptions.length === 0 ? (
-        <Card className="rounded-xl border-dashed border-border p-6 text-center text-xs text-muted font-sans">
+        <Card className="rounded-xl border-dashed border-border/40 p-6 text-center text-xs text-muted font-sans">
           No active subscriber sessions found.
         </Card>
       ) : (
@@ -47,15 +47,15 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
             ))}
           </div>
 
-          <Card className="overflow-hidden border-border bg-surface font-mono">
+          <Card className="overflow-hidden border-border/40 bg-surface/30 font-mono">
             <table className="min-w-full border-collapse text-left text-[11px] leading-relaxed">
-              <thead className="border-b border-border bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-muted font-sans">
+              <thead className="border-b border-border/40 bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-muted font-sans">
                 <tr>
                   <th className="px-4 py-3">Subscriber</th>
                   <th className="px-4 py-3 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody className="divide-y divide-border/40">
                 {subscriptions.map((sub, index) => {
                   const isActive = sub.status === 'ACTIVE' || sub.status === 'CONNECTED';
                   return (

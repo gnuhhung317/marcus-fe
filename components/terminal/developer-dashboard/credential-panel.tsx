@@ -12,22 +12,22 @@ export function CredentialPanel({ bot }: CredentialPanelProps) {
   return (
     <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Credentials & Quick Start</h2>
+        <h2 className="text-xl font-semibold text-main">Credentials & Quick Start</h2>
         <p className="text-xs uppercase tracking-[0.18em] text-muted">REST API Access</p>
       </div>
 
       <div className="mt-4 space-y-3 text-sm">
-        <div className="rounded-xl border border-border bg-surface px-3 py-2 flex items-center justify-between gap-2 overflow-hidden">
+        <div className="rounded-xl border border-border/40 bg-surface/30 px-3 py-2 flex items-center justify-between gap-2 overflow-hidden">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted">Bot ID</p>
-            <p className="text-white font-mono text-xs truncate mt-0.5" title={bot.botId}>{bot.botId}</p>
+            <p className="text-main font-mono text-xs truncate mt-0.5" title={bot.botId}>{bot.botId}</p>
           </div>
           <CopyButton value={bot.botId} className="flex-shrink-0" />
         </div>
-        <div className="rounded-xl border border-border bg-surface px-3 py-2 flex items-center justify-between gap-2 overflow-hidden">
+        <div className="rounded-xl border border-border/40 bg-surface/30 px-3 py-2 flex items-center justify-between gap-2 overflow-hidden">
           <div className="min-w-0 flex-1">
             <p className="text-xs text-muted">API Key</p>
-            <p className="text-white font-mono text-xs truncate mt-0.5" title={apiKey}>{apiKey}</p>
+            <p className="text-main font-mono text-xs truncate mt-0.5" title={apiKey}>{apiKey}</p>
           </div>
           {bot.apiKey && <CopyButton value={bot.apiKey} className="flex-shrink-0" />}
         </div>
@@ -36,7 +36,7 @@ export function CredentialPanel({ bot }: CredentialPanelProps) {
         <div className="mt-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs text-muted font-semibold uppercase tracking-wider">Example HTTP Payload</p>
-          <CopyButton value={snippet} className="text-muted hover:text-white" />
+          <CopyButton value={snippet} className="text-muted hover:text-main" />
         </div>
         <pre className="overflow-auto rounded-xl border border-[var(--semantic-info-soft)] bg-surface p-4 text-xs text-info font-mono leading-relaxed">
           <code>{snippet}</code>

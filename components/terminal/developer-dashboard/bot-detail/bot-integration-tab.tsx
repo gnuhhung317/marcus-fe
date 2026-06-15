@@ -28,7 +28,7 @@ export function BotIntegrationTab({ integrationHealth }: BotIntegrationTabProps)
       {integrationHealth ? (
         <IntegrationHealthWidget health={integrationHealth} />
       ) : (
-        <Card className="rounded-xl border-dashed border-border p-6 text-center text-xs text-muted font-sans">
+        <Card className="rounded-xl border-dashed border-border/40 p-6 text-center text-xs text-muted font-sans">
           Integration health is not available for this bot yet.
         </Card>
       )}

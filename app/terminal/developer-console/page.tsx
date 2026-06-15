@@ -17,12 +17,12 @@ export default async function TerminalDeveloperConsolePage() {
     <div className="space-y-8">
       <header>
         <p className="text-xs uppercase tracking-[0.16em] text-muted">Operator Console</p>
-        <h1 className="mt-3 text-4xl font-semibold text-white">Algorithm Health and API</h1>
+        <h1 className="mt-3 text-4xl font-semibold text-main">Algorithm Health and API</h1>
       </header>
 
       <section className="grid gap-5 lg:grid-cols-2">
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-xl font-semibold text-white">Platform Connection</h2>
+          <h2 className="text-xl font-semibold text-main">Platform Connection</h2>
           <div className="mt-4 rounded-xl border border-border bg-surface p-4">
             <p className="text-sm text-muted">Overall Status</p>
             <p className={`mt-2 text-3xl font-semibold ${isConnected ? 'text-positive' : 'text-negative'}`}>
@@ -33,7 +33,7 @@ export default async function TerminalDeveloperConsolePage() {
         </article>
 
         <article className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-          <h2 className="text-xl font-semibold text-white">Signal JSON Schema</h2>
+          <h2 className="text-xl font-semibold text-main">Signal JSON Schema</h2>
           <pre className="mt-4 overflow-auto rounded-xl border border-info/30 bg-surface-strong p-4 text-xs text-info">
 {`{
   "version": "1.2",
@@ -52,7 +52,7 @@ export default async function TerminalDeveloperConsolePage() {
 
       <section className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Recent Signals</h2>
+          <h2 className="text-xl font-semibold text-main">Recent Signals</h2>
           <p className="text-sm text-muted">{signalStream.length} records</p>
         </div>
         <div className="mt-4 overflow-x-auto rounded-xl border border-border">
@@ -69,10 +69,10 @@ export default async function TerminalDeveloperConsolePage() {
             <tbody>
               {signalStream.map((signal) => (
                 <tr key={signal.signalId} className="border-t border-border/18 transition-colors hover:bg-border/8">
-                  <td className="px-4 py-3.5 text-white">{signal.signalId}</td>
+                  <td className="px-4 py-3.5 text-main">{signal.signalId}</td>
                   <td className="px-4 py-3.5 text-muted">{signal.botId}</td>
-                  <td className="px-4 py-3.5 text-white">{signal.symbol}</td>
-                  <td className="px-4 py-3.5 text-white">{signal.action}</td>
+                  <td className="px-4 py-3.5 text-main">{signal.symbol}</td>
+                  <td className="px-4 py-3.5 text-main">{signal.action}</td>
                   <td className="px-4 py-3.5 text-muted">{signal.status}</td>
                 </tr>
               ))}
@@ -83,7 +83,7 @@ export default async function TerminalDeveloperConsolePage() {
 
       <section className="glass-strong rounded-2xl p-5 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Streaming Log</h2>
+          <h2 className="text-xl font-semibold text-main">Streaming Log</h2>
           <p className={`text-sm ${isConnected ? 'text-positive' : 'text-negative'}`}>{isConnected ? 'Connected' : 'Degraded'}</p>
         </div>
         <ul className="mt-4 space-y-2 text-sm">

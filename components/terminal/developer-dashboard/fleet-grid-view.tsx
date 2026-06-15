@@ -52,8 +52,8 @@ export function FleetGridView({ bots, onBotStatusChange, onSelect }: FleetGridVi
 
       <div className="space-y-5">
         <div className="flex items-center justify-between border-b border-border pb-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400">Router Fleet Overview</h2>
-          <span className="text-[10px] text-slate-500 font-mono">Select a card to view console telemetry & credentials</span>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Router Fleet Overview</h2>
+          <span className="text-[10px] text-muted font-mono">Select a card to view console telemetry & credentials</span>
         </div>
 
         {filteredBots.length === 0 ? (

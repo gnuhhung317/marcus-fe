@@ -36,16 +36,16 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
           {bot.metricBlocks.map((block) => (
             <Card key={block.title} variant="glass-strong" className="rounded-lg p-5 shadow-[var(--shadow-soft)]">
               <h2 className="text-2xl font-semibold text-main">{block.title}</h2>
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-surface-strong px-3 py-3">
+              <div className="mt-6 overflow-hidden rounded-xl border border-border/40 bg-surface/30">
+                <div className="flex items-center justify-between border-b border-border/40 px-3 py-3">
                   <span className="text-sm text-main">Estimated annual return</span>
                   <span className="font-semibold text-positive">{block.annualReturn}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-surface-strong px-3 py-3">
+                <div className="flex items-center justify-between border-b border-border/40 px-3 py-3">
                   <span className="text-sm text-main">Maximum drawdown</span>
                   <span className="font-semibold text-positive">{block.maxDrawdown}</span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-border/60 bg-surface-strong px-3 py-3">
+                <div className="flex items-center justify-between px-3 py-3">
                   <span className="text-sm text-main">Sharpe ratio</span>
                   <span className="font-semibold text-main">{block.sharpe}</span>
                 </div>
@@ -69,9 +69,9 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
 
           <Card variant="glass-strong" className="rounded-lg p-5 shadow-[var(--shadow-soft)]">
             <h2 className="text-2xl font-semibold text-main">Performance metrics</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="mt-5 overflow-hidden rounded-xl border border-border/40 bg-surface/30 md:grid md:grid-cols-2">
               {bot.metrics.map((metric) => (
-                <div key={metric.label} className="flex items-center justify-between border-b border-border/50 py-3">
+                <div key={metric.label} className="flex items-center justify-between border-b border-border/40 px-3 py-3 last:border-b-0 md:odd:border-r md:odd:border-border/40">
                   <span className="text-sm font-medium text-main">{metric.label}</span>
                   <span className="text-lg font-semibold text-positive">{metric.value}</span>
                 </div>

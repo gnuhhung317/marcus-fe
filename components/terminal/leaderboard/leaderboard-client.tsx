@@ -87,23 +87,23 @@ function PodiumCard({
         {getDataSourceBadge(row.dataSource)}
       </div>
 
-      <div className={cn('rounded-2xl border border-border p-4', style.accent)}>
+      <div className={cn('rounded-2xl border border-border/40 p-4', style.accent)}>
         <h2 className="line-clamp-1 text-2xl font-semibold text-main">{row.botName}</h2>
         <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
       </div>
 
-      <div className="mt-auto grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-border bg-surface p-3">
+      <div className="mt-auto grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 grid-cols-3 divide-x divide-border/40">
+        <div className="p-3">
           <p className="text-[10px] uppercase tracking-[0.12em] text-muted">CAGR</p>
           <p className={cn('mt-1 text-2xl font-semibold', row.cagr >= 0 ? 'text-positive' : 'text-negative')}>
             {formatPercent(row.cagr)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-3">
+        <div className="p-3">
           <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Drawdown</p>
           <p className="mt-1 text-2xl font-semibold text-main">{Math.abs(row.drawdown).toFixed(2)}%</p>
         </div>
-        <div className="rounded-xl border border-border bg-surface p-3">
+        <div className="p-3">
           <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Sharpe</p>
           <p className="mt-1 text-2xl font-semibold text-main">{row.sharpe.toFixed(2)}</p>
         </div>

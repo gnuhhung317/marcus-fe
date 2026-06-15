@@ -20,7 +20,7 @@ export function BotConsoleClient({ initialData, botId }: BotConsoleClientProps) 
   if (!activeBot) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-slate-400">Bot console data could not be loaded.</p>
+        <p className="text-sm text-muted">Bot console data could not be loaded.</p>
       </div>
     );
   }

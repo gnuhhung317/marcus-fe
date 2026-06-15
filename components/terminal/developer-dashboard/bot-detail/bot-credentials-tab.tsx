@@ -46,7 +46,7 @@ export function BotCredentialsTab({ botId, apiKey, exchange, pair }: BotCredenti
         </div>
       </div>
 
-      <Card className="relative overflow-hidden border-border bg-surface-strong">
+      <Card className="relative overflow-hidden border-border/40 bg-surface-strong">
         <div className="absolute right-3 top-3">
           <CopyButton value={snippetText} className="h-8 w-8 text-muted hover:text-main" />
         </div>

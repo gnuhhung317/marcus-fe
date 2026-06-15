@@ -136,7 +136,7 @@ export function SubscriptionCardsContainer({
       />
 
       {feedback ? (
-        <div className="rounded-xl border border-white/8 bg-white/[0.03] p-4">
+        <div className="rounded-xl border border-border/40 bg-surface/40 p-4">
           <p className={`text-sm font-medium ${feedback.tone === 'success' ? 'text-positive' : 'text-negative'}`}>
             {feedback.message}
           </p>
@@ -150,7 +150,7 @@ export function SubscriptionCardsContainer({
           <section className="space-y-3">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">Needs attention</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-main">Needs attention</h3>
                 <p className="mt-1 text-xs text-muted">
                   {attentionCards.length} subscriptions need a decision.
                 </p>
@@ -184,13 +184,13 @@ export function SubscriptionCardsContainer({
           <section className="space-y-3">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-white">Healthy</h3>
+                <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-main">Healthy</h3>
                 <p className="mt-1 text-xs text-muted">
                   {healthyCards.length} stable subscriptions remain in the background.
                 </p>
               </div>
               <p className="text-xs text-muted">
-                Active: <span className="font-semibold text-white">{summary.activeCount}</span>
+                Active: <span className="font-semibold text-main">{summary.activeCount}</span>
               </p>
             </div>
 
@@ -219,12 +219,12 @@ export function SubscriptionCardsContainer({
 
       {confirmingBot ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-canvas/80 px-4 backdrop-blur-sm"
           role="presentation"
           onClick={() => setConfirmingBot(null)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-white/8 bg-surface-strong p-6 shadow-[var(--shadow-soft)]"
+            className="w-full max-w-lg rounded-2xl border border-border/40 bg-surface p-6 shadow-[var(--shadow-soft)]"
             role="dialog"
             aria-modal="true"
             aria-labelledby="confirm-unsubscribe-title"
@@ -232,7 +232,7 @@ export function SubscriptionCardsContainer({
             onClick={(event) => event.stopPropagation()}
           >
             <p className="text-xs uppercase tracking-[0.16em] text-negative">Confirm unsubscribe</p>
-            <h3 id="confirm-unsubscribe-title" className="mt-2 text-xl font-semibold text-white">
+            <h3 id="confirm-unsubscribe-title" className="mt-2 text-xl font-semibold text-main">
               {confirmingBot.botName}
             </h3>
             <p id="confirm-unsubscribe-description" className="mt-3 text-sm text-muted">
@@ -243,7 +243,7 @@ export function SubscriptionCardsContainer({
                 type="button"
                 onClick={() => setConfirmingBot(null)}
                 ref={cancelButtonRef}
-                className="rounded-xl border border-white/8 bg-white/[0.04] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-white/[0.08]"
+                className="rounded-xl border border-border/40 bg-surface-strong px-4 py-2 text-sm font-semibold text-main transition-colors hover:bg-surface"
               >
                 Cancel
               </button>
@@ -251,7 +251,7 @@ export function SubscriptionCardsContainer({
                 type="button"
                 onClick={() => void executeUnsubscribe()}
                 disabled={busyBotId === confirmingBot.botId}
-                className="rounded-xl border border-negative/20 bg-negative/12 px-4 py-2 text-sm font-semibold text-negative transition-colors hover:bg-negative/16 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-xl border border-negative/20 bg-negative/10 px-4 py-2 text-sm font-semibold text-negative transition-colors hover:bg-negative/15 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {busyBotId === confirmingBot.botId ? 'Unsubscribing...' : 'Unsubscribe'}
               </button>

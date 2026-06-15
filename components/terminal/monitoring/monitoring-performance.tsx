@@ -79,13 +79,13 @@ export function MonitoringPerformance({ dashboard, lastUpdated, range, onRangeCh
         </div>
 
         {hasSeries && (
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-lg border border-border bg-surface p-3">
+          <div className="mt-4 grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 grid-cols-2 divide-y divide-border/40 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
+            <div className="p-3">
               <div className="text-[10px] uppercase tracking-wider text-muted">Current Balance</div>
               <div className="mt-1 font-mono text-base font-bold text-main">{formatCurrency(currentEquity)}</div>
             </div>
 
-            <div className="rounded-lg border border-border bg-surface p-3">
+            <div className="p-3">
               <div className="text-[10px] uppercase tracking-wider text-muted">Total Change</div>
               <div className={cn('mt-1 font-mono text-base font-bold', changeEquity >= 0 ? 'text-positive' : 'text-negative')}>
                 {formatSignedCurrency(changeEquity)}
@@ -93,12 +93,12 @@ export function MonitoringPerformance({ dashboard, lastUpdated, range, onRangeCh
               </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-surface p-3">
+            <div className="p-3">
               <div className="text-[10px] uppercase tracking-wider text-muted">Peak Balance</div>
               <div className="mt-1 font-mono text-base font-bold text-main">{formatCurrency(peakEquity)}</div>
             </div>
 
-            <div className="rounded-lg border border-border bg-surface p-3">
+            <div className="p-3">
               <div className="text-[10px] uppercase tracking-wider text-muted">Drawdown</div>
               <div className={cn('mt-1 font-mono text-base font-bold', drawdown < 0 ? 'text-negative' : 'text-positive')}>
                 {drawdown === 0 ? '$0.00' : formatCurrency(drawdown)}
@@ -130,14 +130,14 @@ export function MonitoringPerformance({ dashboard, lastUpdated, range, onRangeCh
           </div>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <div className="mt-5 grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 md:grid-cols-3 divide-y divide-border/40 md:divide-y-0 md:divide-x">
           {dashboard.allocations.map((slice) => (
-            <div key={slice.name} className="space-y-2 rounded-lg border border-border bg-surface p-3">
+            <div key={slice.name} className="space-y-2 px-3 py-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted">{slice.name}</span>
                 <span className="font-mono font-semibold text-positive">{slice.value.toFixed(1)}%</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-surface-strong">
+              <div className="h-1.5 overflow-hidden rounded-full bg-border/30">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-positive to-positive/50"
                   style={{ width: `${Math.max(2, slice.value)}%` }}

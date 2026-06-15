@@ -14,7 +14,7 @@ export function RegisterBotFormCard({
 }: RegisterBotFormCardProps) {
   return (
     <article className="glass rounded-2xl p-6">
-      <h2 className="font-display text-2xl text-white">Register Bot</h2>
+      <h2 className="font-display text-2xl text-main">Register Bot</h2>
       <p className="mt-2 text-sm text-muted">Required fields map directly to RegisterBotRequest.</p>
 
       <Form<RegisterBotFormValues>
@@ -32,14 +32,14 @@ export function RegisterBotFormCard({
             <div className="grid gap-4 md:grid-cols-2">
               <FormField label="Bot Name" error={errors.botName?.message}>
                 <input
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-white outline-none focus:border-positive/50"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('botName')}
                 />
               </FormField>
 
               <FormField label="Exchange" error={errors.exchange?.message}>
                 <select
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-white outline-none focus:border-positive/50"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('exchange')}
                 >
                   <option value="BINANCE">BINANCE</option>
@@ -50,7 +50,7 @@ export function RegisterBotFormCard({
 
               <FormField label="Trading Pair" error={errors.tradingPair?.message}>
                 <input
-                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-white outline-none focus:border-positive/50"
+                  className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('tradingPair')}
                   placeholder="e.g. BTC/USDT"
                 />

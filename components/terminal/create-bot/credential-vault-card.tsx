@@ -8,7 +8,7 @@ function VaultValue({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border bg-surface p-4">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">{label}</p>
-      <p className="mt-2 break-all font-mono text-sm text-white">{value}</p>
+      <p className="mt-2 break-all font-mono text-sm text-main">{value}</p>
     </div>
   );
 }
@@ -16,7 +16,7 @@ function VaultValue({ label, value }: { label: string; value: string }) {
 export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
   return (
     <article className="glass rounded-2xl p-6">
-      <h2 className="font-display text-2xl text-white">Credential Vault (One-Time Display)</h2>
+      <h2 className="font-display text-2xl text-main">Credential Vault (One-Time Display)</h2>
 
       {credentials ? (
         <>
@@ -27,7 +27,7 @@ export function CredentialVaultCard({ credentials }: CredentialVaultCardProps) {
 
           <div className="mt-4 rounded-xl border border-[var(--primary-soft)] bg-primary-soft p-4">
             <p className="text-xs uppercase tracking-[0.16em] text-positive">rawSecret</p>
-            <p className="mt-2 break-all font-mono text-sm text-white">{credentials.rawSecret}</p>
+            <p className="mt-2 break-all font-mono text-sm text-main">{credentials.rawSecret}</p>
             <p className="mt-2 text-xs text-muted">Store this immediately. It will not be shown again.</p>
           </div>
         </>

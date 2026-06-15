@@ -81,8 +81,8 @@ export function BotDecisionCardComponent({ card, onKeep, onUnsubscribe, isBusy =
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-            <div className="rounded-xl border border-border bg-surface px-3 py-3">
+          <div className="grid grid-cols-2 overflow-hidden rounded-xl border border-border/40 bg-surface/30 divide-y divide-border/40 md:grid-cols-4 md:divide-y-0 md:divide-x">
+            <div className="px-3 py-3">
               <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">PnL</p>
               <p className={`mt-2 font-mono text-lg font-semibold ${pnlColor}`}>
                 {card.currentPnL >= 0 ? '+' : ''}
@@ -91,19 +91,19 @@ export function BotDecisionCardComponent({ card, onKeep, onUnsubscribe, isBusy =
               <p className="mt-1 text-[11px] text-fg-muted">{(card.pnlPercent * 100).toFixed(2)}%</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface px-3 py-3">
+            <div className="px-3 py-3">
               <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Drawdown</p>
               <p className={`mt-2 font-mono text-lg font-semibold ${drawdownColor}`}>{(card.drawdownPercent * 100).toFixed(1)}%</p>
               <p className="mt-1 text-[11px] text-fg-muted">7-day max</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface px-3 py-3">
+            <div className="px-3 py-3">
               <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Win rate</p>
               <p className="mt-2 font-mono text-lg font-semibold text-positive">{(card.winRate * 100).toFixed(1)}%</p>
               <p className="mt-1 text-[11px] text-fg-muted">24h average</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-surface px-3 py-3">
+            <div className="px-3 py-3">
               <p className="text-[10px] uppercase tracking-[0.16em] text-fg-muted">Signals</p>
               <p className="mt-2 font-mono text-lg font-semibold text-fg">
                 {card.successfulSignals24h}/{card.signalCount24h}
@@ -112,7 +112,7 @@ export function BotDecisionCardComponent({ card, onKeep, onUnsubscribe, isBusy =
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface px-4 py-4">
+          <div className="rounded-xl border border-border/40 bg-surface/30 px-4 py-4">
             <p className={`line-clamp-3 text-sm leading-relaxed ${tone.text}`}>{card.reasonExplanation}</p>
           </div>
 

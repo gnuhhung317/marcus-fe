@@ -3,7 +3,7 @@ export function ProvisioningFlowPanel() {
     <aside className="glass rounded-2xl p-5">
       <p className="text-xs uppercase tracking-[0.16em] text-muted">Provisioning Flow</p>
       <ol className="mt-5 space-y-3 text-sm">
-        <li className="rounded-xl border border-[var(--primary-soft)] bg-primary-soft px-3 py-3 text-white">
+        <li className="rounded-xl border border-[var(--primary-soft)] bg-primary-soft px-3 py-3 text-main">
           01. Register bot via /bots
         </li>
         <li className="rounded-xl border border-border px-3 py-3 text-muted">

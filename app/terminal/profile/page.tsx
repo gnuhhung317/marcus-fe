@@ -54,7 +54,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.16em] text-muted">Profile</p>
-            <h2 className="mt-3 text-2xl font-semibold text-white">Basic account information</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-main">Basic account information</h2>
           </div>
           <span className="rounded-full border border-border px-3 py-1 text-xs text-muted">
             Role: {formatRoleLabel(profile.role)}
@@ -68,7 +68,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
               type="text"
               name="username"
               defaultValue={profile.username}
-              className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white outline-none"
+              className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-main outline-none"
               disabled={!canManageAccount}
             />
           </label>
@@ -79,7 +79,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
               type="email"
               name="email"
               defaultValue={profile.email}
-              className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-white outline-none"
+              className="mt-2 w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-main outline-none"
               disabled={!canManageAccount}
             />
           </label>
@@ -102,7 +102,7 @@ export default async function TerminalProfilePage({ searchParams }: ProfilePageP
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.16em] text-muted">Identity</p>
-          <h1 className="mt-3 text-4xl font-semibold text-white">{profile.username}</h1>
+          <h1 className="mt-3 text-4xl font-semibold text-main">{profile.username}</h1>
           <p className="mt-2 text-sm text-muted">UID: {profile.userId}</p>
           <p className="mt-1 text-sm text-muted">{profile.email} · Role {formatRoleLabel(profile.role)}</p>
         </div>

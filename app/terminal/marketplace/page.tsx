@@ -99,12 +99,12 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
   const end = Math.min(marketplacePage.total, marketplacePage.page * marketplacePage.pageSize);
 
   return (
-    <div className="space-y-8">
-      <header className="space-y-4">
+    <div className="space-y-5">
+      <header className="space-y-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Marketplace</p>
-          <h1 className="mt-3 text-4xl font-semibold text-main">Bot marketplace</h1>
-          <p className="mt-2 text-sm text-muted">
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Marketplace</p>
+          <h1 className="mt-1 text-2xl font-bold text-main">Bot marketplace</h1>
+          <p className="mt-1 text-xs text-muted">
             Compare verified strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.
           </p>
         </div>
@@ -112,7 +112,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
         <MarketplaceFilter query={query} />
       </header>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
         <p>
           Showing {start}-{end} of {marketplacePage.total} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
         </p>
@@ -127,7 +127,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
           actionHref="/terminal/marketplace"
         />
       ) : (
-        <section className="grid auto-rows-fr items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid auto-rows-fr items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
           {marketplacePage.bots.map((bot) => (
             <MarketplaceBotCard key={bot.botId} bot={bot} />
           ))}

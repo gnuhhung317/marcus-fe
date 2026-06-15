@@ -32,30 +32,28 @@ test('Marketplace → Bot Detail → Subscribe → Dashboard', async ({ page }) 
   }
 
   await page.goto('/terminal/marketplace');
-  await expect(page.getByRole('heading', { name: 'Strategy Marketplace' })).toBeVisible();
-  const marketplaceHits = page.locator('article:has-text("View Detail")');
-  await expect(await marketplaceHits.count()).toBeGreaterThan(0);
+  await expect(page.getByRole('heading', { name: 'Bot marketplace' })).toBeVisible();
+  await expect(page.getByText(/active bots/i)).toBeVisible();
 
   await page.getByLabel('Search').fill('');
-  await page.getByRole('button', { name: 'Apply Filters' }).click();
+  await page.getByRole('button', { name: 'Apply filters' }).click();
   await page.waitForURL('**/terminal/marketplace**');
 
-  const firstDetail = page.locator('text=View Detail').first();
+  const firstDetail = page.getByRole('link', { name: 'Open bot' }).first();
   await expect(firstDetail).toBeVisible();
   await firstDetail.click();
 
   await expect(page.getByText('Bot Profile')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Subscribe Bot' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Subscribe bot' })).toBeVisible();
 
-  const subscribeButton = page.getByRole('button', { name: 'Subscribe Bot' });
+  const subscribeButton = page.getByRole('button', { name: 'Subscribe bot' });
   await expect(subscribeButton).toBeDisabled();
 
   await page.locator('input[type="checkbox"]').check();
   await expect(subscribeButton).toBeEnabled();
 
   await subscribeButton.click();
-  await expect(page.locator('text=Subscription Status')).toBeVisible();
-  await expect(page.locator('p:has-text("SUBSCRIBED")')).toBeVisible();
+  await expect(page.getByText('Runtime token')).toBeVisible();
 
   const unsubscribeButton = page.getByRole('button', { name: 'Unsubscribe' });
   await expect(unsubscribeButton).toBeEnabled();

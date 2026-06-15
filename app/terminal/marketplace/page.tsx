@@ -105,7 +105,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
           <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Marketplace</p>
           <h1 className="mt-1 text-2xl font-bold text-main">Bot marketplace</h1>
           <p className="mt-1 text-xs text-muted">
-            Compare verified strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.
+            Compare verified active strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.
           </p>
         </div>
 
@@ -114,7 +114,7 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
         <p>
-          Showing {start}-{end} of {marketplacePage.total} bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
+          Showing {start}-{end} of {marketplacePage.total} active bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
         </p>
         <p>Page {marketplacePage.page}</p>
       </div>

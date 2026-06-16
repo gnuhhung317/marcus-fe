@@ -11,6 +11,10 @@ const intlMiddleware = createMiddleware({
   localePrefix: 'always'
 });
 
+function isRedirectResponse(response: NextResponse) {
+  return response.status >= 300 && response.status < 400 && response.headers.has('location');
+}
+
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
@@ -18,9 +22,9 @@ export function middleware(request: NextRequest) {
   // 1. Run intlMiddleware to handle locale prefixing
   const response = intlMiddleware(request);
 
-  // If intlMiddleware redirected, return that response
-  if (response.headers.get('x-next-intl-route')) {
-     return response;
+  // If intlMiddleware redirected to add or normalize a locale prefix, return it immediately.
+  if (isRedirectResponse(response)) {
+    return response;
   }
 
   // 2. Auth Logic
@@ -68,7 +72,7 @@ export function middleware(request: NextRequest) {
 
   // Authenticated users: redirect root → terminal
   if (pathWithoutLocale === '/') {
-    return NextResponse.redirect(new URL(`/${locale}/terminal/marketplace`, baseUrl));
+    return NextResponse.redirect(new URL(`/${locale}/terminal`, baseUrl));
   }
 
   return response;

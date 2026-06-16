@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { favoriteBot, unsubscribeFromBot } from '@/lib/contracts/client';
 import { BotDecisionCard } from '@/lib/contracts/types';
 import { BotDecisionRow } from './bot-decision-row';
-import { DecisionFilter } from '@/app/terminal/decision/decision-filter';
+import { DecisionFilter } from '@/app/[locale]/terminal/decision/decision-filter';
 import { EmptyStateCard } from '@/components/shared/api-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

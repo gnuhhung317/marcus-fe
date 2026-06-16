@@ -108,6 +108,22 @@ export async function getAdminBotDetail(botId: string): Promise<AdminBotDetail> 
   });
 }
 
+export async function getAdminBotDetailPageData(botId: string): Promise<AdminBotDetailPageData> {
+  const [detail, signals, subscribers, auditEvents] = await Promise.all([
+    getAdminBotDetail(botId),
+    listAdminBotSignals(botId, { limit: 50 }),
+    listAdminBotSubscribers(botId, { page: 0, size: 50 }),
+    listAdminAuditEvents({ targetType: 'BOT', targetId: botId, page: 0, size: 50 }),
+  ]);
+
+  return {
+    detail,
+    signals,
+    subscribers,
+    auditEvents,
+  };
+}
+
 export async function updateAdminBotStatus(
   botId: string,
   payload: { status: AdminBotStatus; reason: string; cancelActiveSubscriptions: boolean },

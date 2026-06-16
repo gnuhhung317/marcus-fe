@@ -10,8 +10,13 @@ import { redirect } from 'next/navigation';
 export default async function TerminalDashboardPage() {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
+  const normalizedRole = role === 'USER' ? 'TRADER' : role;
 
-  if (role === 'DEVELOPER') {
+  if (normalizedRole === 'ADMIN') {
+    redirect('/terminal/admin');
+  }
+
+  if (normalizedRole === 'DEVELOPER') {
     redirect('/terminal/developer-dashboard');
   }
 

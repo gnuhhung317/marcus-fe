@@ -29,17 +29,17 @@ export const terminalNavSections = [
   {
     labelKey: 'trade',
     items: [
-      { href: '/terminal/decision', labelKey: 'decision', icon: LayoutDashboard, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/monitoring', labelKey: 'monitoring', icon: Radar, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/marketplace', labelKey: 'market', icon: Store, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/leaderboard', labelKey: 'leaderboard', icon: Trophy, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/decision', labelKey: 'decision', icon: LayoutDashboard, roles: ['TRADER', 'OPERATOR'] },
+      { href: '/terminal/monitoring', labelKey: 'monitoring', icon: Radar, roles: ['TRADER', 'OPERATOR'] },
+      { href: '/terminal/marketplace', labelKey: 'market', icon: Store, roles: ['TRADER', 'OPERATOR'] },
+      { href: '/terminal/leaderboard', labelKey: 'leaderboard', icon: Trophy, roles: ['TRADER', 'OPERATOR'] },
     ],
   },
   {
     labelKey: 'build',
     items: [
-      { href: '/terminal/create-bot', labelKey: 'deploy', icon: Rocket, roles: ['OPERATOR', 'ADMIN'] },
-      { href: '/terminal/developer-dashboard', labelKey: 'bots', icon: Bot, roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/create-bot', labelKey: 'deploy', icon: Rocket, roles: ['OPERATOR'] },
+      { href: '/terminal/developer-dashboard', labelKey: 'bots', icon: Bot, roles: ['DEVELOPER', 'OPERATOR'] },
       { href: '/terminal/developer-console', labelKey: 'console', icon: Terminal, roles: ['OPERATOR', 'ADMIN'] },
     ],
   },

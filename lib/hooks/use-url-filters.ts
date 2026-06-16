@@ -11,35 +11,54 @@ export function useUrlFilters() {
     return searchParams.get(key) || defaultValue;
   };
 
-  const setFilter = useCallback(
-    (key: string, value: string) => {
+  const setFilters = useCallback(
+    (updates: Record<string, string | number | boolean | null | undefined>) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (value === 'ALL' || !value) {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
+
+      Object.entries(updates).forEach(([key, value]) => {
+        if (
+          value === undefined ||
+          value === null ||
+          value === '' ||
+          value === 'ALL'
+        ) {
+          params.delete(key);
+          return;
+        }
+
+        params.set(key, String(value));
+      });
 
       startTransition(() => {
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+        const queryString = params.toString();
+        router.replace(queryString ? `${pathname}?${queryString}` : pathname, { scroll: false });
       });
     },
     [pathname, router, searchParams]
+  );
+
+  const setFilter = useCallback(
+    (key: string, value: string) => {
+      setFilters({ [key]: value });
+    },
+    [setFilters]
   );
 
   const resetFilters = useCallback(
     (keys: string[]) => {
-      const params = new URLSearchParams(searchParams.toString());
-      keys.forEach((key) => params.delete(key));
-      startTransition(() => {
-        router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-      });
+      const updates = keys.reduce<Record<string, null>>((acc, key) => {
+        acc[key] = null;
+        return acc;
+      }, {});
+
+      setFilters(updates);
     },
-    [pathname, router, searchParams]
+    [setFilters]
   );
 
   return {
     getFilter,
+    setFilters,
     setFilter,
     resetFilters,
     isPending,

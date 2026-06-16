@@ -1,11 +1,18 @@
-import Link from 'next/link';
+import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/navigation';
 import { ArrowRight, BookOpenText, Code2, MessageSquareMore, Rocket } from 'lucide-react';
 import { getHomePageData } from '@/lib/contracts/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
-export default async function HomePage() {
+export default function HomePage() {
+  const t = useTranslations('Home');
+  return <HomeContent t={t} />;
+}
+
+async function HomeContent({ t }: { t: any }) {
   const { marketOverview, marketingStats } = await getHomePageData();
 
   return (
@@ -16,24 +23,26 @@ export default async function HomePage() {
         <div className="grid items-center gap-12 lg:grid-cols-[1fr_1fr]">
           <div className="max-w-2xl">
             <Badge variant="success">
-              Engine Online · {marketOverview.activeBots} Active Bots
+              {t('badge', { activeBots: marketOverview.activeBots })}
             </Badge>
             <h1 className="mt-8 font-display text-5xl leading-[1.08] text-main md:text-7xl">
-              High-Frequency <br />
-              <span className="text-muted">Algorithmic Trading.</span>
+              {t.rich('headline', {
+                br: () => <br />,
+                span: (chunks: ReactNode) => <span className="text-muted">{chunks}</span>
+              })}
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-muted sm:text-xl">
-              Design, backtest, and deploy high-frequency bots with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.
+              {t('description')}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Button asChild className="rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-wide">
                 <Link href="/login?next=/terminal">
-                  Launch Terminal
+                  {t('launchTerminal')}
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-wide">
-                <Link href="/research">Read Documentation</Link>
+                <Link href="/research">{t('readDocs')}</Link>
               </Button>
             </div>
           </div>
@@ -75,19 +84,19 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 gap-px sm:grid-cols-4">
               <div className="bg-canvas/60 p-6 text-center sm:p-8">
                 <p className="font-display text-4xl font-bold text-main sm:text-5xl">{marketingStats.verifiedDevelopers}+</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Developers</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">{t('stats.developers')}</p>
               </div>
               <div className="bg-canvas/60 p-6 text-center sm:p-8">
                 <p className="font-display text-4xl font-bold text-main sm:text-5xl">{marketingStats.activeCloudExecutors}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Executors</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">{t('stats.executors')}</p>
               </div>
               <div className="bg-canvas/60 p-6 text-center sm:p-8">
                 <p className="font-display text-4xl font-bold text-main sm:text-5xl">{marketingStats.systemUptime}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Core Uptime</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">{t('stats.uptime')}</p>
               </div>
               <div className="bg-canvas/60 p-6 text-center sm:p-8">
                 <p className="font-display text-4xl font-bold text-main sm:text-5xl">{marketingStats.supportedExchanges}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">Supported Exchanges</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted">{t('stats.exchanges')}</p>
               </div>
             </div>
           </Card>
@@ -96,8 +105,8 @@ export default async function HomePage() {
 
       <section className="relative z-10 mx-auto mt-32 max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
-          <h2 className="font-display text-3xl text-main sm:text-5xl">Quant Lifecycle</h2>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">From ideation to high-frequency cloud execution.</p>
+          <h2 className="font-display text-3xl text-main sm:text-5xl">{t('lifecycle.title')}</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-muted">{t('lifecycle.subtitle')}</p>
         </div>
 
         <div className="mt-16 grid gap-8 lg:grid-cols-3">
@@ -108,9 +117,9 @@ export default async function HomePage() {
             <div className="mb-6 inline-flex rounded-lg bg-surface p-3 text-main">
               <BookOpenText className="h-6 w-6" />
             </div>
-            <h3 className="font-display text-2xl text-main">Learn & Backtest</h3>
+            <h3 className="font-display text-2xl text-main">{t('lifecycle.step1.title')}</h3>
             <p className="mt-4 leading-relaxed text-muted">
-              Access the Academy for institutional quant bots. Run historical backtests on years of tick data, in-browser, within seconds.
+              {t('lifecycle.step1.desc')}
             </p>
           </Card>
 
@@ -121,9 +130,9 @@ export default async function HomePage() {
             <div className="mb-6 inline-flex rounded-lg bg-surface p-3 text-main">
               <Code2 className="h-6 w-6" />
             </div>
-            <h3 className="font-display text-2xl text-main">Build & Simulate</h3>
+            <h3 className="font-display text-2xl text-main">{t('lifecycle.step2.title')}</h3>
             <p className="mt-4 leading-relaxed text-muted">
-              Use our Python SDK or visual editor to construct logic. Forward-test in a simulated environment without real capital risk.
+              {t('lifecycle.step2.desc')}
             </p>
           </Card>
 
@@ -134,9 +143,9 @@ export default async function HomePage() {
             <div className="mb-6 inline-flex rounded-lg bg-surface p-3 text-main">
               <Rocket className="h-6 w-6" />
             </div>
-            <h3 className="font-display text-2xl text-main">Deploy & Scale</h3>
+            <h3 className="font-display text-2xl text-main">{t('lifecycle.step3.title')}</h3>
             <p className="mt-4 leading-relaxed text-muted">
-              Securely connect API keys. Deploy 24/7 dedicated cloud executors for minimum latency routing alongside exchanges.
+              {t('lifecycle.step3.desc')}
             </p>
           </Card>
         </div>
@@ -144,19 +153,19 @@ export default async function HomePage() {
 
       <section className="relative z-10 mx-auto mt-32 max-w-3xl px-4 text-center sm:px-6 lg:px-8">
         <Card variant="glass" className="p-10 sm:p-16">
-          <h2 className="font-display text-3xl text-main">Join The Hub</h2>
+          <h2 className="font-display text-3xl text-main">{t('hub.title')}</h2>
           <p className="mx-auto mt-4 max-w-lg text-muted">
-            Connect with quantitative developers, share bots, and get priority support from the Marcus engineering team.
+            {t('hub.desc')}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Button asChild className="rounded-xl px-6 py-3 text-sm font-bold">
               <Link href="#">
-                Discord Server
+                {t('hub.discord')}
                 <MessageSquareMore className="h-4 w-4" />
               </Link>
             </Button>
             <Button asChild variant="outline" className="rounded-xl px-6 py-3 text-sm font-bold">
-              <Link href="#">Developer Forums</Link>
+              <Link href="#">{t('hub.forums')}</Link>
             </Button>
           </div>
         </Card>

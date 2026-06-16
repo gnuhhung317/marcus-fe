@@ -1,5 +1,8 @@
 import {
   Bot,
+  Server,
+  Shield,
+  Users,
   LayoutDashboard,
   Radar,
   Rocket,
@@ -12,37 +15,46 @@ import {
 
 export type TerminalNavItem = {
   href: string;
-  label: string;
+  labelKey: string;
   icon: LucideIcon;
   roles: readonly string[];
 };
 
 export type TerminalNavSection = {
-  label: string;
+  labelKey: string;
   items: readonly TerminalNavItem[];
 };
 
 export const terminalNavSections = [
   {
-    label: 'Trade',
+    labelKey: 'trade',
     items: [
-      { href: '/terminal/decision', label: 'Decision', icon: LayoutDashboard, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/monitoring', label: 'Monitoring', icon: Radar, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/marketplace', label: 'Market', icon: Store, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/leaderboard', label: 'Leaderboard', icon: Trophy, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/decision', labelKey: 'decision', icon: LayoutDashboard, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/monitoring', labelKey: 'monitoring', icon: Radar, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/marketplace', labelKey: 'market', icon: Store, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/leaderboard', labelKey: 'leaderboard', icon: Trophy, roles: ['TRADER', 'OPERATOR', 'ADMIN'] },
     ],
   },
   {
-    label: 'Build',
+    labelKey: 'build',
     items: [
-      { href: '/terminal/create-bot', label: 'Deploy', icon: Rocket, roles: ['OPERATOR', 'ADMIN'] },
-      { href: '/terminal/developer-dashboard', label: 'Bots', icon: Bot, roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },
-      { href: '/terminal/developer-console', label: 'Console', icon: Terminal, roles: ['OPERATOR', 'ADMIN'] },
+      { href: '/terminal/create-bot', labelKey: 'deploy', icon: Rocket, roles: ['OPERATOR', 'ADMIN'] },
+      { href: '/terminal/developer-dashboard', labelKey: 'bots', icon: Bot, roles: ['DEVELOPER', 'OPERATOR', 'ADMIN'] },
+      { href: '/terminal/developer-console', labelKey: 'console', icon: Terminal, roles: ['OPERATOR', 'ADMIN'] },
     ],
   },
   {
-    label: 'Account',
-    items: [{ href: '/terminal/profile', label: 'Profile', icon: UserRound, roles: ['TRADER', 'DEVELOPER', 'OPERATOR', 'ADMIN'] }],
+    labelKey: 'account',
+    items: [{ href: '/terminal/profile', labelKey: 'profile', icon: UserRound, roles: ['TRADER', 'DEVELOPER', 'OPERATOR', 'ADMIN'] }],
+  },
+  {
+    labelKey: 'admin',
+    items: [
+      { href: '/terminal/admin', labelKey: 'overview', icon: Shield, roles: ['ADMIN'] },
+      { href: '/terminal/admin/users', labelKey: 'users', icon: Users, roles: ['ADMIN'] },
+      { href: '/terminal/admin/bots', labelKey: 'bots', icon: Bot, roles: ['ADMIN'] },
+      { href: '/terminal/admin/system', labelKey: 'system', icon: Server, roles: ['ADMIN'] },
+    ],
   },
 ] as const satisfies readonly TerminalNavSection[];
 

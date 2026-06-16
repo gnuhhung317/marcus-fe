@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname } from '@/lib/navigation';
 import { ChevronLeft, ChevronRight, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -17,11 +17,14 @@ function TerminalNavLink({
   item,
   collapsed,
   active,
+  t,
 }: {
   item: TerminalNavItem;
   collapsed: boolean;
   active: boolean;
+  t: any;
 }) {
+  const label = t(`nav.${item.labelKey}`);
   const link = (
     <Button
       asChild
@@ -33,9 +36,9 @@ function TerminalNavLink({
         active ? 'border-positive bg-positive/10 text-positive' : 'text-muted hover:bg-surface hover:text-main'
       )}
     >
-      <Link href={item.href} aria-current={active ? 'page' : undefined} aria-label={item.label}>
+      <Link href={item.href as any} aria-current={active ? 'page' : undefined} aria-label={label}>
         <item.icon className="size-4 shrink-0" />
-        <span className={cn('min-w-0 truncate', collapsed && 'lg:sr-only')}>{item.label}</span>
+        <span className={cn('min-w-0 truncate', collapsed && 'lg:sr-only')}>{label}</span>
       </Link>
     </Button>
   );
@@ -48,23 +51,26 @@ function TerminalNavLink({
     <Tooltip>
       <TooltipTrigger asChild>{link}</TooltipTrigger>
       <TooltipContent side="right" align="center">
-        {item.label}
+        {label}
       </TooltipContent>
     </Tooltip>
   );
 }
 
 function TerminalSidebarSection({
-  label,
+  labelKey,
   items,
   collapsed,
   pathname,
+  t,
 }: {
-  label: string;
+  labelKey: string;
   items: readonly TerminalNavItem[];
   collapsed: boolean;
   pathname: string;
+  t: any;
 }) {
+  const label = t(`nav.${labelKey}`);
   return (
     <section className="space-y-2">
       <p className={cn('px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted', collapsed && 'lg:sr-only')}>
@@ -72,7 +78,7 @@ function TerminalSidebarSection({
       </p>
       <nav className="space-y-1" aria-label={label}>
         {items.map((item) => (
-          <TerminalNavLink key={item.href} item={item} collapsed={collapsed} active={isTerminalLinkActive(pathname, item.href)} />
+          <TerminalNavLink key={item.href} item={item} collapsed={collapsed} active={isTerminalLinkActive(pathname, item.href)} t={t} />
         ))}
       </nav>
     </section>
@@ -80,6 +86,7 @@ function TerminalSidebarSection({
 }
 
 export function TerminalSidebar({ role }: { role: string }) {
+  const t = useTranslations('Terminal');
   const pathname = usePathname();
   const { isCollapsed, toggleCollapsed } = useSidebarState();
   const sections = getVisibleTerminalSections(role);
@@ -98,7 +105,7 @@ export function TerminalSidebar({ role }: { role: string }) {
               <Terminal className="size-4" />
             </div>
             <div className={cn('min-w-0', isCollapsed && 'lg:sr-only')}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Terminal</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">{t('sidebar.navigation')}</p>
               <p className="truncate text-sm font-medium text-main">Navigation</p>
             </div>
           </div>
@@ -109,7 +116,7 @@ export function TerminalSidebar({ role }: { role: string }) {
             size="icon"
             className={cn('hidden shrink-0 border-border/70 bg-surface/60 text-main hover:bg-surface lg:inline-flex')}
             onClick={toggleCollapsed}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
           >
             {isCollapsed ? <ChevronRight className="size-4" /> : <ChevronLeft className="size-4" />}
           </Button>
@@ -118,11 +125,12 @@ export function TerminalSidebar({ role }: { role: string }) {
         <div className="flex flex-col gap-5 px-3 py-3 lg:flex-1 lg:overflow-y-auto">
           {sections.map((section) => (
             <TerminalSidebarSection
-              key={section.label}
-              label={section.label}
+              key={section.labelKey}
+              labelKey={section.labelKey}
               items={section.items}
               collapsed={isCollapsed}
               pathname={pathname}
+              t={t}
             />
           ))}
         </div>

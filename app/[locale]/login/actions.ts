@@ -2,7 +2,7 @@
 
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { loginWithCredentials } from '../../lib/contracts/client';
+import { loginWithCredentials } from '@/lib/contracts/client';
 
 const isProduction = process.env.NODE_ENV === 'production';
 

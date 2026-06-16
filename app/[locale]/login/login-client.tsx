@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, ArrowRight, LockKeyhole, Mail, ShieldCheck, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { SiteHeader } from '@/components/marketing/site-header';
 import { SiteFooter } from '@/components/marketing/site-footer';
 import { Button } from '@/components/ui/button';
@@ -13,22 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
 import { clearBrowserAccessToken, setBrowserAccessToken } from '@/lib/api/http';
-
-function getErrorMessage(error?: string) {
-  if (error === 'missing_credentials') {
-    return 'Please enter both username/email and password.';
-  }
-
-  if (error === 'invalid_credentials') {
-    return 'Login failed. Please check your credentials and try again.';
-  }
-
-  if (error === 'service_unavailable') {
-    return 'Login service is temporarily unavailable.';
-  }
-
-  return undefined;
-}
 
 interface LoginClientProps {
   initialNextPath: string;
@@ -39,8 +24,26 @@ interface LoginClientProps {
 const LOGIN_ROUTE = '/api/auth/login';
 
 export default function LoginClient({ initialNextPath, initialError, initialLoggedOut }: LoginClientProps) {
-  const errorMessage = getErrorMessage(initialError);
+  const t = useTranslations('Login');
   const [formError, setFormError] = useState<string | undefined>(undefined);
+
+  const getErrorMessage = (error?: string) => {
+    if (error === 'missing_credentials') {
+      return t('errors.missingCredentials');
+    }
+  
+    if (error === 'invalid_credentials') {
+      return t('errors.invalidCredentials');
+    }
+  
+    if (error === 'service_unavailable') {
+      return t('errors.serviceUnavailable');
+    }
+  
+    return undefined;
+  };
+
+  const errorMessage = getErrorMessage(initialError);
 
   useEffect(() => {
     if (initialLoggedOut) {
@@ -75,23 +78,23 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
 
       if (!response.ok) {
         if (response.status === 401) {
-          setFormError('Invalid username/email or password.');
+          setFormError(t('errors.invalidUserPass'));
           return;
         }
 
-        setFormError(payload?.message || `Login failed with status ${response.status}.`);
+        setFormError(payload?.message || t('errors.genericFail', { status: response.status }));
         return;
       }
 
       if (!payload?.accessToken || !payload?.refreshToken) {
-        setFormError(payload?.message || 'Login completed but authentication tokens were not issued.');
+        setFormError(payload?.message || t('errors.noTokens'));
         return;
       }
 
       setBrowserAccessToken(payload.accessToken);
       window.location.replace(initialNextPath);
     } catch (error) {
-      setFormError('Login service is temporarily unavailable.');
+      setFormError(t('errors.serviceUnavailable'));
     }
   }
 
@@ -106,13 +109,13 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
           <Card variant="glass-strong" className="flex flex-col justify-between p-8 md:p-10">
             <div className="flex flex-col gap-4">
               <Badge variant="success">
-                Marcus Trading Ecosystem
+                {t('ecosystem')}
               </Badge>
               <h1 className="text-2xl font-semibold leading-snug tracking-tight text-main md:text-3xl">
-                Next-Gen Algorithmic Trading
+                {t('headline')}
               </h1>
               <p className="text-sm leading-relaxed text-muted">
-                Unlock professional quantitative execution, real-time portfolio intelligence, and secure API bot operations in a unified workspace.
+                {t('description')}
               </p>
             </div>
 
@@ -120,20 +123,20 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               <div className="rounded-2xl border border-border/60 bg-surface/70 p-5 transition-colors duration-300 hover:border-primary/25">
                 <div className="flex items-center gap-2 text-positive">
                   <ShieldCheck className="h-5 w-5" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">Institutional Security</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">{t('securityTitle')}</p>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted">
-                  Enterprise session encryption, secure MFA authorization, and isolated API-key bots safeguard your trades.
+                  {t('securityDesc')}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-border/60 bg-surface/70 p-5 transition-colors duration-300 hover:border-primary/25">
                 <div className="flex items-center gap-2 text-info">
                   <Zap className="h-5 w-5" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">Low-Latency Execution</p>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-main">{t('latencyTitle')}</p>
                 </div>
                 <p className="mt-2 text-xs leading-relaxed text-muted">
-                  Execute bots with direct-to-exchange routing, zero execution lags, and live telemetry.
+                  {t('latencyDesc')}
                 </p>
               </div>
             </div>
@@ -141,9 +144,9 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
 
           <Card variant="glass-strong" className="flex flex-col justify-center p-8 md:p-10">
             <div className="flex flex-col gap-2">
-              <p className="text-xs uppercase tracking-[0.18em] text-positive">Terminal Access</p>
-              <h2 className="text-2xl font-semibold tracking-tight text-main">Welcome back</h2>
-              <p className="text-sm text-muted">Use your Marcus credentials to access the terminal.</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-positive">{t('terminalAccess')}</p>
+              <h2 className="text-2xl font-semibold tracking-tight text-main">{t('welcomeBack')}</h2>
+              <p className="text-sm text-muted">{t('instructions')}</p>
             </div>
 
             {errorMessage ? (
@@ -162,7 +165,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
 
             <form onSubmit={handleSubmit(onSubmit)} className="mt-6 flex flex-col gap-5">
               <label className="flex flex-col gap-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted">Username or email</span>
+                <span className="text-xs font-medium uppercase tracking-widest text-muted">{t('usernameOrEmail')}</span>
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                   <Input
@@ -178,7 +181,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted">Password</span>
+                <span className="text-xs font-medium uppercase tracking-widest text-muted">{t('Auth.password')}</span>
                 <div className="relative">
                   <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                   <Input
@@ -194,16 +197,16 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               </label>
 
               <Button type="submit" className="h-12 w-full" isLoading={isSubmitting}>
-                {isSubmitting ? 'Signing In...' : 'Sign In'}
+                {isSubmitting ? t('signingIn') : t('signIn')}
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </form>
 
             <p className="mt-6 flex flex-col items-center justify-center gap-2 text-center text-xs text-muted sm:flex-row sm:gap-3">
               <span>
-                Don&apos;t have an account?{' '}
+                {t('noAccount')}{' '}
                 <Button asChild variant="link" className="h-auto p-0 text-positive">
-                  <Link href="/register">Sign up</Link>
+                  <Link href="/register">{t('signUp')}</Link>
                 </Button>
               </span>
             </p>

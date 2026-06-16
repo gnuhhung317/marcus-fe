@@ -1,0 +1,121 @@
+{
+  "Common": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "home": "Home",
+    "terminal": "Terminal",
+    "marketplace": "Marketplace",
+    "developer": "Developer"
+  },
+  "Auth": {
+    "loginTitle": "Login to your account",
+    "registerTitle": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit"
+  },
+  "Login": {
+    "ecosystem": "Marcus Trading Ecosystem",
+    "headline": "Next-Gen Algorithmic Trading",
+    "description": "Unlock professional quantitative execution, real-time portfolio intelligence, and secure API bot operations in a unified workspace.",
+    "securityTitle": "Institutional Security",
+    "securityDesc": "Enterprise session encryption, secure MFA authorization, and isolated API-key bots safeguard your trades.",
+    "latencyTitle": "Low-Latency Execution",
+    "latencyDesc": "Execute bots with direct-to-exchange routing, zero execution lags, and live telemetry.",
+    "terminalAccess": "Terminal Access",
+    "welcomeBack": "Welcome back",
+    "instructions": "Use your Marcus credentials to access the terminal.",
+    "usernameOrEmail": "Username or email",
+    "signingIn": "Signing In...",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "errors": {
+      "missingCredentials": "Please enter both username/email and password.",
+      "invalidCredentials": "Login failed. Please check your credentials and try again.",
+      "serviceUnavailable": "Login service is temporarily unavailable.",
+      "genericFail": "Login failed with status {status}.",
+      "noTokens": "Login completed but authentication tokens were not issued.",
+      "invalidUserPass": "Invalid username/email or password."
+    }
+  },
+  "Home": {
+    "badge": "Engine Online · {activeBots} Active Bots",
+    "headline": "High-Frequency Algorithmic Trading.",
+    "description": "Design, backtest, and deploy high-frequency bots with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.",
+    "launchTerminal": "Launch Terminal",
+    "readDocs": "Read Documentation",
+    "stats": {
+      "developers": "Developers",
+      "executors": "Executors",
+      "uptime": "Core Uptime",
+      "exchanges": "Supported Exchanges"
+    },
+    "lifecycle": {
+      "title": "Quant Lifecycle",
+      "subtitle": "From ideation to high-frequency cloud execution.",
+      "step1": {
+        "title": "Learn & Backtest",
+        "desc": "Access the Academy for institutional quant bots. Run historical backtests on years of tick data, in-browser, within seconds."
+      },
+      "step2": {
+        "title": "Build & Simulate",
+        "desc": "Use our Python SDK or visual editor to construct logic. Forward-test in a simulated environment without real capital risk."
+      },
+      "step3": {
+        "title": "Deploy & Scale",
+        "desc": "Securely connect API keys. Deploy 24/7 dedicated cloud executors for minimum latency routing alongside exchanges."
+      }
+    },
+    "hub": {
+      "title": "Join The Hub",
+      "desc": "Connect with quantitative developers, share bots, and get priority support from the Marcus engineering team.",
+      "discord": "Discord Server",
+      "forums": "Developer Forums"
+    }
+  },
+  "Register": {
+    "title": "Create an account",
+    "subtitle": "Create your Marcus Trading account to start exploring bots, simulations, and live execution tools.",
+    "form": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Create Account",
+      "submitting": "Creating Account...",
+      "success": "Account created successfully! Redirecting to login...",
+      "errors": {
+        "generic": "Registration failed. Please try again.",
+        "emailTaken": "This email is already registered.",
+        "usernameTaken": "This username is already taken."
+      }
+    }
+  },
+  "Terminal": {
+    "nav": {
+      "trade": "Trade",
+      "build": "Build",
+      "account": "Account",
+      "admin": "Admin",
+      "decision": "Decision",
+      "monitoring": "Monitoring",
+      "market": "Market",
+      "leaderboard": "Leaderboard",
+      "deploy": "Deploy",
+      "bots": "Bots",
+      "console": "Console",
+      "profile": "Profile",
+      "overview": "Overview",
+      "users": "Users",
+      "system": "System"
+    },
+    "sidebar": {
+      "navigation": "Navigation",
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar"
+    }
+  }
+}

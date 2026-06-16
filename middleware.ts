@@ -1,23 +1,44 @@
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+
+const locales = ['en', 'vi'];
+const defaultLocale = 'en';
+
+const intlMiddleware = createMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'always'
+});
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const search = request.nextUrl.search;
 
-  // Construct base URL from headers to respect dynamic hostnames/IPs
+  // 1. Run intlMiddleware to handle locale prefixing
+  const response = intlMiddleware(request);
+
+  // If intlMiddleware redirected, return that response
+  if (response.headers.get('x-next-intl-route')) {
+     return response;
+  }
+
+  // 2. Auth Logic
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
   const isLocalhost = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('192.168.');
   const proto = isLocalhost ? 'http' : 'https';
   const baseUrl = `${proto}://${host}`;
 
-  // Read auth cookies — presence check only, no validation/refresh here.
-  // Token expiry & refresh is handled client-side via /api/auth/refresh.
   const accessToken = request.cookies.get('marcus_access_token')?.value;
   const role = request.cookies.get('marcus_role')?.value;
   const normalizedRole = role === 'USER' ? 'TRADER' : role;
 
-  const matchesRoute = (route: string) => pathname === route || pathname.startsWith(`${route}/`);
+  // Extract locale from pathname (e.g., /en/login -> en)
+  const segments = pathname.split('/');
+  const locale = locales.includes(segments[1]) ? segments[1] : defaultLocale;
+  const pathWithoutLocale = locales.includes(segments[1]) ? `/${segments.slice(2).join('/')}` : pathname;
+
+  const matchesRoute = (route: string) => pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`);
 
   const publicRoutes = ['/', '/login', '/register', '/logout'];
   const isPublicRoute = publicRoutes.some(matchesRoute);
@@ -28,33 +49,37 @@ export function middleware(request: NextRequest) {
   // Not authenticated → only allow public routes
   if (!accessToken || !normalizedRole) {
     if (isPublicRoute) {
-      return NextResponse.next();
+      return response;
     }
     if (isProtectedRoute) {
       const nextPath = `${pathname}${search}`;
-      return NextResponse.redirect(new URL(`/login?next=${encodeURIComponent(nextPath)}`, baseUrl));
+      return NextResponse.redirect(new URL(`/${locale}/login?next=${encodeURIComponent(nextPath)}`, baseUrl));
     }
-    return NextResponse.next();
+    return response;
   }
 
   // GUEST can only access marketing pages
   if (normalizedRole === 'GUEST') {
     if (isProtectedRoute) {
-      return NextResponse.redirect(new URL('/', baseUrl));
+      return NextResponse.redirect(new URL(`/${locale}`, baseUrl));
     }
-    return NextResponse.next();
+    return response;
   }
 
   // Authenticated users: redirect root → terminal
-  if (pathname === '/') {
-    return NextResponse.redirect(new URL('/terminal/marketplace', baseUrl));
+  if (pathWithoutLocale === '/') {
+    return NextResponse.redirect(new URL(`/${locale}/terminal/marketplace`, baseUrl));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
   matcher: [
+    // Match all pathnames except for
+    // - API routes
+    // - _next (static files)
+    // - file extensions (e.g. .svg, .png)
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg|.*\\.webp).*)',
   ],
 };

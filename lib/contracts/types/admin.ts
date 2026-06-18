@@ -49,7 +49,6 @@ export interface AdminBotDetail {
   exchangeId?: string | null;
   price?: number | null;
   riskLevel?: string | null;
-  assetPairs?: string[] | null;
   createdAt?: string | null;
   updatedAt?: string | null;
   activeSubscriberCount: number;
@@ -63,7 +62,6 @@ export interface AdminBotSubscriberRow {
   email?: string | null;
   status: AdminSubscriptionStatus;
   executorConnected: boolean;
-  packageId?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   canceledByAdminId?: string | null;

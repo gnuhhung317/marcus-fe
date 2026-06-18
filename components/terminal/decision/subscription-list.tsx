@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { favoriteBot, unsubscribeFromBot } from '@/lib/contracts/client';
+import { unsubscribeFromBot } from '@/lib/contracts/client';
 import { BotDecisionCard } from '@/lib/contracts/types';
 import { BotDecisionRow } from './bot-decision-row';
 import { DecisionFilter } from '@/app/[locale]/terminal/decision/decision-filter';
@@ -32,7 +32,6 @@ export function SubscriptionList({
   summary,
 }: SubscriptionListProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [favoriteBotIds, setFavoriteBotIds] = useState<string[]>([]);
   const [busyBotId, setBusyBotId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
   const [confirmingBot, setConfirmingBot] = useState<BotDecisionCard | null>(null);
@@ -42,25 +41,6 @@ export function SubscriptionList({
     if (!query) return true;
     return card.botName.toLowerCase().includes(query) || card.exchange.toLowerCase().includes(query);
   });
-
-  const handleKeep = async (botId: string) => {
-    setBusyBotId(botId);
-    setFeedback(null);
-    try {
-      const result = await favoriteBot(botId);
-      if (result.favorited) {
-        setFavoriteBotIds((current) => (current.includes(botId) ? current : [...current, botId]));
-      }
-      setFeedback({ tone: 'success', message: 'Bot marked as kept.' });
-    } catch (error) {
-      setFeedback({
-        tone: 'error',
-        message: error instanceof Error ? error.message : 'Unable to keep this bot right now.',
-      });
-    } finally {
-      setBusyBotId(null);
-    }
-  };
 
   const handleUnsubscribe = async () => {
     if (!confirmingBot) return;
@@ -113,9 +93,7 @@ export function SubscriptionList({
               key={card.subscriptionId}
               card={card}
               isBusy={busyBotId === card.botId}
-              isKept={favoriteBotIds.includes(card.botId)}
-              onKeep={handleKeep}
-              onUnsubscribe={(id) => setConfirmingBot(card)}
+              onUnsubscribe={() => setConfirmingBot(card)}
             />
           ))}
         </div>

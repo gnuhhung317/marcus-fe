@@ -423,12 +423,3 @@ export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): P
     trades,
   };
 }
-
-export async function favoriteBot(botId: string): Promise<{ botId: string; favorited: boolean }> {
-  return requestContractJson<{ botId: string; favorited: boolean }>('bot-favorite', {
-    pathParams: { botId },
-    init: {
-      method: 'POST',
-    },
-  });
-}

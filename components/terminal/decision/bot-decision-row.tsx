@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
 import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,8 +12,6 @@ import { RiskBar } from '@/components/shared/risk-bar';
 interface BotDecisionRowProps {
   card: BotDecisionCard;
   isBusy: boolean;
-  isKept: boolean;
-  onKeep: (botId: string) => void;
   onUnsubscribe: (botId: string) => void;
 }
 
@@ -44,25 +41,13 @@ const reasonStyles: Record<DecisionReason, { border: string; label: string; badg
 export function BotDecisionRow({
   card,
   isBusy,
-  isKept,
-  onKeep,
   onUnsubscribe,
 }: BotDecisionRowProps) {
-  const [isPending, setIsPending] = useState(false);
   const style = reasonStyles[card.reason];
-
-  const handleKeep = async () => {
-    setIsPending(true);
-    try {
-      await onKeep(card.botId);
-    } finally {
-      setIsPending(false);
-    }
-  };
 
   const pnlColor = card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
   const drawdownColor = card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
-  const actionDisabled = isBusy || isPending;
+  const actionDisabled = isBusy;
 
   return (
     <Card
@@ -147,15 +132,6 @@ export function BotDecisionRow({
       </div>
 
       <div className="flex items-center gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
-        <Button
-          onClick={handleKeep}
-          disabled={actionDisabled}
-          size="sm"
-          variant="outline"
-          className={isKept ? 'border-positive/20 bg-primary-soft text-positive hover:bg-primary/10' : ''}
-        >
-          {isKept ? 'Kept' : 'Keep'}
-        </Button>
         <Button asChild size="sm" variant="outline">
           <Link href={`/terminal/marketplace/${card.botId}`}>Review</Link>
         </Button>

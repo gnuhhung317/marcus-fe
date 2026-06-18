@@ -119,15 +119,6 @@ export const contractRoutes: ContractRoute[] = [
     status: 'available',
   },
   {
-    id: 'bot-favorite',
-    method: 'POST',
-    path: '/bots/{botId}/favorite',
-    operationId: 'favoriteBot',
-    page: 'terminal/bots/[botId]',
-    feature: 'Mark a bot as favorite',
-    status: 'available',
-  },
-  {
     id: 'bot-unsubscribe',
     method: 'DELETE',
     path: '/subscriptions/{botId}',

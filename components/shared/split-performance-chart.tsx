@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { AreaSeries, Time, createChart } from 'lightweight-charts';
 import { Calendar, ListFilter, Play, ShieldAlert, TrendingUp } from 'lucide-react';
 import {
@@ -65,11 +66,12 @@ function getStats(points: DataPoint[]) {
 }
 
 function ChartCard({ mode, data }: { mode: ChartMode; data: DataPoint[] }) {
+  const t = useTranslations('BotAnalytics.chart');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const stats = getStats(data);
   const isLive = mode === 'live';
-  const title = isLive ? 'Live Performance' : 'Backtest Performance';
-  const eyebrow = isLive ? 'Out-of-sample paper' : 'Simulation Environment';
+  const title = isLive ? t('livePerformance') : t('backtestPerformance');
+  const eyebrow = isLive ? t('outOfSamplePaper') : t('simulationEnvironment');
   const titleTone = isLive ? 'text-positive' : 'text-main';
   const eyebrowTone = isLive ? 'text-positive' : 'text-muted';
 
@@ -110,11 +112,11 @@ function ChartCard({ mode, data }: { mode: ChartMode; data: DataPoint[] }) {
             <ShieldAlert className="h-6 w-6 text-muted" />
           </div>
           <div className="space-y-1">
-            <h4 className="text-sm font-semibold text-main">{isLive ? 'Live Trading Inactive' : 'Backtest Data Inactive'}</h4>
+            <h4 className="text-sm font-semibold text-main">{isLive ? t('liveTradingInactive') : t('backtestDataInactive')}</h4>
             <p className="max-w-xs text-xs leading-relaxed text-muted">
               {isLive
-                ? 'Paper trading has not started yet. Subscribe and deploy this bot to initialize out-of-sample performance tracking.'
-                : 'Historical performance has not populated yet. Wait for backtest data to render the simulation track.'}
+                ? t('liveTradingInactiveMessage')
+                : t('backtestDataInactiveMessage')}
             </p>
           </div>
         </div>
@@ -144,18 +146,19 @@ function ChartCard({ mode, data }: { mode: ChartMode; data: DataPoint[] }) {
 
       <div className={`mt-4 flex items-center justify-between border-t border-border pt-3 text-xs font-mono ${isLive ? 'text-positive' : 'text-muted'}`}>
         <span className="flex items-center gap-1.5">
-          <Calendar className="h-3.5 w-3.5" /> {stats.diffDays} Days
+          <Calendar className="h-3.5 w-3.5" /> {t('days', { count: stats.diffDays })}
         </span>
         <span className="flex items-center gap-1.5">
-          <TrendingUp className="h-3.5 w-3.5" /> {stats.pointsCount} Points
+          <TrendingUp className="h-3.5 w-3.5" /> {t('points', { count: stats.pointsCount })}
         </span>
-        <span>{isLive ? 'Live Mode' : 'Historical Backtest'}</span>
+        <span>{isLive ? t('liveMode') : t('historicalBacktest')}</span>
       </div>
     </Card>
   );
 }
 
 export function SplitPerformanceChart({ data }: SplitPerformanceChartProps) {
+  const t = useTranslations('BotAnalytics.chart');
   const backtestData = data.filter((point) => point.phase !== 'OUT_OF_SAMPLE');
   const liveData = data.filter((point) => point.phase === 'OUT_OF_SAMPLE');
 
@@ -165,7 +168,7 @@ export function SplitPerformanceChart({ data }: SplitPerformanceChartProps) {
   if (!hasBacktestChart && !hasLiveChart) {
     return (
       <div className="panel flex h-80 items-center justify-center text-sm text-muted">
-        Insufficient performance data available
+        {t('insufficientData')}
       </div>
     );
   }

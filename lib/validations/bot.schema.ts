@@ -1,14 +1,18 @@
 import { z } from 'zod';
 
-export const registerBotSchema = z.object({
-  botName: z.string().min(3, 'Bot name must be at least 3 characters').max(50, 'Bot name is too long').trim(),
-  exchange: z.enum(['BINANCE', 'BYBIT', 'OKX']),
-  tradingPair: z
-    .string()
-    .min(1, 'Trading pair is required')
-    .regex(/^[A-Z0-9]+\/[A-Z0-9]+$/, 'Must be in format ASSET/QUOTE (e.g., BTC/USDT)')
-    .trim(),
-  description: z.string().max(200, 'Description is too long').optional(),
-});
+type MessageFn = (key: string, values?: Record<string, string | number>) => string;
 
-export type RegisterBotFormValues = z.infer<typeof registerBotSchema>;
+export function createRegisterBotSchema(t: MessageFn) {
+  return z.object({
+    botName: z.string().min(3, t('nameMin')).max(50, t('nameMax')).trim(),
+    exchange: z.enum(['BINANCE', 'BYBIT', 'OKX']),
+    tradingPair: z
+      .string()
+      .min(1, t('pairRequired'))
+      .regex(/^[A-Z0-9]+\/[A-Z0-9]+$/, t('pairFormat'))
+      .trim(),
+    description: z.string().max(200, t('descriptionMax')).optional(),
+  });
+}
+
+export type RegisterBotFormValues = z.infer<ReturnType<typeof createRegisterBotSchema>>;

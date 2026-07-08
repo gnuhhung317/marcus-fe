@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DeveloperBotSummary } from '@/lib/contracts/types';
 
 const statusColors: Record<DeveloperBotSummary['status'], { bg: string; text: string; dot: string }> = {
@@ -34,6 +35,7 @@ interface DeveloperBotListProps {
 }
 
 export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterClick }: DeveloperBotListProps) {
+  const t = useTranslations('DeveloperDashboard.botList');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBots = bots.filter(
@@ -48,14 +50,16 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
     <article className="flex flex-col rounded-xl border border-border bg-surface p-5">
       <div className="mb-4 flex items-center justify-between border-b border-border pb-4">
         <div>
-          <h2 className="text-sm font-bold tracking-wide uppercase text-main">Bot Registry</h2>
-          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">{bots.length} provisioned</p>
+          <h2 className="text-sm font-bold tracking-wide uppercase text-main">{t('title')}</h2>
+          <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
+            {t('provisioned', { count: bots.length })}
+          </p>
         </div>
         <button
           type="button"
           onClick={onRegisterClick}
           className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-border bg-surface-strong p-1.5 text-muted transition-colors hover:border-border/60 hover:text-main"
-          title="Register New Bot"
+          title={t('registerTooltip')}
         >
           <svg className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -73,7 +77,7 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filter registry..."
+          placeholder={t('searchPlaceholder')}
           className="w-full rounded-xl border border-border bg-surface-strong py-2 pl-9 pr-8 text-xs text-main placeholder:text-muted outline-none transition-all focus:border-border/60"
         />
         {searchQuery && (
@@ -101,20 +105,20 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className={`text-xs font-bold transition-colors ${activeBotId === undefined ? 'text-positive' : 'text-main'}`}>
-                Global Fleet Overview
+                {t('overviewTitle')}
               </p>
-              <p className="mt-1 font-mono text-[10px] text-muted">Aggregated telemetry & routed logs</p>
+              <p className="mt-1 font-mono text-[10px] text-muted">{t('overviewSubtitle')}</p>
             </div>
             <span className="flex-shrink-0 flex items-center gap-1.5 rounded-full border border-border/40 bg-surface-strong px-2 py-0.5 font-mono text-[9px] font-bold text-muted">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-muted" />
-              FLEET
+              {t('fleetBadge')}
             </span>
           </div>
         </button>
 
         {filteredBots.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border bg-surface-strong py-8 text-center">
-            <p className="text-xs text-muted">No bots matching &quot;{searchQuery}&quot;</p>
+            <p className="text-xs text-muted">{t('empty', { query: searchQuery })}</p>
           </div>
         ) : (
           filteredBots.map((bot) => {
@@ -156,9 +160,9 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
 
                   <div className="mt-3 flex items-center border-t border-border/40 pt-2.5 font-mono text-[9px]">
                     <div className="flex items-center gap-1.5 font-semibold uppercase text-main">
-                      <span>{bot.exchange ?? 'N/A'}</span>
+                      <span>{bot.exchange ?? t('na')}</span>
                       <span className="font-normal text-muted">•</span>
-                      <span>{bot.tradingPair ?? 'N/A'}</span>
+                      <span>{bot.tradingPair ?? t('na')}</span>
                     </div>
                   </div>
                 </div>

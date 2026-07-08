@@ -1,6 +1,6 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { BotGridCard } from './bot-grid-card';
 import { DeveloperBotStatus, DeveloperBotSummary } from '@/lib/contracts/types';
 import { FleetStatsGrid } from './fleet-stats-grid';
@@ -15,8 +15,9 @@ interface FleetGridViewProps {
 }
 
 export function FleetGridView({ bots, onBotStatusChange, onSelect }: FleetGridViewProps) {
+  const t = useTranslations('DeveloperDashboard.fleetGrid');
   const { getFilter, resetFilters } = useUrlFilters();
-  
+
   const searchQuery = getFilter('q', '');
   const selectedStatus = getFilter('status', 'ALL');
   const selectedExchange = getFilter('venue', 'ALL');
@@ -52,8 +53,8 @@ export function FleetGridView({ bots, onBotStatusChange, onSelect }: FleetGridVi
 
       <div className="space-y-5">
         <div className="flex items-center justify-between border-b border-border pb-3">
-          <h2 className="text-sm font-bold uppercase tracking-wider text-muted">Router Fleet Overview</h2>
-          <span className="text-[10px] text-muted font-mono">Select a card to view console telemetry & credentials</span>
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted">{t('title')}</h2>
+          <span className="text-[10px] text-muted font-mono">{t('subtitle')}</span>
         </div>
 
         {filteredBots.length === 0 ? (

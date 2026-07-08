@@ -1,9 +1,10 @@
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { AdminPageHeader } from '@/components/terminal/admin/admin-page-header';
 import { AdminBotsClient } from '@/components/terminal/admin/admin-bots-client';
 import { listAdminBots } from '@/lib/services/admin.service';
 import { normalizeAdminBotsQueryParams, type AdminBotsSearchParams } from '@/lib/validations/admin.schema';
+import { redirect } from '@/lib/navigation';
 
 interface AdminBotsPageProps {
   searchParams?: AdminBotsSearchParams;
@@ -12,9 +13,11 @@ interface AdminBotsPageProps {
 export default async function AdminBotsPage({ searchParams }: AdminBotsPageProps) {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
+  const locale = await getLocale();
+  const t = await getTranslations('Admin.Bots.page');
 
   if (role !== 'ADMIN') {
-    redirect('/terminal');
+    redirect({ href: '/terminal', locale });
   }
 
   const filters = normalizeAdminBotsQueryParams(searchParams);
@@ -22,7 +25,7 @@ export default async function AdminBotsPage({ searchParams }: AdminBotsPageProps
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader title="Bots" description="Inspect and control all bots across the platform." />
+      <AdminPageHeader title={t('title')} description={t('description')} />
       <AdminBotsClient initialData={bots} filters={filters} />
     </div>
   );

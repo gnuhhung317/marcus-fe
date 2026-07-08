@@ -1,16 +1,16 @@
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/shared/status-dot';
-import { BotSignalItem } from '@/lib/contracts/types';
+import { BotSignalItem, ViewerSubscription } from '@/lib/contracts/types';
 import { SubscribeBotPanel } from '@/components/terminal/marketplace/subscribe-bot-panel';
 
 interface MarketplaceBotSidebarProps {
   botId: string;
   botStatus?: string;
+  initialSubscription?: ViewerSubscription | null;
   signals: BotSignalItem[];
 }
-
-const setupSteps = ['Inspect Metadata', 'Obtain Access', 'Route Executor Signals'] as const;
 
 function getSignalDotStatus(signal: BotSignalItem) {
   const statusNormalized = (signal.status ?? 'UNKNOWN').toUpperCase();
@@ -25,16 +25,19 @@ function getSignalDotStatus(signal: BotSignalItem) {
   return 'offline' as const;
 }
 
-export function MarketplaceBotSidebar({ botId, botStatus, signals }: MarketplaceBotSidebarProps) {
+export function MarketplaceBotSidebar({ botId, botStatus, initialSubscription, signals }: MarketplaceBotSidebarProps) {
+  const t = useTranslations('Marketplace.sidebar');
+  const setupSteps = [t('steps.1'), t('steps.2'), t('steps.3')];
+
   return (
     <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
       <section className="space-y-3">
-        <p className="text-xs uppercase tracking-[0.16em] text-muted">Deployment</p>
-        <SubscribeBotPanel botId={botId} botStatus={botStatus} />
+        <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('deployment')}</p>
+        <SubscribeBotPanel botId={botId} botStatus={botStatus} initialSubscription={initialSubscription} />
       </section>
 
       <Card variant="glass-strong" className="p-6 shadow-[var(--shadow-soft)]">
-        <h2 className="text-lg font-semibold text-main">Runtime Setup Guide</h2>
+        <h2 className="text-lg font-semibold text-main">{t('setupTitle')}</h2>
         <ol className="mt-4 space-y-4">
           {setupSteps.map((step, index) => (
             <li key={step} className="flex gap-3">
@@ -52,8 +55,8 @@ export function MarketplaceBotSidebar({ botId, botStatus, signals }: Marketplace
       <Card variant="glass-strong" className="p-6 shadow-[var(--shadow-soft)]">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-muted">Signals</p>
-            <h2 className="mt-2 text-xl font-semibold text-main">Recent Signals</h2>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('signals')}</p>
+            <h2 className="mt-2 text-xl font-semibold text-main">{t('recentSignals')}</h2>
           </div>
           <Badge variant="outline" className="font-mono">
             {signals.length}
@@ -98,7 +101,7 @@ export function MarketplaceBotSidebar({ botId, botStatus, signals }: Marketplace
           </div>
         ) : (
           <div className="mt-4 rounded-xl border border-dashed border-border/40 bg-surface/40 p-5 text-center text-sm text-muted">
-            Recent marketplace signals are not available for this bot yet.
+            {t('empty')}
           </div>
         )}
       </Card>

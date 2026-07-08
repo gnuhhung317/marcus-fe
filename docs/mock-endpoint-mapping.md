@@ -1,16 +1,17 @@
 # Endpoint Mapping (API-Only)
 
 ## Overview
-This report documents the current relationship between the real backend API endpoints and frontend contract client mappings.
+This report documents the current relationship between backend endpoints and the frontend contract layer.
 
-The frontend now follows an API-only model:
-- Real API endpoints through `requestJson()` / `requestContractJson()`.
-- No runtime mock fallback payloads when endpoints fail.
+The frontend follows an API-only runtime policy:
+- Real API calls go through `requestJson()` and `requestContractJson()`.
+- There is no runtime mock payload injection when an endpoint fails.
+- Some public marketing surfaces still use static presentation copy by design, even when related backend routes exist.
 
 The endpoint registry is defined in `lib/contracts/endpoints.ts`.
 
 ## Runtime data policy
-Runtime UI data is sourced from API responses only. On endpoint failure, the contract layer now surfaces errors or empty collections rather than injecting mock payloads.
+Runtime UI data is sourced from API responses only. On endpoint failure, the contract layer surfaces errors or empty collections rather than silently substituting fake payloads.
 
 ## Endpoint registry
 `lib/contracts/endpoints.ts` defines the canonical frontend API contract list.
@@ -33,7 +34,6 @@ The following routes are marked `status: 'available'`:
 - `GET /leaderboard/bots`
 - `GET /leaderboard/featured`
 - `GET /bots/my-bots`
-- `GET /bots/{botId}`
 - `GET /bots/{botId}/integration-health`
 - `GET /subscriptions/{botId}/active`
 - `PATCH /bots/{botId}/status`
@@ -43,34 +43,37 @@ The following routes are marked `status: 'available'`:
 - `GET /system/execution-logs`
 
 ### Gap routes (no runtime fallback)
-The following routes are marked `status: 'gap'` and require backend availability for data:
+The following routes are still tracked as `status: 'gap'` in the frontend registry and should not be treated as production-grade content sources yet:
 - `GET /academy/courses`
 - `GET /academy/metrics`
 - `GET /content/blog/posts`
 - `GET /content/research/reports`
 - `GET /market/overview`
 
+Important note for Academy and content:
+- `/academy/courses` and `/academy/metrics` currently resolve to backend responses backed by static editorial placeholders.
+- They are not live academy operations data and should not be presented on the public marketing route as verified production metrics.
+- `/content/blog/posts` and `/content/research/reports` are still gap content routes and should not be presented on public marketing routes as published editorial or research material.
+
 ## Page-by-page mapping
 
 ### Marketing pages
-The marketing pages are mostly mock-driven:
-- `app/(marketing)/page.tsx` — home content is powered by `marketTickers` and `principles`.
-- `app/(marketing)/training/page.tsx` — training content is powered by `trainingCourses`.
-- `app/(marketing)/market/page.tsx` — market leaderboard uses `leaderboardRows`.
-- `app/(marketing)/blog/page.tsx` — blog feed uses `blogPosts`.
-- `app/(marketing)/research/page.tsx` — research page uses `researchReports`.
-
-These pages are currently not fully wired to the corresponding `gap` endpoints.
+The marketing pages mix API-backed content, static presentation content, and prelaunch placeholders:
+- `app/(marketing)/page.tsx` uses real market overview data alongside static marketing copy.
+- `app/(marketing)/training/page.tsx` is intentionally a prelaunch page with static copy and real CTAs; it does not consume academy placeholder endpoints on the public route.
+- `app/(marketing)/market/page.tsx` uses contract-backed leaderboard data.
+- `app/(marketing)/blog/page.tsx` is intentionally a prelaunch page with static copy and real CTAs; it does not consume gap blog content endpoints on the public route.
+- `app/(marketing)/research/page.tsx` is intentionally a prelaunch page with static copy and real CTAs; it does not consume gap research content endpoints on the public route.
 
 ### Terminal dashboard and data pages
-The terminal app uses real backend endpoints with fallback mock data.
+The terminal app uses real backend endpoints with limited, explicitly coded fallback behavior in some surfaces.
 
 #### Dashboard
 - Real endpoints:
   - `GET /dashboard/overview`
   - `GET /dashboard/exchange-allocation`
   - `GET /bots/{botId}/trades`
-- Mock fallback:
+- UI fallback behavior:
   - `terminalKpis`
   - `botTrades`
   - `defaultAllocations` defined in page code
@@ -81,7 +84,7 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `GET /bots/{botId}`
   - `POST /subscriptions/{botId}`
   - `DELETE /subscriptions/{botId}`
-- Mock fallback:
+- UI fallback behavior:
   - `marketplaceBots` for bot feed and detail fallback
   - subscription stub data when endpoint is unavailable
 
@@ -90,7 +93,7 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `GET /users/me`
   - `GET /users/me/api-keys`
   - `GET /users/me/login-activities`
-- Mock fallback:
+- UI fallback behavior:
   - `profileApiKeys`
   - `defaultLoginActivities`
 
@@ -100,7 +103,7 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `GET /bots/{botId}/analytics/metrics`
   - `GET /bots/{botId}/analytics/performance-series`
   - `GET /bots/{botId}/trades`
-- Mock fallback:
+- UI fallback behavior:
   - `botTrades`
   - fallback series and metrics when endpoint payload is missing or unavailable
 
@@ -109,8 +112,8 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `GET /system/connectivity`
   - `GET /signals`
   - `GET /system/execution-logs`
-- Mock fallback:
-  - when these endpoints fail, stubbed operational state is rendered instead
+- UI fallback behavior:
+  - stubbed operational state when those endpoints fail
 
 #### Developer dashboard
 - Real endpoints:
@@ -123,24 +126,21 @@ The terminal app uses real backend endpoints with fallback mock data.
   - `PATCH /bots/{botId}/metadata`
   - `DELETE /bots/{botId}`
 - Simulation support:
-  - Signals with `metadata.simulation=true` are flagged `isSimulated` in response
-  - Simulated signals bypass Kafka/WebSocket routing; visible only in developer views
+  - Signals with `metadata.simulation=true` are flagged `isSimulated` in response.
+  - Simulated signals bypass Kafka/WebSocket routing and remain visible only in developer views.
 
 ## Notes on auth
-Auth routing has been updated to use internal proxy routes:
+Auth routing uses internal proxy routes:
 - `app/api/auth/login/route.ts`
 - `app/api/auth/register/route.ts`
 
-These routes call the real backend auth endpoints and set cookies, so auth is now separate from mock fallback content.
+These routes call the real backend auth endpoints and set cookies, so auth is separate from presentation-layer placeholder content.
 
 ## Recommendation
-1. Prioritize replacing remaining `gap` endpoints with available backend implementations.
-2. Keep contract error/empty-state UX consistent for endpoint outages.
-3. Update `lib/contracts/endpoints.ts` status from `gap` to `available` once each API is validated.
-4. Add smoke tests for all contract routes to catch drift early.
+1. Prioritize replacing remaining `gap` endpoints with validated backend implementations or clearly marked prelaunch content.
+2. Keep contract error and empty-state UX consistent for endpoint outages.
+3. Update `lib/contracts/endpoints.ts` status from `gap` to `available` only after each API is validated as a real production data source.
+4. Add smoke tests for key contract routes to catch drift early.
 
 ## Conclusion
-The frontend contract layer now operates in API-only mode:
-- real endpoints for terminal, marketing, and auth paths
-- no runtime mock fallback payload injection
-- explicit gap tracking in `lib/contracts/endpoints.ts`
+The frontend contract layer operates in API-only mode, but public marketing pages may still choose static or prelaunch presentation when the backend source is not yet production-ready.

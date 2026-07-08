@@ -1,0 +1,887 @@
+{
+  "Terminal": {
+    "nav": {
+      "trade": "Giao dịch",
+      "build": "Xây dựng",
+      "account": "Tài khoản",
+      "admin": "Quản trị",
+      "decision": "Quyết định",
+      "monitoring": "Giám sát",
+      "market": "Thị trường",
+      "leaderboard": "Bảng xếp hạng",
+      "deploy": "Triển khai",
+      "bots": "Bots",
+      "console": "Console",
+      "profile": "Hồ sơ",
+      "overview": "Tổng quan",
+      "users": "Người dùng",
+      "system": "Hệ thống"
+    },
+    "loading": {
+      "title": "Đang tải dữ liệu terminal",
+      "message": "Đang lấy các hợp đồng và ảnh chụp thực thi mới nhất."
+    },
+    "error": {
+      "title": "Tải terminal thất bại",
+      "message": "Một yêu cầu hợp đồng đã thất bại trong lúc chuẩn bị màn hình này.",
+      "action": "Tải lại"
+    },
+    "sidebar": {
+      "navigation": "Điều hướng",
+      "title": "Điều hướng",
+      "expand": "Mở rộng thanh bên",
+      "collapse": "Thu gọn thanh bên"
+    }
+  },
+  "TerminalMarketplace": {
+    "eyebrow": "Marketplace",
+    "title": "Chợ bot",
+    "description": "So sánh các bot chiến lược đang hoạt động đã xác minh, xem phân tích cấp bot và kiểm tra lộ trình triển khai trước khi đăng ký.",
+    "results": "Đang hiển thị {start}-{end} trên tổng {total} bot đang hoạt động / {sort}",
+    "page": "Trang {page}",
+    "retry": "Thử lại",
+    "resetFilters": "Đặt lại bộ lọc",
+    "error": {
+      "title": "Không thể truy cập marketplace",
+      "message": "Hiện không thể tải bot marketplace."
+    },
+    "empty": {
+      "title": "Không có bot nào khớp với bộ lọc hiện tại",
+      "message": "Hãy thử đổi từ khóa tìm kiếm, thứ tự sắp xếp hoặc kích thước trang."
+    },
+    "sort": {
+      "lowestDrawdown": "Sụt giảm thấp nhất",
+      "mostSubscribers": "Nhiều người đăng ký nhất",
+      "highestCagr": "CAGR cao nhất"
+    },
+    "detail": {
+      "analytics": "Phân tích",
+      "title": "Phân rã hiệu suất",
+      "summarySource": {
+        "dryRun": "Live / Dry Run",
+        "historical": "Lịch sử",
+        "signalBasedFallback": "Fallback từ tín hiệu"
+      },
+      "error": {
+        "title": "Không thể xem hồ sơ bot",
+        "message": "Hiện không thể tải chi tiết bot."
+      },
+      "back": "Quay lại Marketplace"
+    }
+  },
+  "Marketplace": {
+    "filter": {
+      "search": "Tìm kiếm",
+      "placeholder": "Tên bot, ID hoặc tag",
+      "sort": "Sắp xếp",
+      "sortOptions": {
+        "cagr": "CAGR cao nhất",
+        "return30d": "Lợi nhuận cao nhất",
+        "drawdown": "Sụt giảm thấp nhất",
+        "subscribers": "Nhiều người đăng ký nhất"
+      },
+      "pageSize": "Số lượng mỗi trang",
+      "action": "Hành động",
+      "apply": "Áp dụng bộ lọc"
+    },
+    "card": {
+      "cagr": "CAGR",
+      "winRate": "Tỷ lệ thắng",
+      "drawdown": "Sụt giảm",
+      "na": "Không có",
+      "openBot": "Mở bot"
+    },
+    "detailHero": {
+      "eyebrow": "Hồ sơ bot",
+      "status": "Trạng thái",
+      "exchange": "Sàn",
+      "pair": "Cặp",
+      "botId": "Bot ID",
+      "na": "Không có",
+      "back": "Quay lại Marketplace"
+    },
+    "subscribe": {
+      "title": "Đăng ký bot",
+      "blocked": "Bot này hiện đang ở trạng thái {status} nên không thể nhận đăng ký mới.",
+      "riskAcknowledgement": "Tôi hiểu chiến lược này có thể thua lỗ và hiệu suất quá khứ không đảm bảo lợi nhuận tương lai.",
+      "status": "Trạng thái",
+      "botId": "Bot ID",
+      "runtimeToken": "Runtime token",
+      "requesting": "Đang yêu cầu runtime token từ backend...",
+      "empty": "Đăng ký để hiển thị runtime token tại đây.",
+      "subscribe": "Đăng ký bot",
+      "unsubscribe": "Hủy đăng ký",
+      "confirmUnsubscribe": "Hủy đăng ký bot này ngay bây giờ? Bạn có thể đăng ký lại sau.",
+      "errors": {
+        "subscribe": "Không thể đăng ký ngay lúc này. Vui lòng thử lại.",
+        "unsubscribe": "Không thể hủy đăng ký ngay lúc này. Vui lòng thử lại.",
+        "notAvailable": "Bot này hiện không sẵn sàng để đăng ký.",
+        "confirmRisk": "Vui lòng xác nhận cảnh báo rủi ro trước khi đăng ký."
+      },
+      "toast": {
+        "subscribeTitle": "Đã yêu cầu đăng ký",
+        "subscribeMessage": "Runtime token hiện đã khả dụng.",
+        "subscribeFailedTitle": "Đăng ký thất bại",
+        "subscribeFailedMessage": "Vui lòng thử lại sau vài giây.",
+        "unsubscribeTitle": "Đã hủy đăng ký",
+        "unsubscribeMessage": "Đăng ký bot đã được dừng.",
+        "unsubscribeFailedTitle": "Hủy đăng ký thất bại",
+        "unsubscribeFailedMessage": "Đăng ký hiện tại của bạn vẫn không đổi."
+      }
+    },
+    "snapshot": {
+      "eyebrow": "Tổng quan",
+      "title": "Snapshot runtime",
+      "description": "Các chỉ số tổng quan được căn theo nguồn dữ liệu đang xem từ marketplace hoặc leaderboard.",
+      "annualReturn": "Lợi nhuận năm",
+      "maxDrawdown": "Sụt giảm tối đa",
+      "sharpeRatio": "Tỷ lệ Sharpe",
+      "winRate": "Tỷ lệ thắng",
+      "sampleDays": "Số ngày mẫu",
+      "closedTrades": "Giao dịch đã đóng",
+      "sources": {
+        "dryRun": "Live / Dry Run",
+        "historical": "Lịch sử",
+        "signalBasedFallback": "Fallback từ tín hiệu",
+        "unavailable": "Chưa rõ nguồn dữ liệu"
+      }
+    },
+    "sidebar": {
+      "deployment": "Triển khai",
+      "setupTitle": "Hướng dẫn thiết lập runtime",
+      "steps": {
+        "1": "Kiểm tra metadata",
+        "2": "Lấy quyền truy cập",
+        "3": "Định tuyến tín hiệu executor"
+      },
+      "signals": "Tín hiệu",
+      "recentSignals": "Tín hiệu gần đây",
+      "empty": "Hiện chưa có tín hiệu marketplace gần đây cho bot này."
+    }
+  },
+  "CreateBot": {
+    "header": {
+      "eyebrow": "Cấp phát bot",
+      "title": "Tạo bot và cấp secret",
+      "description": "Đăng ký metadata bot, nhận credentials một lần, sau đó triển khai runtime và xác thực luồng tín hiệu bằng secret được tạo."
+    },
+    "flow": {
+      "title": "Quy trình cấp phát",
+      "step1": "01. Đăng ký bot qua /bots",
+      "step2": "02. Nhận apiKey + rawSecret (chỉ một lần)",
+      "step3": "03. Triển khai runtime và gửi tín hiệu bằng secret",
+      "warning": "Không bao giờ để lộ rawSecret trong ứng dụng client hoặc log trình duyệt."
+    },
+    "credentialVault": {
+      "title": "Kho credentials (hiển thị một lần)",
+      "botId": "botId",
+      "apiKey": "apiKey",
+      "rawSecret": "rawSecret",
+      "warning": "Hãy lưu ngay. Secret này sẽ không hiển thị lại.",
+      "empty": "Tạo bot để sinh credentials dùng một lần."
+    },
+    "form": {
+      "title": "Đăng ký bot",
+      "description": "Các trường bắt buộc ánh xạ trực tiếp tới RegisterBotRequest.",
+      "botName": "Tên bot",
+      "exchange": "Sàn giao dịch",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "tradingPair": "Cặp giao dịch",
+      "tradingPairPlaceholder": "ví dụ: BTC/USDT",
+      "submit": "Tạo bot",
+      "submitting": "Đang tạo secret..."
+    },
+    "workspace": {
+      "errors": {
+        "generateFailed": "Không thể tạo credentials bot. Vui lòng thử lại."
+      },
+      "warningTitle": "Cảnh báo: Secret dùng một lần",
+      "warningBody": "Vì lý do bảo mật, Signing Secret sẽ không thể truy cập sau khi bạn rời khỏi trang này. Hãy sao chép và lưu giữ an toàn ngay lập tức.",
+      "done": "Xong & xem Bot Console"
+    }
+  },
+  "DeveloperDashboard": {
+    "title": "Bảng điều khiển nhà phát triển",
+    "view": {
+      "grid": "Dạng lưới",
+      "console": "Dạng console"
+    },
+    "registerBotButton": "Đăng ký bot",
+    "loadingConsole": "Đang tải telemetry console bot...",
+    "consoleError": "Không thể tải dữ liệu bảng điều khiển bot.",
+    "fleetTitle": "Tổng quan toàn đội bot",
+    "fleetStatus": "Trạng thái đội bot: Bình thường",
+    "emptyFleetState": {
+      "message": "Không có router nào khớp với bộ lọc tìm kiếm hiện tại.",
+      "reset": "Đặt lại toàn bộ bộ lọc"
+    },
+    "subscriptionTable": {
+      "title": "Đăng ký",
+      "activeCount": "{count} đang hoạt động",
+      "bot": "Bot",
+      "subscriber": "Người đăng ký",
+      "status": "Trạng thái",
+      "subscriberLabel": "Người đăng ký #{index}"
+    },
+    "subscriptionPage": {
+      "eyebrow": "Bảng điều khiển nhà phát triển",
+      "title": "Đăng ký đang hoạt động",
+      "description": "Xem các phiên executor đã kết nối cho bot này. Danh sách chỉ phản ánh quyền truy cập đăng ký trực tiếp.",
+      "emptyTitle": "Chưa có đăng ký đang hoạt động",
+      "emptyMessage": "Bot này hiện chưa có phiên executor nào được kết nối.",
+      "emptyAction": "Mở bảng điều khiển nhà phát triển",
+      "errorTitle": "Không thể tải đăng ký đang hoạt động",
+      "errorMessage": "Hiện không thể tải các đăng ký đang hoạt động.",
+      "retry": "Thử lại"
+    },
+    "botList": {
+      "title": "Danh sách bot",
+      "provisioned": "{count} bot đã cấp phát",
+      "registerTooltip": "Đăng ký bot mới",
+      "searchPlaceholder": "Lọc danh sách...",
+      "overviewTitle": "Tổng quan toàn đội bot",
+      "overviewSubtitle": "Telemetry tổng hợp & log đã được tuyến",
+      "fleetBadge": "ĐỘI BOT",
+      "empty": "Không có bot nào khớp với \"{query}\"",
+      "na": "Không có"
+    },
+    "botDetail": {
+      "header": {
+        "back": "Về đội hình",
+        "venuePair": "Sàn • Cặp",
+        "developerId": "ID nhà phát triển",
+        "lastUpdated": "Cập nhật lần cuối",
+        "edit": "Sửa bot",
+        "delete": "Xóa bot",
+        "na": "N/A"
+      },
+      "tabs": {
+        "overview": "Tổng quan",
+        "analytics": "Phân tích",
+        "credentials": "Credentials",
+        "integration": "Tích hợp",
+        "signals": "Tín hiệu",
+        "subscribers": "Người đăng ký",
+        "audit": "Nhật ký kiểm toán",
+        "warningTitle": "Cảnh báo",
+        "pausedMessage": "Bot này hiện đang TẠM DỪNG. Các subscription client đang kết nối vẫn giữ nguyên, nhưng tín hiệu thực thi đầu ra sẽ bị từ chối cho đến khi trạng thái chạy được khôi phục."
+      },
+      "credentials": {
+        "title": "Thông tin xác thực API"
+      },
+      "overview": {
+        "summary": "Tổng quan telemetry",
+        "status": "Trạng thái",
+        "subscribers": "Người đăng ký",
+        "connected": "Đã kết nối",
+        "active": "Đang hoạt động",
+        "performance": "Chỉ số hiệu năng",
+        "annualReturn": "Lợi nhuận năm",
+        "maxDrawdown": "Sụt giảm tối đa",
+        "sharpeRatio": "Tỷ lệ Sharpe",
+        "winRate": "Tỷ lệ thắng",
+        "riskProfile": "Hồ sơ rủi ro",
+        "riskExposure": "Mức rủi ro dựa trên giới hạn sụt giảm",
+        "riskBadge": "{score} RỦI RO ({value}/10)"
+      },
+      "subscribers": {
+        "title": "Người đăng ký đang hoạt động",
+        "sessions": "{count} phiên",
+        "empty": "Chưa có phiên đăng ký đang hoạt động.",
+        "subscribers": "Người đăng ký",
+        "connected": "Đã kết nối",
+        "active": "Đang hoạt động",
+        "subscriber": "Người đăng ký",
+        "status": "Trạng thái",
+        "subscriberLabel": "Người đăng ký #{index}"
+      },
+      "deleteModal": {
+        "dangerZone": "Khu vực nguy hiểm",
+        "title": "Xóa bot webhook",
+        "description": "Xóa vĩnh viễn bot này và thu hồi quyền truy cập của các subscriber đã kết nối.",
+        "confirmPrompt": "Bạn có chắc chắn muốn xóa vĩnh viễn {botName} không? Hành động này không thể hoàn tác.",
+        "activeSubscribersBadge": "Subscriber đang hoạt động",
+        "activeSubscribersMessage": "Bot này có {count} kết nối subscriber đang hoạt động. Backend sẽ từ chối xóa khi vẫn còn subscription đang hoạt động.",
+        "typeNamePrompt": "Nhập tên bot để xác nhận:",
+        "cancel": "Hủy",
+        "confirm": "Xóa vĩnh viễn"
+      },
+      "fleetGrid": {
+        "title": "Tổng quan đội bot",
+        "subtitle": "Chọn một thẻ để xem telemetry console và credentials"
+      },
+      "fleetFilters": {
+        "searchPlaceholder": "Tìm theo tên bot hoặc ID...",
+        "status": {
+          "all": "Tất cả trạng thái",
+          "active": "Chỉ hoạt động",
+          "paused": "Chỉ tạm dừng",
+          "down": "Chỉ lỗi",
+          "deleted": "Chỉ đã xóa"
+        },
+        "venues": {
+          "all": "Tất cả sàn"
+        },
+        "clear": "Xóa bộ lọc"
+      },
+      "fleetStats": {
+        "fleetSize": {
+          "label": "Kích thước đội",
+          "description": "Phiên bản đã cấp phát"
+        },
+        "active": {
+          "label": "Đang hoạt động",
+          "description": "Đang phát trực tiếp"
+        },
+        "paused": {
+          "label": "Tạm dừng",
+          "description": "Hàng đợi chờ"
+        },
+        "down": {
+          "label": "Lỗi",
+          "alert": "Phát hiện sự cố",
+          "ok": "Hệ thống bình thường"
+        }
+      },
+      "signalStream": {
+        "empty": "Chưa có tín hiệu nào cho bot này.",
+        "time": "Thời gian",
+        "action": "Hành động",
+        "symbol": "Symbol",
+        "price": "Giá",
+        "size": "Khối lượng",
+        "sl": "SL",
+        "tp": "TP",
+        "status": "Trạng thái"
+      },
+      "signalDetail": {
+        "title": "Chi tiết tín hiệu",
+        "closeAria": "Đóng ngăn chi tiết tín hiệu",
+        "close": "Đóng",
+        "action": "Hành động",
+        "symbol": "Symbol",
+        "status": "Trạng thái",
+        "generated": "Đã tạo",
+        "leverage": "Đòn bẩy",
+        "marketType": "Loại thị trường",
+        "reduceOnly": "Chỉ giảm",
+        "yes": "Có",
+        "no": "Không",
+        "size": "Khối lượng",
+        "tp": "TP",
+        "sl": "SL",
+        "rawPayload": "Payload thô"
+      },
+      "integrationHealth": {
+        "title": "Sức khỏe tích hợp",
+        "empty": "Hiện chưa có telemetry sức khỏe từ backend.",
+        "lastChecked": "Kiểm tra lần cuối {value}",
+        "lastSignal": "Tín hiệu cuối",
+        "message": "Thông điệp"
+      },
+      "botGridCard": {
+        "closeMenu": "Đóng menu trạng thái",
+        "updating": "Đang cập nhật...",
+        "noStatusAction": "Không có thao tác trạng thái",
+        "performance": "Hiệu năng",
+        "runtimeKey": "Khóa runtime",
+        "console": "Console"
+      },
+      "botSignalsTab": {
+        "title": "Luồng tín hiệu",
+        "count": "{count} tín hiệu"
+      },
+      "botIntegrationTab": {
+        "title": "Sức khỏe tích hợp",
+        "empty": "Bot này hiện chưa có thông tin sức khỏe tích hợp."
+      },
+      "credentialPanel": {
+        "title": "Credentials và bắt đầu nhanh",
+        "subtitle": "Truy cập REST API",
+        "botId": "Bot ID",
+        "apiKey": "API Key",
+        "examplePayload": "Ví dụ payload HTTP",
+        "notAvailable": "Không khả dụng"
+      }
+    },
+    "registerBot": {
+      "eyebrow": "Cổng tín hiệu",
+      "title": "Đăng ký bot webhook mới",
+      "credentialsGenerated": "Đã tạo credentials",
+      "cancel": "Hủy",
+      "submit": "Cấp phát credentials",
+      "provisioning": "Đang cấp phát...",
+      "done": "Xong & kết nối bot",
+      "warningTitle": "Cảnh báo: Secret dùng một lần",
+      "warningBody": "Vì lý do bảo mật, Signing Secret sẽ không thể truy cập sau khi cửa sổ này đóng. Hãy sao chép và lưu giữ an toàn ngay lập tức.",
+      "botId": "Bot ID",
+      "apiKey": "Public API Key",
+      "rawSecret": "Signing Secret (rawSecret)",
+      "copied": "Đã sao chép!",
+      "copy": "Sao chép",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "form": {
+        "botName": "Tên bot",
+        "botNamePlaceholder": "ví dụ: BTC_BREAKOUT_BOT",
+        "exchange": "Sàn giao dịch",
+        "tradingPair": "Cặp giao dịch",
+        "tradingPairPlaceholder": "BTC/USDT"
+      },
+      "errors": {
+        "generateFailed": "Không thể tạo credentials bot. Vui lòng thử lại."
+      }
+    },
+    "deploySnippet": {
+      "title": "Triển khai đoạn tích hợp"
+    },
+    "editBot": {
+      "eyebrow": "Quản lý cấu hình",
+      "title": "Chỉnh sửa cấu hình bot",
+      "description": "Cập nhật metadata của bot hiển thị cho operator và luồng giao dịch.",
+      "cancel": "Hủy",
+      "submit": "Lưu thay đổi",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "form": {
+        "botName": "Tên bot",
+        "botNamePlaceholder": "ví dụ: BTC_BREAKOUT_BOT",
+        "description": "Mô tả",
+        "descriptionPlaceholder": "ví dụ: Bot grid thuật toán chạy cảnh báo webhook Python tùy chỉnh.",
+        "exchange": "Sàn giao dịch",
+        "tradingPair": "Cặp giao dịch",
+        "tradingPairPlaceholder": "BTC/USDT"
+      }
+    },
+    "onboarding": {
+      "title": "Chưa có bot nào được cấp phát",
+      "description": "Kết nối hệ thống giao dịch tự động, script hoặc cảnh báo TradingView Pine Script vào bộ định tuyến tín hiệu Marcus Trading. Tạo bot mới để nhận API credentials.",
+      "step1": {
+        "title": "Metadata bot",
+        "description": "Chỉ định sàn giao dịch (Binance, Bybit, v.v.) và cặp thực thi tùy chỉnh."
+      },
+      "step2": {
+        "title": "Cấp secret",
+        "description": "Nhận API key và display secret được ký mã hóa."
+      },
+      "step3": {
+        "title": "Gửi tín hiệu",
+        "description": "Cấu hình chiến lược thuật toán để stream tín hiệu JSON tới webhook của chúng tôi."
+      },
+      "submit": "Đăng ký bot đầu tiên"
+    }
+  },
+  "Monitoring": {
+    "page": {
+      "loading": {
+        "title": "Đang tải màn hình giám sát",
+        "message": "Đồng bộ telemetry danh mục, log thực thi và phân bổ sàn.",
+        "equity": "Đường cong vốn",
+        "equityMessage": "Đang chuẩn bị chuỗi dữ liệu lịch sử.",
+        "feed": "Luồng thực thi",
+        "feedMessage": "Đang lấy các sự kiện runtime mới nhất.",
+        "view": "Màn hình giám sát",
+        "viewMessage": "Đang chuẩn bị trạng thái dashboard."
+      },
+      "error": {
+        "title": "Giám sát không khả dụng",
+        "refreshTitle": "Làm mới giám sát thất bại"
+      },
+      "retry": "Thử lại",
+      "retryAgain": "Thử lại"
+    },
+    "header": {
+      "title": "Bảng điều khiển giám sát",
+      "phase": "Giai đoạn 2",
+      "eyebrow": "Giám sát",
+      "subheading": "Telemetry danh mục + khả năng quan sát thực thi",
+      "description": "Hiệu suất vốn, phân bổ sàn, log thực thi và luồng tín hiệu trong một giao diện thân thiện với operator.",
+      "refresh": "Làm mới",
+      "status": {
+        "connectivity": "Kết nối",
+        "checking": "Đang kiểm tra",
+        "unavailable": "Không khả dụng"
+      },
+      "kpis": {
+        "errorTitle": "Không thể tải KPI giám sát",
+        "errorMessage": "Không thể tải KPI giám sát",
+        "loadingTitle": "Đang tải KPI",
+        "loadingMessage": "Đang lấy số liệu giám sát và sức khỏe hệ thống."
+      }
+    },
+    "performance": {
+      "neverSynced": "Chưa đồng bộ",
+      "updated": "Cập nhật:",
+      "live": "Trực tiếp",
+      "syncedMinutes": "Đã đồng bộ {value} phút trước",
+      "syncedHours": "Đã đồng bộ {value} giờ trước",
+      "syncedDays": "Đã đồng bộ {value} ngày trước",
+      "equityCurve": "Đường cong vốn",
+      "currentBalance": "Số dư hiện tại",
+      "totalChange": "Tổng thay đổi",
+      "peakBalance": "Mức đỉnh",
+      "drawdown": "Sụt giảm",
+      "exchangeAllocation": "Phân bổ sàn"
+    },
+    "trades": {
+      "title": "Các lệnh gần đây",
+      "fills": "{count} khớp lệnh",
+      "empty": {
+        "title": "Chưa ghi nhận khớp lệnh",
+        "message": "Sự kiện thực thi chiến lược sẽ xuất hiện ở đây sau khi vị thế được khởi tạo."
+      },
+      "table": {
+        "instrument": "Công cụ",
+        "side": "Chiều",
+        "size": "Khối lượng",
+        "price": "Giá",
+        "pnl": "PnL",
+        "time": "Thời gian"
+      }
+    },
+    "logs": {
+      "executionLogs": "Lịch sử thực thi",
+      "loading": "Đang tải lịch sử thực thi và tín hiệu gần đây.",
+      "events": "{count} sự kiện",
+      "logSearch": "Tìm log theo nguồn hoặc nội dung...",
+      "noLogs": "Không có log thực thi nào khớp bộ lọc hiện tại.",
+      "signalStream": "Tín hiệu gần đây",
+      "signalSearch": "Lọc theo symbol, action hoặc trạng thái...",
+      "noSignals": "Không có tín hiệu gần đây nào khớp tiêu chí.",
+      "levels": {
+        "all": "Tất cả",
+        "error": "Lỗi",
+        "warn": "Cảnh báo",
+        "info": "Thông tin",
+        "debug": "Gỡ lỗi"
+      },
+      "actions": {
+        "buy": "Mua",
+        "sell": "Bán"
+      },
+      "status": {
+        "executed": "Đã thực thi",
+        "pending": "Đang chờ",
+        "rejected": "Bị từ chối"
+      },
+      "table": {
+                  "time": "Thời gian",
+                  "level": "Mức",
+                  "source": "Nguồn",
+                  "message": "Nội dung",
+                  "symbol": "Symbol",
+                  "action": "Hành động",
+                  "status": "Trạng thái"
+              }
+    }
+  },
+  "Decision": {
+    "page": {
+      "title": "Bảng quyết định",
+      "sync": "Đồng bộ telemetry",
+      "triage": "Phân loại đăng ký",
+      "retry": "Thử lại",
+      "error": {
+        "title": "Lỗi dashboard",
+        "message": "Không thể tải quyết định"
+      },
+      "performanceErrorTitle": "Không thể tải hiệu suất danh mục",
+      "performanceErrorMessage": "Hiện không thể tải hiệu suất danh mục.",
+      "performanceLoadingTitle": "Đang tải hiệu suất danh mục",
+      "performanceLoadingMessage": "Đang lấy đường cong vốn và phân bổ.",
+      "overviewErrorTitle": "Không thể tải chỉ số danh mục",
+      "overviewErrorMessage": "Hiện không thể tải chỉ số danh mục.",
+      "overviewLoadingTitle": "Đang tải chỉ số danh mục",
+      "overviewLoadingMessage": "Đang lấy bản tóm tắt và sức khỏe tài khoản.",
+      "subscriptionsLoadingMessage": "Đang lấy các đăng ký đang hoạt động và tín hiệu rủi ro."
+    },
+    "filter": {
+      "title": "Bộ lọc quyết định",
+      "showing": "Đang hiển thị {resultCount} / {totalCount} đăng ký",
+      "searchLabel": "Tìm đăng ký theo tên bot",
+      "searchPlaceholder": "Tìm tên bot...",
+      "all": "Tất cả bot ({count})",
+      "active": "Đang hoạt động ({count})",
+      "atRisk": "Có rủi ro ({count})"
+    },
+    "row": {
+      "solid": "Ổn định",
+      "reviewAction": "Xem xét",
+      "highRisk": "Rủi ro cao",
+      "slipping": "Đang giảm",
+      "risk": "Rủi ro: {value}%",
+      "winRate": "Tỷ lệ thắng",
+      "maxDd": "Max DD",
+      "signals": "Tín hiệu",
+      "pnlLabel": "PnL: ",
+      "returnLabel": "Lợi nhuận: ",
+      "review": "Xem xét",
+      "unsubscribe": "Hủy đăng ký"
+    },
+    "subscriptions": {
+      "unsubscribed": "Đã hủy đăng ký {botName}.",
+      "error": "Không thể hủy đăng ký.",
+      "empty": {
+        "title": "Không tìm thấy đăng ký nào",
+        "message": "Hãy điều chỉnh bộ lọc hoặc tiêu chí tìm kiếm."
+      },
+      "confirm": {
+        "title": "Xác nhận hủy đăng ký",
+        "message": "Bạn có chắc muốn hủy đăng ký {botName}? Hành động này sẽ dừng các lệnh đang chạy cho bot này trên {exchange}.",
+        "action": "Xác nhận"
+      },
+      "cancel": "Hủy",
+      "processing": "Đang xử lý..."
+    },
+    "equityOverview": {
+      "equityCurve": "Đường cong vốn (Out-of-Sample / Live)",
+      "points": "{count} điểm",
+      "allocationTitle": "Phân bổ vốn theo sàn",
+      "allocated": "Đã phân bổ",
+      "empty": "Chưa có dữ liệu phân bổ"
+    },
+    "portfolioMetrics": {
+      "title": "Telemetry danh mục",
+      "offline": "Ngoại tuyến",
+      "neverSynced": "Chưa đồng bộ",
+      "live": "Trực tiếp",
+      "syncedMinutes": "Đã đồng bộ {value} phút trước",
+      "syncedHours": "Đã đồng bộ {value} giờ trước",
+      "syncedDays": "Đã đồng bộ {value} ngày trước",
+      "activeFleet": "Đội đang hoạt động",
+      "lastSync": "Đồng bộ lần cuối",
+      "dataState": "Trạng thái dữ liệu",
+      "staleAccounts": "Tài khoản cũ",
+      "ok": "OK",
+      "warn": "CẢNH BÁO",
+      "alert": "BÁO ĐỘNG",
+      "stable": "ỔN ĐỊNH",
+      "totalEquity": {
+        "label": "Tổng vốn",
+        "subtext": "Vốn gốc + PnL nổi"
+      },
+      "openPnl": {
+        "label": "PnL mở",
+        "subtext": "Độ lệch chưa thực hiện của danh mục"
+      },
+      "winRate": {
+        "label": "Tỷ lệ thắng (24h)",
+        "healthy": "Chất lượng tín hiệu tốt",
+        "below": "Dưới mục tiêu"
+      },
+      "atRisk": {
+        "label": "Subscription có rủi ro",
+        "urgent": "Cần chú ý ngay",
+        "optimal": "Mức rủi ro tối ưu"
+      }
+    },
+    "portfolioOverview": {
+      "title": "Tổng quan danh mục",
+      "status": {
+        "offline": "Ngoại tuyến",
+        "live": "Trực tiếp",
+        "neverSynced": "Chưa đồng bộ",
+        "syncedMinutes": "Đã đồng bộ {value} phút trước",
+        "syncedHours": "Đã đồng bộ {value} giờ trước",
+        "syncedDays": "Đã đồng bộ {value} ngày trước"
+      },
+      "stats": {
+        "totalEquity": {
+          "label": "Tổng vốn",
+          "detail": "Vốn gốc + lợi nhuận nổi"
+        },
+        "openPnl": {
+          "label": "PnL mở",
+          "detail": "Độ lệch danh mục chưa thực hiện"
+        },
+        "winRate": {
+          "label": "Tỷ lệ thắng (24h)",
+          "healthy": "Chất lượng tín hiệu tốt",
+          "below": "Cần theo dõi"
+        },
+        "atRiskSubscriptions": {
+          "label": "Subscription có rủi ro",
+          "review": "Cần xem xét ngay",
+          "ok": "Không có cảnh báo khẩn"
+        }
+      },
+      "activeBots": "Bot đang hoạt động",
+      "syncedAt": "Đồng bộ lúc",
+      "data": "Dữ liệu",
+      "freshness": {
+        "fresh": "FRESH",
+        "partial": "PARTIAL",
+        "stale": "STALE"
+      },
+      "staleAccounts": "{count} tài khoản cũ",
+      "staleAccountsPlural": "{count} tài khoản cũ"
+    }
+  },
+  "TerminalProfile": {
+    "success": "Cập nhật hồ sơ thành công.",
+    "error": "Không thể cập nhật hồ sơ. Vui lòng thử lại.",
+    "profile": "Hồ sơ",
+    "basicInfo": "Thông tin tài khoản cơ bản",
+    "role": "Vai trò: {role}",
+    "username": "Tên đăng nhập",
+    "email": "Email",
+    "save": "Lưu hồ sơ",
+    "guestLocked": "Tài khoản Guest không thể cập nhật cài đặt hồ sơ.",
+    "identity": "Danh tính",
+    "uid": "UID: {userId}",
+    "identitySummary": "{email} · Vai trò {role}"
+  },
+  "DeveloperConsole": {
+    "eyebrow": "Console vận hành",
+    "title": "Sức khỏe thuật toán và API",
+    "platformConnection": "Kết nối nền tảng",
+    "overallStatus": "Trạng thái tổng thể",
+    "checkedAt": "Đã kiểm tra lúc {value}",
+    "schema": "Schema JSON của tín hiệu",
+    "recentSignals": "Tín hiệu gần đây",
+    "records": "{count} bản ghi",
+    "table": {
+      "signalId": "Signal ID",
+      "bot": "Bot",
+      "symbol": "Symbol",
+      "action": "Hành động",
+      "status": "Trạng thái"
+    },
+    "streamingLog": "Log streaming",
+    "connected": "Đã kết nối",
+    "degraded": "Suy giảm"
+  },
+  "TerminalBot": {
+    "eyebrow": "Phân tích bot",
+    "description": "Hiệu suất runtime, lịch sử backtest và các lệnh đã đóng cho {exchange}.",
+    "export": "Xuất JSON",
+    "review": "Xem bot",
+    "blockTitles": {
+      "totalData": "Tổng dữ liệu",
+      "historical": "Lịch sử",
+      "outOfSample": "Ngoài mẫu"
+    },
+    "metrics": {
+      "annualReturn": "Lợi nhuận năm ước tính",
+      "maxDrawdown": "Sụt giảm tối đa",
+      "sharpeRatio": "Tỷ lệ Sharpe"
+    },
+    "sections": {
+      "chart": "Biểu đồ hiệu suất",
+      "metrics": "Chỉ số hiệu suất",
+      "trades": "Nhật ký giao dịch"
+    },
+    "table": {
+      "timestamp": "Thời gian",
+      "pair": "Cặp",
+      "side": "Chiều",
+      "pnl": "PnL ròng"
+    },
+    "chart": {
+      "insufficientData": "Không đủ dữ liệu cho biểu đồ hiệu suất",
+      "outOfSampleStart": "Bắt đầu ngoài mẫu",
+      "historical": "Lịch sử",
+      "outOfSample": "Ngoài mẫu",
+      "normalizedReturnAxis": "Trục Y: lợi nhuận chuẩn hóa (%)"
+    }
+  },
+  "BotAnalytics": {
+    "empty": {
+      "title": "Chưa có hiệu suất live/OOS",
+      "message": "Phân tích sẽ xuất hiện sau khi bot có đủ dữ liệu runtime lịch sử và live/dry run."
+    },
+    "metric": "Chỉ số",
+    "summarySource": "Các thẻ tổng quan đang bám theo nguồn {source}.",
+    "sample": "{days} ngày | {trades} giao dịch",
+    "blockTitles": {
+      "totalData": "Tổng dữ liệu",
+      "historical": "Lịch sử",
+      "outOfSample": "Live / Dry Run"
+    },
+    "metrics": {
+      "annualReturn": "Lợi nhuận năm",
+      "maxDrawdown": "Sụt giảm tối đa",
+      "sharpeRatio": "Tỷ lệ Sharpe",
+      "sortinoRatio": "Tỷ lệ Sortino",
+      "calmarRatio": "Tỷ lệ Calmar",
+      "profitFactor": "Hệ số lợi nhuận",
+      "winRate": "Tỷ lệ thắng",
+      "sampleDays": "Số ngày mẫu",
+      "closedTrades": "Giao dịch đã đóng"
+    },
+    "chart": {
+      "livePerformance": "Hiệu suất trực tiếp",
+      "backtestPerformance": "Hiệu suất backtest",
+      "outOfSamplePaper": "Ngoài mẫu paper",
+      "simulationEnvironment": "Môi trường mô phỏng",
+      "liveTradingInactive": "Giao dịch trực tiếp chưa hoạt động",
+      "backtestDataInactive": "Dữ liệu backtest chưa hoạt động",
+      "liveTradingInactiveMessage": "Paper trading chưa bắt đầu. Hãy đăng ký và triển khai bot này để khởi tạo theo dõi hiệu suất ngoài mẫu.",
+      "backtestDataInactiveMessage": "Hiệu suất lịch sử chưa được nạp. Hãy đợi dữ liệu backtest hiển thị track mô phỏng.",
+      "days": "{count} Ngày",
+      "points": "{count} Điểm",
+      "liveMode": "Chế độ trực tiếp",
+      "historicalBacktest": "Backtest lịch sử",
+      "insufficientData": "Không đủ dữ liệu hiệu suất"
+    }
+  },
+  "Leaderboard": {
+    "page": {
+      "error": {
+        "title": "Không thể tải bảng xếp hạng",
+        "message": "Hiện không thể tải leaderboard."
+      },
+      "retry": "Thử lại"
+    },
+    "tabs": {
+      "main": "Bảng xếp hạng chính",
+      "proving": "Sân thử nghiệm"
+    },
+    "risk": {
+      "badge": "Rủi ro",
+      "title": "Cảnh báo rủi ro",
+      "message": "Dữ liệu backtest lịch sử không đảm bảo kết quả tương lai. Các bot này chưa được xác minh trên thị trường live. Vốn có rủi ro."
+    },
+    "sort": {
+      "cagr": "Sắp xếp theo CAGR",
+      "sharpe": "Sắp xếp theo Sharpe"
+    },
+    "rank": "Hạng #{rank}",
+    "by": "Bởi {creator}",
+    "details": "Chi tiết",
+    "dataSource": {
+      "oos": "OOS",
+      "backtest": "Backtest"
+    },
+    "metrics": {
+      "cagr": "CAGR",
+      "drawdown": "Sụt giảm",
+      "sharpe": "Sharpe"
+    },
+    "table": {
+      "rank": "Hạng",
+      "bot": "Bot",
+      "creator": "Người tạo",
+      "cagr": "CAGR",
+      "maxDd": "Max DD",
+      "sharpe": "Sharpe"
+    },
+    "empty": {
+      "mainTitle": "Chưa có dữ liệu bảng xếp hạng chính",
+      "mainMessage": "Leaderboard live vẫn chưa trả về dữ liệu DRY_RUN.",
+      "provingTitle": "Chưa có dữ liệu sân thử nghiệm",
+      "provingMessage": "Leaderboard lịch sử vẫn chưa trả về dữ liệu backtest."
+    },
+    "summary": "Đang hiển thị {count} bot · {source} · Sắp xếp theo {sortBy}"
+  }
+}

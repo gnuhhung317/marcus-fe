@@ -17,22 +17,9 @@ interface SiteHeaderProps {
   username?: string;
 }
 
-function formatRole(role?: string): string {
-  if (!role) return '';
-
-  const map: Record<string, string> = {
-    ADMIN: 'Admin',
-    USER: 'Trader',
-    TRADER: 'Trader',
-    DEVELOPER: 'Developer',
-    OPERATOR: 'Operator',
-  };
-
-  return map[role.toUpperCase()] ?? role;
-}
-
 export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps) {
   const t = useTranslations('Common');
+  const tRoles = useTranslations('Common.roles');
   const pathname = usePathname();
   const router = useRouter();
   const focusClass =
@@ -40,11 +27,25 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
 
   const navItems = [
     { href: '/', label: t('home') },
-    { href: '/training', label: 'Training' },
-    { href: '/market', label: 'Market' },
-    { href: '/blog', label: 'Blog' },
-    { href: '/research', label: 'Research' },
+    { href: '/developers/docs', label: t('developers') },
+    { href: '/training', label: t('training') },
+    { href: '/market', label: t('market') },
+    { href: '/blog', label: t('blog') },
+    { href: '/research', label: t('research') },
   ];
+
+  function formatRoleLabel(value?: string): string {
+    if (!value) return '';
+
+    const normalized = value.toUpperCase();
+    if (normalized === 'USER') return tRoles('TRADER');
+    if (normalized === 'ADMIN') return tRoles('ADMIN');
+    if (normalized === 'TRADER') return tRoles('TRADER');
+    if (normalized === 'DEVELOPER') return tRoles('DEVELOPER');
+    if (normalized === 'OPERATOR') return tRoles('OPERATOR');
+    if (normalized === 'GUEST') return tRoles('GUEST');
+    return value;
+  }
 
   const handleLogout = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -68,16 +69,16 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" aria-label="Marcus Trading home" className={cn('inline-flex items-center gap-2 text-lg text-main', focusClass)}>
+        <Link href="/" aria-label={t('branding.homeLabel')} className={cn('inline-flex items-center gap-2 text-lg text-main', focusClass)}>
           <Image
             src={brandLogo}
-            alt="Marcus Trading logo"
+            alt={t('branding.logoAlt')}
             width={32}
             height={32}
             className="size-8 rounded-md object-contain"
             priority
           />
-          <span className="font-display">Marcus Trading</span>
+          <span className="font-display whitespace-nowrap">{t('branding.name')}</span>
         </Link>
 
         <nav className="hidden items-center gap-2 md:flex" aria-label="Primary navigation">
@@ -122,11 +123,11 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
           ) : (
             <>
               <Badge variant="outline" className="rounded-xl px-3 py-2 text-[11px] uppercase tracking-[0.12em]">
-                {username ?? formatRole(role)}
+                {username ?? formatRoleLabel(role)}
               </Badge>
               <Button asChild size="sm" className="h-9 px-4 text-sm">
                 <Link href="/terminal" aria-label="Go to dashboard" className={focusClass}>
-                  Dashboard
+                  {t('dashboard')}
                 </Link>
               </Button>
               <Button variant="outline" size="sm" className="h-9 px-4 text-sm" onClick={handleLogout} aria-label="Sign out">
@@ -143,7 +144,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
               aria-label="Open menu"
               className={cn('list-none cursor-pointer rounded-lg border border-border/60 px-3 py-2 text-xs uppercase tracking-[0.12em] text-main', focusClass)}
             >
-              Menu
+              {t('menu')}
             </summary>
             <Card variant="glass-strong" className="absolute right-0 mt-2 w-56 p-3 shadow-[var(--shadow-soft)]">
               <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
@@ -182,11 +183,11 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
                 ) : (
                   <>
                     <Badge variant="outline" className="rounded-lg px-3 py-2 text-xs uppercase tracking-[0.12em]">
-                      {username ?? formatRole(role)}
+                      {username ?? formatRoleLabel(role)}
                     </Badge>
                     <Button asChild size="sm" className="h-9 w-full justify-start px-3 text-sm">
                       <Link href="/terminal" aria-label="Go to dashboard" className={focusClass}>
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                     </Button>
                     <Button variant="outline" size="sm" className="h-9 w-full justify-start px-3 text-sm" onClick={handleLogout} aria-label="Sign out">

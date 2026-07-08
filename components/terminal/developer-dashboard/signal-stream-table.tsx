@@ -1,3 +1,6 @@
+ 'use client';
+
+import { useTranslations } from 'next-intl';
 import { DeveloperSignalItem } from '@/lib/contracts/types';
 import { Badge, type BadgeProps } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -37,10 +40,12 @@ function formatSize(value?: number | null) {
 }
 
 export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps) {
+  const t = useTranslations('DeveloperDashboard.signalStream');
+
   if (!signals.length) {
     return (
       <Card className="rounded-xl border-dashed border-border bg-surface p-6 text-center text-xs text-muted font-sans">
-        No signals received for this bot yet.
+        {t('empty')}
       </Card>
     );
   }
@@ -50,14 +55,14 @@ export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps)
       <table className="min-w-full border-collapse text-left text-[11px] leading-relaxed">
         <thead className="border-b border-border bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-muted font-sans">
           <tr>
-            <th className="px-4 py-3">Time</th>
-            <th className="px-4 py-3">Action</th>
-            <th className="px-4 py-3">Symbol</th>
-            <th className="px-4 py-3 text-right">Price</th>
-            <th className="px-4 py-3 text-right">Size</th>
-            <th className="px-4 py-3 text-right">SL</th>
-            <th className="px-4 py-3 text-right">TP</th>
-            <th className="px-4 py-3 text-right">Status</th>
+            <th className="px-4 py-3">{t('time')}</th>
+            <th className="px-4 py-3">{t('action')}</th>
+            <th className="px-4 py-3">{t('symbol')}</th>
+            <th className="px-4 py-3 text-right">{t('price')}</th>
+            <th className="px-4 py-3 text-right">{t('size')}</th>
+            <th className="px-4 py-3 text-right">{t('sl')}</th>
+            <th className="px-4 py-3 text-right">{t('tp')}</th>
+            <th className="px-4 py-3 text-right">{t('status')}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">

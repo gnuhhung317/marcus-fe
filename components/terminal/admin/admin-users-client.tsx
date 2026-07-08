@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { useToast } from '@/components/providers/toast-provider';
 import { useAdminUserMutations } from '@/lib/hooks/use-admin-mutations';
@@ -18,25 +19,30 @@ interface AdminUsersClientProps {
   filters: AdminUsersQueryParams;
 }
 
-export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps) {
-  const { pushToast } = useToast();
-  const query = useAdminUsersQuery(filters, initialData);
-  const { updateRole, updateBan } = useAdminUserMutations();
-  const [roleTarget, setRoleTarget] = useState<AdminUserRow | null>(null);
-  const [banTarget, setBanTarget] = useState<AdminUserRow | null>(null);
+interface AdminUsersContentProps extends AdminUsersClientProps {
+  onEditRole: (user: AdminUserRow) => void;
+  onToggleBan: (user: AdminUserRow) => void;
+}
 
+const AdminUsersContent = memo(function AdminUsersContent({
+  initialData,
+  filters,
+  onEditRole,
+  onToggleBan,
+}: AdminUsersContentProps) {
+  const t = useTranslations('Admin.Users');
+  const query = useAdminUsersQuery(filters, initialData);
   const users = query.data ?? initialData;
 
   if (query.isLoading && !query.data) {
-    return <LoadingStateCard title="Loading users" message="Fetching the latest admin user list." />;
+    return <LoadingStateCard title={t('state.loadingTitle')} message={t('state.loadingMessage')} />;
   }
 
   if (query.error && !query.data) {
     return (
       <ErrorStateCard
-        title="Users unavailable"
-        message={query.error instanceof Error ? query.error.message : 'Unable to load users right now.'}
-        actionLabel="Retry"
+        title={t('state.errorTitle')}
+        message={query.error instanceof Error ? query.error.message : t('state.errorMessage')}
         onAction={() => void query.refetch()}
       />
     );
@@ -47,16 +53,10 @@ export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps
       <div className="space-y-6">
         <AdminUsersFilterBar filters={filters} totalElements={users.totalElements} />
         <EmptyStateCard
-          title="No users found"
-          message="Try adjusting the search, role, or ban filters."
+          title={t('state.emptyTitle')}
+          message={t('state.emptyMessage')}
         />
-        <AdminPagination
-          page={users.page}
-          pageSize={users.size}
-          totalElements={users.totalElements}
-          hasNext={users.hasNext}
-          itemLabel="users"
-        />
+        <AdminPagination page={users.page} pageSize={users.size} totalElements={users.totalElements} hasNext={users.hasNext} />
       </div>
     );
   }
@@ -67,8 +67,8 @@ export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps
 
       <AdminUsersTable
         data={users}
-        onEditRole={(user) => setRoleTarget(user)}
-        onToggleBan={(user) => setBanTarget(user)}
+        onEditRole={onEditRole}
+        onToggleBan={onToggleBan}
       />
 
       <AdminPagination
@@ -76,7 +76,34 @@ export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps
         pageSize={users.size}
         totalElements={users.totalElements}
         hasNext={users.hasNext}
-        itemLabel="users"
+      />
+    </div>
+  );
+});
+
+export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps) {
+  const { pushToast } = useToast();
+  const t = useTranslations('Admin.Users');
+  const tRoles = useTranslations('Common.roles');
+  const { updateRole, updateBan } = useAdminUserMutations();
+  const [roleTarget, setRoleTarget] = useState<AdminUserRow | null>(null);
+  const [banTarget, setBanTarget] = useState<AdminUserRow | null>(null);
+
+  const handleEditRole = useCallback((user: AdminUserRow) => {
+    setRoleTarget(user);
+  }, []);
+
+  const handleToggleBan = useCallback((user: AdminUserRow) => {
+    setBanTarget(user);
+  }, []);
+
+  return (
+    <>
+      <AdminUsersContent
+        initialData={initialData}
+        filters={filters}
+        onEditRole={handleEditRole}
+        onToggleBan={handleToggleBan}
       />
 
       <AdminUserRoleDialog
@@ -90,13 +117,15 @@ export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps
 
           await updateRole.mutateAsync({ userId: roleTarget.userId, role, reason });
           pushToast({
-            title: 'Role updated',
-            message: `${roleTarget.username} is now ${role}.`,
+            title: t('toast.roleUpdatedTitle'),
+            message: t('toast.roleUpdatedMessage', {
+              username: roleTarget.username,
+              role: tRoles(role),
+            }),
             tone: 'success',
           });
         }}
       />
-
       <AdminUserBanDialog
         open={banTarget !== null}
         user={banTarget}
@@ -113,12 +142,12 @@ export function AdminUsersClient({ initialData, filters }: AdminUsersClientProps
           });
 
           pushToast({
-            title: banTarget.banned ? 'User unbanned' : 'User banned',
+            title: banTarget.banned ? t('toast.userUnbannedTitle') : t('toast.userBannedTitle'),
             message: banTarget.username,
             tone: 'success',
           });
         }}
       />
-    </div>
+    </>
   );
 }

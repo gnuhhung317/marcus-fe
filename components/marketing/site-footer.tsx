@@ -1,22 +1,23 @@
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
+import { useTranslations } from 'next-intl';
 
 export function SiteFooter() {
+  const t = useTranslations('Marketing.footer');
+
   return (
     <footer className="mt-16 border-t border-border/60 py-8">
       <div className="mx-auto flex w-full max-w-7xl flex-col items-start justify-between gap-4 px-5 md:flex-row md:items-center md:px-8">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">
-          2026 Marcus Trading Systems. Operational Intelligence Layer.
-        </p>
+        <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{t('copyright')}</p>
         <div className="flex items-center gap-6 text-xs text-muted">
           <Link href="/research" className="transition-colors duration-200 hover:text-white">
-            Research
+            {t('research')}
           </Link>
           <Link href="/blog" className="transition-colors duration-200 hover:text-white">
-            Blog
+            {t('blog')}
           </Link>
-          <a href="#" className="transition-colors duration-200 hover:text-white">
-            API Docs
-          </a>
+          <Link href="/developers/docs" className="transition-colors duration-200 hover:text-white">
+            {t('apiDocs')}
+          </Link>
         </div>
       </div>
     </footer>

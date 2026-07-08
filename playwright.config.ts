@@ -17,12 +17,13 @@ const config: PlaywrightTestConfig = {
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'npx next dev -p 3001',
+    command: 'node tests/e2e/dev-server.mjs',
     port: 3001,
     timeout: 120_000,
     reuseExistingServer: true,
     env: {
-      NEXT_PUBLIC_API_BASE_URL: 'https://marcus-api.tromoi.xyz/api/v1',
+      NEXT_PUBLIC_API_BASE_URL: 'http://127.0.0.1:4010/api/v1',
+      REAL_API_BASE_URL: 'https://marcus-api.tromoi.xyz/api/v1',
       NODE_ENV: 'development',
     },
   },

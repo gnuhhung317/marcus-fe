@@ -1,4 +1,7 @@
+'use client';
+
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Bot, Pause, Zap } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
@@ -49,33 +52,17 @@ function StatCard({
 }
 
 export function FleetStatsGrid({ total, active, paused, down }: FleetStatsGridProps) {
+  const t = useTranslations('DeveloperDashboard.fleetStats');
+
   return (
     <Card className="grid grid-cols-2 lg:grid-cols-4 divide-x divide-y lg:divide-y-0 divide-border/40 bg-surface/40 border-none">
+      <StatCard label={t('fleetSize.label')} value={total} description={t('fleetSize.description')} icon={<Bot className="h-4 w-4" />} tone="neutral" />
+      <StatCard label={t('active.label')} value={active} description={t('active.description')} icon={<Zap className="h-4 w-4" />} tone="positive" />
+      <StatCard label={t('paused.label')} value={paused} description={t('paused.description')} icon={<Pause className="h-4 w-4" />} tone="warning" />
       <StatCard
-        label="Fleet Size"
-        value={total}
-        description="Provisioned instances"
-        icon={<Bot className="h-4 w-4" />}
-        tone="neutral"
-      />
-      <StatCard
-        label="Active"
-        value={active}
-        description="Broadcasting live"
-        icon={<Zap className="h-4 w-4" />}
-        tone="positive"
-      />
-      <StatCard
-        label="Paused"
-        value={paused}
-        description="Standby queue"
-        icon={<Pause className="h-4 w-4" />}
-        tone="warning"
-      />
-      <StatCard
-        label="Down"
+        label={t('down.label')}
         value={down}
-        description={down > 0 ? 'Outage detected' : 'System nominal'}
+        description={down > 0 ? t('down.alert') : t('down.ok')}
         icon={<AlertTriangle className="h-4 w-4" />}
         tone={down > 0 ? 'negative' : 'neutral'}
       />

@@ -42,7 +42,7 @@ async function HomeContent({ t }: { t: any }) {
                 </Link>
               </Button>
               <Button asChild variant="outline" className="rounded-xl px-8 py-3.5 text-sm font-bold uppercase tracking-wide">
-                <Link href="/research">{t('readDocs')}</Link>
+                <Link href="/developers/docs">{t('readDocs')}</Link>
               </Button>
             </div>
           </div>
@@ -52,26 +52,26 @@ async function HomeContent({ t }: { t: any }) {
               <div className="h-3 w-3 rounded-full bg-negative" />
               <div className="h-3 w-3 rounded-full bg-warning" />
               <div className="h-3 w-3 rounded-full bg-positive" />
-              <span className="ml-2 font-mono text-[10px] uppercase text-muted">marcus-engine-v4.sys</span>
+              <span className="ml-2 font-mono text-[10px] uppercase text-muted">{t('terminal.badge')}</span>
             </div>
             <div className="p-6 font-mono text-sm leading-relaxed text-muted">
-              <p className="text-positive">$ pip install marcus-sdk</p>
-              <p className="mt-2">Collecting marcus-sdk...</p>
-              <p>Successfully installed marcus-sdk-4.2.0</p>
-              <p className="mt-4 text-positive">$ marcus deploy bot.py --env prod</p>
+              <p className="text-positive">{t('terminal.install')}</p>
+              <p className="mt-2">{t('terminal.collecting')}</p>
+              <p>{t('terminal.installed')}</p>
+              <p className="mt-4 text-positive">{t('terminal.deploy')}</p>
               <p className="mt-2 text-muted">
-                [<span className="text-positive">OK</span>] Validating schema parameters...
+                [<span className="text-positive">{t('terminal.ok')}</span>] {t('terminal.validating')}
               </p>
               <p className="text-muted">
-                [<span className="text-positive">OK</span>] Connecting to execution cloud...
+                [<span className="text-positive">{t('terminal.ok')}</span>] {t('terminal.connecting')}
               </p>
               <p className="text-muted">
-                [<span className="text-positive">OK</span>] Provisioning isolation container...
+                [<span className="text-positive">{t('terminal.ok')}</span>] {t('terminal.provisioning')}
               </p>
               <div className="mt-6 border-l-2 border-positive pl-4">
-                <p className="text-main">Bot Deployed Successfully</p>
-                <p className="mt-1 text-xs text-muted">Routing ID: mrx_8f72a911</p>
-                <p className="text-xs text-muted">Latency: 1.2ms (Direct-To-Venue)</p>
+                <p className="text-main">{t('terminal.deployed')}</p>
+                <p className="mt-1 text-xs text-muted">{t('terminal.routingId')}</p>
+                <p className="text-xs text-muted">{t('terminal.latency')}</p>
               </div>
             </div>
           </Card>
@@ -134,6 +134,9 @@ async function HomeContent({ t }: { t: any }) {
             <p className="mt-4 leading-relaxed text-muted">
               {t('lifecycle.step2.desc')}
             </p>
+            <Button asChild variant="outline" className="mt-6 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-[0.12em]">
+              <Link href="/developers/docs#sdk">{t('lifecycle.docsCta')}</Link>
+            </Button>
           </Card>
 
           <Card variant="glass" className="noise relative p-8 transition-transform hover:-translate-y-1">
@@ -147,6 +150,9 @@ async function HomeContent({ t }: { t: any }) {
             <p className="mt-4 leading-relaxed text-muted">
               {t('lifecycle.step3.desc')}
             </p>
+            <Button asChild variant="outline" className="mt-6 rounded-xl px-4 py-2 text-xs font-bold uppercase tracking-[0.12em]">
+              <Link href="/developers/docs#executor">{t('lifecycle.docsCta')}</Link>
+            </Button>
           </Card>
         </div>
       </section>

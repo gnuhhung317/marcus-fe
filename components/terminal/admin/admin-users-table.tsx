@@ -1,6 +1,7 @@
 'use client';
 
 import { PencilLine, ShieldAlert } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
 import type { AdminPage, AdminUserRow } from '@/lib/contracts/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -23,17 +24,23 @@ function banBadgeVariant(banned: boolean) {
 }
 
 export function AdminUsersTable({ data, onEditRole, onToggleBan }: AdminUsersTableProps) {
+  const t = useTranslations('Admin.Users.table');
+  const tRoles = useTranslations('Common.roles');
+  const tUserStatus = useTranslations('Common.userStatus');
+  const tCommon = useTranslations('Common.labels');
+  const formatter = useFormatter();
+
   return (
     <Card className="overflow-hidden rounded-2xl border-border/70">
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse text-left text-sm">
           <thead className="bg-surface-strong text-[11px] uppercase tracking-[0.14em] text-muted">
             <tr>
-              <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Ban state</th>
-              <th className="px-4 py-3">Meta</th>
-              <th className="px-4 py-3 text-right">Actions</th>
+              <th className="px-4 py-3">{t('user')}</th>
+              <th className="px-4 py-3">{t('role')}</th>
+              <th className="px-4 py-3">{t('banState')}</th>
+              <th className="px-4 py-3">{t('meta')}</th>
+              <th className="px-4 py-3 text-right">{t('actions')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/70">
@@ -47,30 +54,32 @@ export function AdminUsersTable({ data, onEditRole, onToggleBan }: AdminUsersTab
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={roleBadgeVariant(user.role)}>{user.role}</Badge>
+                  <Badge variant={roleBadgeVariant(user.role)}>{tRoles(user.role)}</Badge>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={banBadgeVariant(user.banned)}>{user.banned ? 'Banned' : 'Active'}</Badge>
+                  <Badge variant={banBadgeVariant(user.banned)}>{user.banned ? tUserStatus('banned') : tUserStatus('active')}</Badge>
                 </td>
                 <td className="px-4 py-3 text-xs text-muted">
                   {user.banned ? (
                     <div className="space-y-1">
-                      <p>{user.banReason ?? 'No reason stored'}</p>
-                      <p>By: {user.bannedByUserId ?? 'Unknown'}</p>
+                      <p>{user.banReason ?? t('noReasonStored')}</p>
+                      <p>
+                        {tCommon('by')}: {user.bannedByUserId ?? t('unknown')}
+                      </p>
                     </div>
                   ) : (
-                    <p>{user.createdAt ? new Date(user.createdAt).toLocaleString() : 'Unknown'}</p>
+                    <p>{user.createdAt ? formatter.dateTime(new Date(user.createdAt), { dateStyle: 'medium', timeStyle: 'short' }) : t('unknown')}</p>
                   )}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => onEditRole(user)}>
                       <PencilLine className="size-4" />
-                      Role
+                      {t('roleButton')}
                     </Button>
                     <Button variant={user.banned ? 'secondary' : 'destructive'} size="sm" onClick={() => onToggleBan(user)}>
                       <ShieldAlert className="size-4" />
-                      {user.banned ? 'Unban' : 'Ban'}
+                      {user.banned ? t('unbanButton') : t('banButton')}
                     </Button>
                   </div>
                 </td>
@@ -79,7 +88,7 @@ export function AdminUsersTable({ data, onEditRole, onToggleBan }: AdminUsersTab
             {!data.items.length ? (
               <tr>
                 <td className="px-4 py-10 text-center text-sm text-muted" colSpan={5}>
-                  No users found.
+                  {t('noUsersFound')}
                 </td>
               </tr>
             ) : null}

@@ -1,7 +1,59 @@
-import { AreaSeriesPartialOptions, ChartOptions, ColorType, DeepPartial, LineSeriesPartialOptions } from 'lightweight-charts';
+import {
+  AreaSeriesPartialOptions,
+  ChartOptions,
+  ColorType,
+  DeepPartial,
+  LineSeriesPartialOptions,
+  TickMarkFormatter,
+  Time,
+  isBusinessDay,
+} from 'lightweight-charts';
 import { resolveThemeColor } from './chart-theme';
 
-export function createEquityChartLayoutOptions(): DeepPartial<ChartOptions> {
+export type EquityChartTimeframe = '1D' | '7D' | '30D' | 'ALL';
+
+function toFormatterDate(time: Time) {
+  if (typeof time === 'number') {
+    return new Date(time * 1000);
+  }
+
+  if (isBusinessDay(time)) {
+    return new Date(Date.UTC(time.year, time.month - 1, time.day));
+  }
+
+  const parsed = new Date(time);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function createTickMarkFormatter(timeframe: EquityChartTimeframe): TickMarkFormatter {
+  return (time: Time, _tickMarkType, locale: string) => {
+    const date = toFormatterDate(time);
+    if (!date) {
+      return null;
+    }
+
+    if (timeframe === '1D') {
+      return new Intl.DateTimeFormat(locale, {
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(date);
+    }
+
+    if (timeframe === 'ALL') {
+      return new Intl.DateTimeFormat(locale, {
+        month: 'short',
+        year: '2-digit',
+      }).format(date);
+    }
+
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+    }).format(date);
+  };
+}
+
+export function createEquityChartLayoutOptions(timeframe: EquityChartTimeframe): DeepPartial<ChartOptions> {
   return {
     autoSize: true,
     height: 320,
@@ -18,7 +70,9 @@ export function createEquityChartLayoutOptions(): DeepPartial<ChartOptions> {
     },
     timeScale: {
       borderColor: resolveThemeColor('--border-line', 0.06),
-      timeVisible: true,
+      timeVisible: timeframe === '1D',
+      secondsVisible: false,
+      tickMarkFormatter: createTickMarkFormatter(timeframe),
     },
     crosshair: {
       vertLine: { color: resolveThemeColor('--semantic-positive', 0.35), width: 1 },
@@ -32,6 +86,7 @@ export function createEquityLineOptions(): LineSeriesPartialOptions {
     color: resolveThemeColor('--semantic-positive'),
     lineWidth: 2,
     priceLineVisible: false,
+    crosshairMarkerRadius: 4,
   };
 }
 

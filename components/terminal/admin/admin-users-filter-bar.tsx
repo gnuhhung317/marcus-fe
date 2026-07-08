@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -16,6 +17,9 @@ interface AdminUsersFilterBarProps {
 
 export function AdminUsersFilterBar({ filters, totalElements }: AdminUsersFilterBarProps) {
   const { setFilters } = useUrlFilters();
+  const t = useTranslations('Admin.Users.filters');
+  const tCommon = useTranslations('Common.roles');
+  const formatter = useFormatter();
   const [query, setQuery] = useState(filters.query ?? '');
   const [role, setRole] = useState(filters.role ?? '');
   const [banned, setBanned] = useState(filters.banned === undefined ? '' : String(filters.banned));
@@ -70,27 +74,27 @@ export function AdminUsersFilterBar({ filters, totalElements }: AdminUsersFilter
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search username, email, or user id"
+            placeholder={t('searchPlaceholder')}
             className="pl-10"
           />
         </label>
 
         <Select value={role} onChange={(event) => setRole(event.target.value)}>
-          <option value="">All roles</option>
-          <option value="ADMIN">Admin</option>
-          <option value="TRADER">Trader</option>
-          <option value="DEVELOPER">Developer</option>
+          <option value="">{t('roleAll')}</option>
+          <option value="ADMIN">{tCommon('ADMIN')}</option>
+          <option value="TRADER">{tCommon('TRADER')}</option>
+          <option value="DEVELOPER">{tCommon('DEVELOPER')}</option>
         </Select>
 
         <Select value={banned} onChange={(event) => setBanned(event.target.value)}>
-          <option value="">All users</option>
-          <option value="false">Active</option>
-          <option value="true">Banned</option>
+          <option value="">{t('banAll')}</option>
+          <option value="false">{t('banActive')}</option>
+          <option value="true">{t('banBanned')}</option>
         </Select>
       </div>
 
       <p className="mt-3 text-xs text-muted">
-        Live filter updates. Showing {totalElements} users.
+        {t('liveUpdate', { count: formatter.number(totalElements) })}
       </p>
     </Card>
   );

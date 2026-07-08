@@ -1,3 +1,4 @@
+import { getTranslations } from 'next-intl/server';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getBotAnalyticsPageData } from '@/lib/contracts/client';
@@ -5,7 +6,14 @@ import { PerformanceChart } from '@/components/shared/performance-chart';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
+function formatBlockTitle(title: string, t: Awaited<ReturnType<typeof getTranslations>>) {
+  if (title === 'Out-of-sample') return t('blockTitles.outOfSample');
+  if (title === 'Historical') return t('blockTitles.historical');
+  return t('blockTitles.totalData');
+}
+
 export default async function TerminalBotPage({ params }: { params: { botId: string } }) {
+  const t = await getTranslations('TerminalBot');
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
 
@@ -19,15 +27,13 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
     <div className="space-y-8">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Bot Analytics</p>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('eyebrow')}</p>
           <h1 className="mt-3 text-4xl font-semibold text-main">{bot.botName}</h1>
-          <p className="mt-2 text-sm text-muted">
-            Runtime bot performance, backtest history, and closed trades for {bot.exchange}.
-          </p>
+          <p className="mt-2 text-sm text-muted">{t('description', { exchange: bot.exchange })}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Export JSON</Button>
-          <Button variant="primary">Review Bot</Button>
+          <Button variant="outline">{t('export')}</Button>
+          <Button variant="primary">{t('review')}</Button>
         </div>
       </header>
 
@@ -35,20 +41,20 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
         <div className="space-y-5">
           {bot.metricBlocks.map((block) => (
             <Card key={block.title} variant="glass-strong" className="rounded-lg p-5 shadow-[var(--shadow-soft)]">
-              <h2 className="text-2xl font-semibold text-main">{block.title}</h2>
+              <h2 className="text-2xl font-semibold text-main">{formatBlockTitle(block.title, t)}</h2>
               <div className="mt-6 overflow-hidden rounded-xl border border-border/40 bg-surface/30">
                 <div className="flex items-center justify-between border-b border-border/40 px-3 py-3">
-                  <span className="text-sm text-main">Estimated annual return</span>
-                  <span className="font-semibold text-positive">{block.annualReturn}</span>
-                </div>
-                <div className="flex items-center justify-between border-b border-border/40 px-3 py-3">
-                  <span className="text-sm text-main">Maximum drawdown</span>
-                  <span className="font-semibold text-positive">{block.maxDrawdown}</span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-3">
-                  <span className="text-sm text-main">Sharpe ratio</span>
-                  <span className="font-semibold text-main">{block.sharpe}</span>
-                </div>
+                <span className="text-sm text-main">{t('metrics.annualReturn')}</span>
+                <span className="font-semibold text-positive">{block.annualReturn}</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-border/40 px-3 py-3">
+                <span className="text-sm text-main">{t('metrics.maxDrawdown')}</span>
+                <span className="font-semibold text-positive">{block.maxDrawdown}</span>
+              </div>
+              <div className="flex items-center justify-between px-3 py-3">
+                <span className="text-sm text-main">{t('metrics.sharpeRatio')}</span>
+                <span className="font-semibold text-main">{block.sharpe}</span>
+              </div>
               </div>
               {block.warning ? (
                 <p className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning" title={block.warning}>
@@ -61,14 +67,14 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
 
         <div className="space-y-5">
           <Card variant="glass-strong" className="rounded-lg p-5 shadow-[var(--shadow-soft)]">
-            <h2 className="text-2xl font-semibold text-main">Performance chart</h2>
+            <h2 className="text-2xl font-semibold text-main">{t('sections.chart')}</h2>
             <div className="mt-6">
               <PerformanceChart data={bot.performanceSeries} splitTimestamp={bot.splitTimestamp} />
             </div>
           </Card>
 
           <Card variant="glass-strong" className="rounded-lg p-5 shadow-[var(--shadow-soft)]">
-            <h2 className="text-2xl font-semibold text-main">Performance metrics</h2>
+            <h2 className="text-2xl font-semibold text-main">{t('sections.metrics')}</h2>
             <div className="mt-5 overflow-hidden rounded-xl border border-border/40 bg-surface/30 md:grid md:grid-cols-2">
               {bot.metrics.map((metric) => (
                 <div key={metric.label} className="flex items-center justify-between border-b border-border/40 px-3 py-3 last:border-b-0 md:odd:border-r md:odd:border-border/40">
@@ -82,15 +88,15 @@ export default async function TerminalBotPage({ params }: { params: { botId: str
       </section>
 
       <Card variant="glass-strong" className="rounded-2xl p-5 shadow-[var(--shadow-soft)]">
-        <h2 className="text-2xl font-semibold text-main">Trade Logs</h2>
+        <h2 className="text-2xl font-semibold text-main">{t('sections.trades')}</h2>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-xs uppercase tracking-[0.15em] text-muted">
               <tr>
-                <th className="py-3">Timestamp</th>
-                <th className="py-3">Pair</th>
-                <th className="py-3">Side</th>
-                <th className="py-3 text-right">Net PnL</th>
+                <th className="py-3">{t('table.timestamp')}</th>
+                <th className="py-3">{t('table.pair')}</th>
+                <th className="py-3">{t('table.side')}</th>
+                <th className="py-3 text-right">{t('table.pnl')}</th>
               </tr>
             </thead>
             <tbody>

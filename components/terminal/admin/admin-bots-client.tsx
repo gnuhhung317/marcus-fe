@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { useToast } from '@/components/providers/toast-provider';
 import { useAdminBotMutations } from '@/lib/hooks/use-admin-mutations';
@@ -17,24 +18,28 @@ interface AdminBotsClientProps {
   filters: AdminBotsQueryParams;
 }
 
-export function AdminBotsClient({ initialData, filters }: AdminBotsClientProps) {
-  const { pushToast } = useToast();
-  const query = useAdminBotsQuery(filters, initialData);
-  const { updateStatus } = useAdminBotMutations();
-  const [statusTarget, setStatusTarget] = useState<Pick<AdminBotRow, 'botId' | 'name' | 'status'> | null>(null);
+interface AdminBotsContentProps extends AdminBotsClientProps {
+  onChangeStatus: (bot: Pick<AdminBotRow, 'botId' | 'name' | 'status'>) => void;
+}
 
+const AdminBotsContent = memo(function AdminBotsContent({
+  initialData,
+  filters,
+  onChangeStatus,
+}: AdminBotsContentProps) {
+  const t = useTranslations('Admin.Bots');
+  const query = useAdminBotsQuery(filters, initialData);
   const bots = query.data ?? initialData;
 
   if (query.isLoading && !query.data) {
-    return <LoadingStateCard title="Loading bots" message="Fetching the latest admin bot list." />;
+    return <LoadingStateCard title={t('state.loadingTitle')} message={t('state.loadingMessage')} />;
   }
 
   if (query.error && !query.data) {
     return (
       <ErrorStateCard
-        title="Bots unavailable"
-        message={query.error instanceof Error ? query.error.message : 'Unable to load bots right now.'}
-        actionLabel="Retry"
+        title={t('state.errorTitle')}
+        message={query.error instanceof Error ? query.error.message : t('state.errorMessage')}
         onAction={() => void query.refetch()}
       />
     );
@@ -44,17 +49,8 @@ export function AdminBotsClient({ initialData, filters }: AdminBotsClientProps) 
     return (
       <div className="space-y-6">
         <AdminBotsFilterBar filters={filters} totalElements={bots.totalElements} />
-        <EmptyStateCard
-          title="No bots found"
-          message="Try adjusting the search term, status, or developer filter."
-        />
-        <AdminPagination
-          page={bots.page}
-          pageSize={bots.size}
-          totalElements={bots.totalElements}
-          hasNext={bots.hasNext}
-          itemLabel="bots"
-        />
+        <EmptyStateCard title={t('state.emptyTitle')} message={t('state.emptyMessage')} />
+        <AdminPagination page={bots.page} pageSize={bots.size} totalElements={bots.totalElements} hasNext={bots.hasNext} />
       </div>
     );
   }
@@ -63,14 +59,34 @@ export function AdminBotsClient({ initialData, filters }: AdminBotsClientProps) 
     <div className="space-y-6">
       <AdminBotsFilterBar filters={filters} totalElements={bots.totalElements} />
 
-      <AdminBotsTable data={bots} onChangeStatus={(bot) => setStatusTarget(bot)} />
+      <AdminBotsTable data={bots} onChangeStatus={onChangeStatus} />
 
       <AdminPagination
         page={bots.page}
         pageSize={bots.size}
         totalElements={bots.totalElements}
         hasNext={bots.hasNext}
-        itemLabel="bots"
+      />
+    </div>
+  );
+});
+
+export function AdminBotsClient({ initialData, filters }: AdminBotsClientProps) {
+  const { pushToast } = useToast();
+  const t = useTranslations('Admin.Bots');
+  const { updateStatus } = useAdminBotMutations();
+  const [statusTarget, setStatusTarget] = useState<Pick<AdminBotRow, 'botId' | 'name' | 'status'> | null>(null);
+
+  const handleChangeStatus = useCallback((bot: Pick<AdminBotRow, 'botId' | 'name' | 'status'>) => {
+    setStatusTarget(bot);
+  }, []);
+
+  return (
+    <>
+      <AdminBotsContent
+        initialData={initialData}
+        filters={filters}
+        onChangeStatus={handleChangeStatus}
       />
 
       <AdminBotStatusDialog
@@ -90,12 +106,12 @@ export function AdminBotsClient({ initialData, filters }: AdminBotsClientProps) 
           });
 
           pushToast({
-            title: 'Bot status updated',
+            title: t('toast.statusUpdatedTitle'),
             message: statusTarget.name,
             tone: 'success',
           });
         }}
       />
-    </div>
+    </>
   );
 }

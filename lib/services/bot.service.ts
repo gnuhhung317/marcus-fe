@@ -5,10 +5,13 @@ import {
   BotMetricBlock,
   MarketplaceBot,
   MarketplacePageData,
+  BotPerformanceQuerySource,
+  BotPerformanceSource,
   MarketplaceQueryParams,
   MarketplaceSortBy,
   SubscriptionResult,
   DeveloperSubscriptionSummary,
+  ViewerSubscription,
   TimeSeriesValue,
   BotTrade,
 } from '@/lib/contracts/types';
@@ -20,6 +23,7 @@ import {
   formatRatio,
   normalizeTradeSide,
 } from '@/lib/services/base.service';
+import { getPortfolioDecisions } from '@/lib/services/portfolio.service';
 
 // --- Internal Response Interfaces ---
 
@@ -35,6 +39,7 @@ interface BotSummaryResponse {
   annualReturn?: number | null;
   maxDrawdown?: number | null;
   winRate?: number | null;
+  performanceSource?: string | null;
   subscribers?: number;
 }
 
@@ -53,6 +58,8 @@ interface BotDetailResponse extends BotSummaryResponse {
   createdAt?: string;
   updatedAt?: string;
   performance?: BotPerformanceResponse;
+  performanceSource?: string | null;
+  viewerSubscription?: ViewerSubscriptionResponse | null;
 }
 
 interface BotSummaryPageResponse {
@@ -76,6 +83,11 @@ interface BotSubscriptionResultResponse {
   botId?: string;
   wsToken?: string;
   status?: string;
+}
+
+interface ViewerSubscriptionResponse {
+  status?: string;
+  wsToken?: string | null;
 }
 
 interface BotAnalyticsMetricBlockResponse {
@@ -151,9 +163,10 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
     botId: bot.botId,
     name: bot.botName ?? 'Unnamed Bot',
     tags: tags,
-    pnl30d: hasPerformanceData ? annualReturnPct : null,
+    annualReturn: hasPerformanceData ? annualReturnPct : null,
     winRate: hasPerformanceData ? winRatePct : null,
     drawdown: hasPerformanceData ? maxDrawdownPct : null,
+    performanceSource: normalizePerformanceSource(bot.performanceSource),
   };
 }
 
@@ -180,10 +193,28 @@ function mapBotDetail(bot: BotDetailResponse): BotDetail {
     status: bot.status ?? 'ACTIVE',
     tradingPair: bot.tradingPair ?? 'BTC/USDT',
     exchange: bot.exchange ?? 'BINANCE',
+    performanceSource: normalizePerformanceSource(bot.performanceSource),
     apiKey: bot.apiKey,
     createdAt: bot.createdAt,
     updatedAt: bot.updatedAt,
     performance,
+    viewerSubscription: normalizeViewerSubscription(bot.viewerSubscription),
+  };
+}
+
+function normalizeViewerSubscription(subscription?: ViewerSubscriptionResponse | null): ViewerSubscription | null {
+  if (!subscription) {
+    return null;
+  }
+
+  const status = (subscription.status ?? '').trim().toUpperCase();
+  if (!status || status === 'UNSUBSCRIBED') {
+    return null;
+  }
+
+  return {
+    status,
+    wsToken: subscription.wsToken ?? null,
   };
 }
 
@@ -193,10 +224,20 @@ function mapMarketplaceSortToBackend(sortBy?: MarketplaceSortBy) {
       return 'drawdown';
     case 'SUBSCRIBERS':
       return '-subscribers';
+    case 'CAGR':
     case 'RETURN_30D':
     default:
       return '-return';
   }
+}
+
+function normalizePerformanceSource(source?: string | null): BotPerformanceSource | null {
+  const normalizedSource = (source ?? '').trim().toUpperCase();
+  if (normalizedSource === 'DRY_RUN' || normalizedSource === 'HISTORICAL' || normalizedSource === 'SIGNAL_BASED') {
+    return normalizedSource;
+  }
+
+  return null;
 }
 
 function mapBotAnalyticsData(
@@ -294,12 +335,14 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
   return pageData.bots;
 }
 
-export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
-  const [response, analytics] = await Promise.all([
+export async function getMarketplaceBotDetail(botId: string, source: BotPerformanceQuerySource = 'AUTO'): Promise<BotDetail> {
+  const [response, analytics, inferredViewerSubscription] = await Promise.all([
     requestContractJson<BotDetailResponse>('bot-detail', {
       pathParams: { botId },
+      queryParams: { source },
     }),
     getBotAnalyticsData(botId),
+    inferViewerSubscriptionFromPortfolio(botId),
   ]);
 
   if (!response.botId) {
@@ -309,7 +352,31 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
   return {
     ...mapBotDetail(response),
     analytics,
+    viewerSubscription: normalizeViewerSubscription(response.viewerSubscription) ?? inferredViewerSubscription,
   };
+}
+
+async function inferViewerSubscriptionFromPortfolio(botId: string): Promise<ViewerSubscription | null> {
+  try {
+    const portfolio = await getPortfolioDecisions('ALL');
+    const matchedDecision = portfolio.decisions.find((decision) => decision.botId === botId);
+
+    if (!matchedDecision) {
+      return null;
+    }
+
+    const normalizedStatus = (matchedDecision.status ?? '').trim().toUpperCase();
+    if (!normalizedStatus || normalizedStatus === 'INACTIVE') {
+      return null;
+    }
+
+    return {
+      status: normalizedStatus,
+      wsToken: null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {

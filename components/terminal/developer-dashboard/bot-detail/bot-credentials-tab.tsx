@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,6 +15,7 @@ interface BotCredentialsTabProps {
 }
 
 export function BotCredentialsTab({ botId, apiKey, exchange, pair }: BotCredentialsTabProps) {
+  const t = useTranslations('DeveloperDashboard.botDetail.credentials');
   const [selectedLanguage, setSelectedLanguage] = useState<SnippetLanguage>('curl');
   
   const snippets = useMemo(() => getBotSnippets({
@@ -28,7 +32,7 @@ export function BotCredentialsTab({ botId, apiKey, exchange, pair }: BotCredenti
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">API Credentials</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">{t('title')}</h2>
         </div>
         <div className="flex flex-wrap gap-1.5 font-mono">
           {SNIPPET_LANGUAGES.map((lang) => (

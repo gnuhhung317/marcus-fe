@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
 import { useBotMutations } from '@/lib/hooks/use-bot-mutations';
 import { DeveloperBotDetail } from '@/lib/contracts/types';
@@ -19,6 +20,7 @@ interface DeleteBotModalProps {
 
 export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }: DeleteBotModalProps) {
   const router = useRouter();
+  const t = useTranslations('DeveloperDashboard.deleteModal');
   const [confirmName, setConfirmName] = useState('');
   const { removeBot } = useBotMutations();
 
@@ -52,9 +54,9 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
               <Trash2 className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-bold uppercase tracking-wider text-negative">Danger Zone</p>
-              <DialogTitle>Delete Webhook Bot</DialogTitle>
-              <DialogDescription>Permanently remove this bot and revoke access for connected subscribers.</DialogDescription>
+              <p className="text-xs font-bold uppercase tracking-wider text-negative">{t('dangerZone')}</p>
+              <DialogTitle>{t('title')}</DialogTitle>
+              <DialogDescription>{t('description')}</DialogDescription>
             </div>
           </div>
           <Button type="button" variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-lg text-muted hover:bg-surface hover:text-main">
@@ -64,7 +66,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
 
         <form onSubmit={handleSubmit} className="space-y-5 px-6 py-5">
           <p className="text-sm leading-relaxed text-muted">
-            Are you sure you want to permanently delete <span className="font-mono font-semibold text-main">{bot.botName}</span>? This action is irreversible.
+            {t('confirmPrompt', { botName: bot.botName })}
           </p>
 
           {activeSubscribersCount > 0 ? (
@@ -72,10 +74,10 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
               <div className="space-y-1">
                 <Badge variant="warning" className="rounded-lg px-2.5 py-1 text-[10px]">
-                  Active Subscribers
+                  {t('activeSubscribersBadge')}
                 </Badge>
                 <p className="text-xs leading-relaxed text-muted">
-                  This bot has {activeSubscribersCount} active subscriber connection(s). The backend rejects deletion while active subscriptions remain.
+                  {t('activeSubscribersMessage', { count: activeSubscribersCount })}
                 </p>
               </div>
             </div>
@@ -83,7 +85,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
 
           <div className="space-y-2">
             <label className="block text-xs font-bold uppercase tracking-wider text-muted">
-              Type the bot name to confirm: <span className="select-none font-mono text-negative">{bot.botName}</span>
+              {t('typeNamePrompt')} <span className="select-none font-mono text-negative">{bot.botName}</span>
             </label>
             <Input
               type="text"
@@ -104,7 +106,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
 
           <DialogFooter className="px-0 pb-0">
             <Button type="button" variant="outline" onClick={onClose} className="h-10 px-4 text-xs font-bold uppercase tracking-wider">
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               type="submit"
@@ -113,7 +115,7 @@ export function DeleteBotModal({ isOpen, onClose, bot, activeSubscribersCount }:
               disabled={!isConfirmed}
               className="h-10 px-5 text-xs font-bold uppercase tracking-wider"
             >
-              Permanently Delete
+              {t('confirm')}
             </Button>
           </DialogFooter>
         </form>

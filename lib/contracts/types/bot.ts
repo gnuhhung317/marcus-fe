@@ -9,6 +9,9 @@ export interface BotPerformance {
   tradesPerDay: number;
 }
 
+export type BotPerformanceSource = 'DRY_RUN' | 'HISTORICAL' | 'SIGNAL_BASED';
+export type BotPerformanceQuerySource = 'AUTO' | 'DRY_RUN' | 'HISTORICAL';
+
 export interface BotSignalItem {
   signalId: string;
   botId: string;
@@ -43,6 +46,11 @@ export interface BotAnalyticsData {
   splitTimestamp?: string | null;
 }
 
+export interface ViewerSubscription {
+  status: string;
+  wsToken?: string | null;
+}
+
 export interface BotDetail {
   botId: string;
   name: string;
@@ -50,24 +58,27 @@ export interface BotDetail {
   status: string;
   tradingPair: string;
   exchange: string;
+  performanceSource?: BotPerformanceSource | null;
   apiKey?: string;
   createdAt?: string;
   updatedAt?: string;
   performance?: BotPerformance;
   analytics?: BotAnalyticsData | null;
   signals?: BotSignalItem[];
+  viewerSubscription?: ViewerSubscription | null;
 }
 
 export interface MarketplaceBot {
   botId: string;
   name: string;
   tags: string[];
-  pnl30d: number | null;
+  annualReturn: number | null;
   winRate: number | null;
   drawdown: number | null;
+  performanceSource?: BotPerformanceSource | null;
 }
 
-export type MarketplaceSortBy = 'RETURN_30D' | 'DRAWDOWN' | 'SUBSCRIBERS';
+export type MarketplaceSortBy = 'CAGR' | 'RETURN_30D' | 'DRAWDOWN' | 'SUBSCRIBERS';
 
 export interface MarketplaceQueryParams {
   search?: string;

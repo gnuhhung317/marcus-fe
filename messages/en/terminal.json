@@ -1,0 +1,887 @@
+{
+  "Terminal": {
+    "nav": {
+      "trade": "Trade",
+      "build": "Build",
+      "account": "Account",
+      "admin": "Admin",
+      "decision": "Decision",
+      "monitoring": "Monitoring",
+      "market": "Market",
+      "leaderboard": "Leaderboard",
+      "deploy": "Deploy",
+      "bots": "Bots",
+      "console": "Console",
+      "profile": "Profile",
+      "overview": "Overview",
+      "users": "Users",
+      "system": "System"
+    },
+    "loading": {
+      "title": "Loading terminal data",
+      "message": "Fetching latest contracts and execution snapshots."
+    },
+    "error": {
+      "title": "Terminal load failed",
+      "message": "A contract request failed while preparing this view.",
+      "action": "Retry Load"
+    },
+    "sidebar": {
+      "navigation": "Navigation",
+      "title": "Navigation",
+      "expand": "Expand sidebar",
+      "collapse": "Collapse sidebar"
+    }
+  },
+  "TerminalMarketplace": {
+    "eyebrow": "Marketplace",
+    "title": "Bot marketplace",
+    "description": "Compare verified active strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.",
+    "results": "Showing {start}-{end} of {total} active bots / {sort}",
+    "page": "Page {page}",
+    "retry": "Retry",
+    "resetFilters": "Reset filters",
+    "error": {
+      "title": "Marketplace unavailable",
+      "message": "Unable to load marketplace bots right now."
+    },
+    "empty": {
+      "title": "No bots match the current filters",
+      "message": "Try changing the search term, sort order, or page size."
+    },
+    "sort": {
+      "lowestDrawdown": "Lowest Drawdown",
+      "mostSubscribers": "Most Subscribers",
+      "highestCagr": "Highest CAGR"
+    },
+    "detail": {
+      "analytics": "Analytics",
+      "title": "Performance Breakdown",
+      "summarySource": {
+        "dryRun": "Live / Dry Run",
+        "historical": "Historical",
+        "signalBasedFallback": "Signal-based fallback"
+      },
+      "error": {
+        "title": "Bot profile unavailable",
+        "message": "Unable to load bot details right now."
+      },
+      "back": "Back to Marketplace"
+    }
+  },
+  "Marketplace": {
+    "filter": {
+      "search": "Search",
+      "placeholder": "Bot name, ID, or tag",
+      "sort": "Sort",
+      "sortOptions": {
+        "cagr": "Highest CAGR",
+        "return30d": "Highest Return",
+        "drawdown": "Lowest Drawdown",
+        "subscribers": "Most Subscribers"
+      },
+      "pageSize": "Page size",
+      "action": "Action",
+      "apply": "Apply filters"
+    },
+    "card": {
+      "cagr": "CAGR",
+      "winRate": "Win rate",
+      "drawdown": "Drawdown",
+      "na": "N/A",
+      "openBot": "Open bot"
+    },
+    "detailHero": {
+      "eyebrow": "Bot Profile",
+      "status": "Status",
+      "exchange": "Exchange",
+      "pair": "Pair",
+      "botId": "Bot ID",
+      "na": "N/A",
+      "back": "Back to Marketplace"
+    },
+    "subscribe": {
+      "title": "Subscribe bot",
+      "blocked": "This bot is currently {status} and cannot accept new subscriptions.",
+      "riskAcknowledgement": "I understand this strategy can lose capital and past performance does not guarantee future returns.",
+      "status": "Status",
+      "botId": "Bot ID",
+      "runtimeToken": "Runtime token",
+      "requesting": "Requesting runtime token from the backend...",
+      "empty": "Subscribe to surface the runtime token here.",
+      "subscribe": "Subscribe bot",
+      "unsubscribe": "Unsubscribe",
+      "confirmUnsubscribe": "Unsubscribe this bot now? You can subscribe again later.",
+      "errors": {
+        "subscribe": "Unable to subscribe right now. Please retry.",
+        "unsubscribe": "Unable to unsubscribe right now. Please retry.",
+        "notAvailable": "This bot is not available for subscription.",
+        "confirmRisk": "Confirm risk warning before subscribing."
+      },
+      "toast": {
+        "subscribeTitle": "Subscription requested",
+        "subscribeMessage": "Runtime token is now available.",
+        "subscribeFailedTitle": "Subscription failed",
+        "subscribeFailedMessage": "Please retry in a few seconds.",
+        "unsubscribeTitle": "Unsubscribed",
+        "unsubscribeMessage": "The bot subscription has been stopped.",
+        "unsubscribeFailedTitle": "Unsubscribe failed",
+        "unsubscribeFailedMessage": "Your current subscription remains unchanged."
+      }
+    },
+    "snapshot": {
+      "eyebrow": "Overview",
+      "title": "Runtime Snapshot",
+      "description": "Summary metrics aligned with the marketplace or leaderboard source currently in view.",
+      "annualReturn": "Annual return",
+      "maxDrawdown": "Max drawdown",
+      "sharpeRatio": "Sharpe ratio",
+      "winRate": "Win rate",
+      "sampleDays": "Sample days",
+      "closedTrades": "Closed trades",
+      "sources": {
+        "dryRun": "Live / Dry Run",
+        "historical": "Historical",
+        "signalBasedFallback": "Signal-based fallback",
+        "unavailable": "Source unavailable"
+      }
+    },
+    "sidebar": {
+      "deployment": "Deployment",
+      "setupTitle": "Runtime Setup Guide",
+      "steps": {
+        "1": "Inspect Metadata",
+        "2": "Obtain Access",
+        "3": "Route Executor Signals"
+      },
+      "signals": "Signals",
+      "recentSignals": "Recent Signals",
+      "empty": "Recent marketplace signals are not available for this bot yet."
+    }
+  },
+  "CreateBot": {
+    "header": {
+      "eyebrow": "Bot Provisioning",
+      "title": "Create Bot and Issue Secret",
+      "description": "Register bot metadata, receive credentials once, then deploy your runtime and authenticate signal traffic with the generated secret."
+    },
+    "flow": {
+      "title": "Provisioning Flow",
+      "step1": "01. Register bot via /bots",
+      "step2": "02. Receive apiKey + rawSecret (one-time)",
+      "step3": "03. Deploy runtime and send signals using secret",
+      "warning": "Never expose rawSecret in client apps or browser logs."
+    },
+    "credentialVault": {
+      "title": "Credential Vault (One-Time Display)",
+      "botId": "botId",
+      "apiKey": "apiKey",
+      "rawSecret": "rawSecret",
+      "warning": "Store this immediately. It will not be shown again.",
+      "empty": "Create a bot to generate one-time credentials."
+    },
+    "form": {
+      "title": "Register Bot",
+      "description": "Required fields map directly to RegisterBotRequest.",
+      "botName": "Bot Name",
+      "exchange": "Exchange",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "tradingPair": "Trading Pair",
+      "tradingPairPlaceholder": "e.g. BTC/USDT",
+      "submit": "Create Bot",
+      "submitting": "Generating Secret..."
+    },
+    "workspace": {
+      "errors": {
+        "generateFailed": "Unable to generate bot credentials. Please retry."
+      },
+      "warningTitle": "Warning: One-Time Secret",
+      "warningBody": "For security reasons, your Signing Secret will not be accessible once you navigate away from this page. Please copy and store it securely immediately.",
+      "done": "Done & View Bot Console"
+    }
+  },
+  "DeveloperDashboard": {
+    "title": "Developer Dashboard",
+    "view": {
+      "grid": "Grid View",
+      "console": "Console View"
+    },
+    "registerBotButton": "Register Bot",
+    "loadingConsole": "Loading bot console telemetry...",
+    "consoleError": "Bot console data could not be loaded.",
+    "fleetTitle": "Global Fleet Overview",
+    "fleetStatus": "Fleet status: Nominal",
+    "emptyFleetState": {
+      "message": "No routers match your active search filter settings.",
+      "reset": "Reset all filters"
+    },
+    "subscriptionTable": {
+      "title": "Subscriptions",
+      "activeCount": "{count} active",
+      "bot": "Bot",
+      "subscriber": "Subscriber",
+      "status": "Status",
+      "subscriberLabel": "Subscriber #{index}"
+    },
+    "subscriptionPage": {
+      "eyebrow": "Developer Dashboard",
+      "title": "Active subscriptions",
+      "description": "View connected executor sessions for this bot. The list reflects live subscription access only.",
+      "emptyTitle": "No active subscriptions",
+      "emptyMessage": "This bot does not have any connected executor sessions right now.",
+      "emptyAction": "Open developer dashboard",
+      "errorTitle": "Active subscriptions unavailable",
+      "errorMessage": "Could not load active subscriptions right now.",
+      "retry": "Retry"
+    },
+    "botList": {
+      "title": "Bot Registry",
+      "provisioned": "{count} provisioned",
+      "registerTooltip": "Register New Bot",
+      "searchPlaceholder": "Filter registry...",
+      "overviewTitle": "Global Fleet Overview",
+      "overviewSubtitle": "Aggregated telemetry & routed logs",
+      "fleetBadge": "FLEET",
+      "empty": "No bots matching \"{query}\"",
+      "na": "N/A"
+    },
+    "botDetail": {
+      "header": {
+        "back": "Back to Fleet",
+        "venuePair": "Venue • Pair",
+        "developerId": "Developer ID",
+        "lastUpdated": "Last Updated",
+        "edit": "Edit Bot",
+        "delete": "Delete Bot",
+        "na": "N/A"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "analytics": "Analytics",
+        "credentials": "Credentials",
+        "integration": "Integration",
+        "signals": "Signals",
+        "subscribers": "Subscribers",
+        "audit": "Audit trail",
+        "warningTitle": "Warning",
+        "pausedMessage": "This bot is currently PAUSED. Active client subscriptions remain connected, but outgoing execution signals are rejected until running state is restored."
+      },
+      "credentials": {
+        "title": "API Credentials"
+      },
+      "overview": {
+        "summary": "Telemetry Summary",
+        "status": "Status",
+        "subscribers": "Subscribers",
+        "connected": "Connected",
+        "active": "Active",
+        "performance": "Performance Metrics",
+        "annualReturn": "Annual return",
+        "maxDrawdown": "Max drawdown",
+        "sharpeRatio": "Sharpe ratio",
+        "winRate": "Win rate",
+        "riskProfile": "Risk Profile",
+        "riskExposure": "Risk exposure based on drawdown limits",
+        "riskBadge": "{score} RISK ({value}/10)"
+      },
+      "subscribers": {
+        "title": "Active Subscribers",
+        "sessions": "{count} Sessions",
+        "empty": "No active subscriber sessions found.",
+        "subscribers": "Subscribers",
+        "connected": "Connected",
+        "active": "Active",
+        "subscriber": "Subscriber",
+        "status": "Status",
+        "subscriberLabel": "Subscriber #{index}"
+      },
+      "deleteModal": {
+        "dangerZone": "Danger Zone",
+        "title": "Delete Webhook Bot",
+        "description": "Permanently remove this bot and revoke access for connected subscribers.",
+        "confirmPrompt": "Are you sure you want to permanently delete {botName}? This action is irreversible.",
+        "activeSubscribersBadge": "Active Subscribers",
+        "activeSubscribersMessage": "This bot has {count} active subscriber connection(s). The backend rejects deletion while active subscriptions remain.",
+        "typeNamePrompt": "Type the bot name to confirm:",
+        "cancel": "Cancel",
+        "confirm": "Permanently Delete"
+      },
+      "fleetGrid": {
+        "title": "Router Fleet Overview",
+        "subtitle": "Select a card to view console telemetry and credentials"
+      },
+      "fleetFilters": {
+        "searchPlaceholder": "Search by bot name or ID...",
+        "status": {
+          "all": "All Statuses",
+          "active": "Active Only",
+          "paused": "Paused Only",
+          "down": "Down Only",
+          "deleted": "Deleted Only"
+        },
+        "venues": {
+          "all": "All Venues"
+        },
+        "clear": "Clear Filters"
+      },
+      "fleetStats": {
+        "fleetSize": {
+          "label": "Fleet Size",
+          "description": "Provisioned instances"
+        },
+        "active": {
+          "label": "Active",
+          "description": "Broadcasting live"
+        },
+        "paused": {
+          "label": "Paused",
+          "description": "Standby queue"
+        },
+        "down": {
+          "label": "Down",
+          "alert": "Outage detected",
+          "ok": "System nominal"
+        }
+      },
+      "signalStream": {
+        "empty": "No signals received for this bot yet.",
+        "time": "Time",
+        "action": "Action",
+        "symbol": "Symbol",
+        "price": "Price",
+        "size": "Size",
+        "sl": "SL",
+        "tp": "TP",
+        "status": "Status"
+      },
+      "signalDetail": {
+        "title": "Signal detail",
+        "closeAria": "Close signal detail drawer",
+        "close": "Close",
+        "action": "Action",
+        "symbol": "Symbol",
+        "status": "Status",
+        "generated": "Generated",
+        "leverage": "Leverage",
+        "marketType": "Market type",
+        "reduceOnly": "Reduce only",
+        "yes": "Yes",
+        "no": "No",
+        "size": "Size",
+        "tp": "TP",
+        "sl": "SL",
+        "rawPayload": "Raw payload"
+      },
+      "integrationHealth": {
+        "title": "Integration Health",
+        "empty": "No health telemetry from backend yet.",
+        "lastChecked": "Last checked {value}",
+        "lastSignal": "Last signal",
+        "message": "Message"
+      },
+      "botGridCard": {
+        "closeMenu": "Close status menu",
+        "updating": "Updating...",
+        "noStatusAction": "No status action",
+        "performance": "Performance",
+        "runtimeKey": "Runtime Key",
+        "console": "Console"
+      },
+      "botSignalsTab": {
+        "title": "Signal Feed",
+        "count": "{count} Signals"
+      },
+      "botIntegrationTab": {
+        "title": "Integration Health",
+        "empty": "Integration health is not available for this bot yet."
+      },
+      "credentialPanel": {
+        "title": "Credentials & Quick Start",
+        "subtitle": "REST API Access",
+        "botId": "Bot ID",
+        "apiKey": "API Key",
+        "examplePayload": "Example HTTP Payload",
+        "notAvailable": "Not available"
+      }
+    },
+    "registerBot": {
+      "eyebrow": "Signal Gateway",
+      "title": "Register New Webhook Bot",
+      "credentialsGenerated": "Credentials Generated",
+      "cancel": "Cancel",
+      "submit": "Provision Credentials",
+      "provisioning": "Provisioning...",
+      "done": "Done & Connect Bot",
+      "warningTitle": "Warning: One-Time Secret",
+      "warningBody": "For security reasons, your Signing Secret will not be accessible once this window is closed. Please copy and store it securely immediately.",
+      "botId": "Bot ID",
+      "apiKey": "Public API Key",
+      "rawSecret": "Signing Secret (rawSecret)",
+      "copied": "Copied!",
+      "copy": "Copy",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "form": {
+        "botName": "Bot Name",
+        "botNamePlaceholder": "e.g. BTC_BREAKOUT_BOT",
+        "exchange": "Exchange Venue",
+        "tradingPair": "Trading Pair",
+        "tradingPairPlaceholder": "BTC/USDT"
+      },
+      "errors": {
+        "generateFailed": "Unable to generate bot credentials. Please retry."
+      }
+    },
+    "deploySnippet": {
+      "title": "Deploy Integration Snippet"
+    },
+    "editBot": {
+      "eyebrow": "Config Management",
+      "title": "Edit Bot Configuration",
+      "description": "Update the bot metadata exposed to operators and trading workflows.",
+      "cancel": "Cancel",
+      "submit": "Save Changes",
+      "venues": {
+        "binance": "Binance",
+        "bybit": "Bybit",
+        "okx": "OKX"
+      },
+      "form": {
+        "botName": "Bot Name",
+        "botNamePlaceholder": "e.g. BTC_BREAKOUT_BOT",
+        "description": "Description",
+        "descriptionPlaceholder": "e.g. Algorithmic grid bot running custom Python webhook alerts.",
+        "exchange": "Exchange Venue",
+        "tradingPair": "Trading Pair",
+        "tradingPairPlaceholder": "BTC/USDT"
+      }
+    },
+    "onboarding": {
+      "title": "No Bots Provisioned",
+      "description": "Connect your automated trading system, scripts, or TradingView Pine Script alerts to the Marcus Trading signal router. Provision a new bot to receive your API credentials.",
+      "step1": {
+        "title": "Bot Metadata",
+        "description": "Specify your exchange venue (Binance, Bybit, etc.) and custom execution pair."
+      },
+      "step2": {
+        "title": "Issue Secrets",
+        "description": "Retrieve a cryptographically signed API key and display secret."
+      },
+      "step3": {
+        "title": "Post Signals",
+        "description": "Configure your algorithmic strategy to stream JSON signals to our webhooks."
+      },
+      "submit": "Register Your First Bot"
+    }
+  },
+  "Monitoring": {
+    "page": {
+      "loading": {
+        "title": "Loading monitoring view",
+        "message": "Syncing portfolio telemetry, execution logs, and exchange allocation.",
+        "equity": "Equity curve",
+        "equityMessage": "Preparing historical series.",
+        "feed": "Execution feed",
+        "feedMessage": "Fetching the latest runtime events.",
+        "view": "Monitoring view",
+        "viewMessage": "Preparing dashboard state."
+      },
+      "error": {
+        "title": "Monitoring unavailable",
+        "refreshTitle": "Monitoring refresh failed"
+      },
+      "retry": "Retry",
+      "retryAgain": "Try again"
+    },
+    "header": {
+      "title": "Monitoring Dashboard",
+      "phase": "Phase 2",
+      "eyebrow": "Monitoring",
+      "subheading": "Portfolio telemetry + execution observability",
+      "description": "Equity performance, exchange allocation, execution logs, and signal flow in a single operator-friendly view.",
+      "refresh": "Refresh",
+      "status": {
+        "connectivity": "Connectivity",
+        "checking": "Checking",
+        "unavailable": "Unavailable"
+      },
+      "kpis": {
+        "errorTitle": "Failed to load monitoring KPIs",
+        "errorMessage": "Failed to load monitoring KPIs",
+        "loadingTitle": "Loading KPIs",
+        "loadingMessage": "Fetching monitoring metrics and system health."
+      }
+    },
+    "performance": {
+      "neverSynced": "Never synced",
+      "updated": "Updated:",
+      "live": "Live",
+      "syncedMinutes": "Synced {value}m ago",
+      "syncedHours": "Synced {value}h ago",
+      "syncedDays": "Synced {value}d ago",
+      "equityCurve": "Equity Curve",
+      "currentBalance": "Current Balance",
+      "totalChange": "Total Change",
+      "peakBalance": "Peak Balance",
+      "drawdown": "Drawdown",
+      "exchangeAllocation": "Exchange Allocation"
+    },
+    "trades": {
+      "title": "Recent Executions",
+      "fills": "{count} fills",
+      "empty": {
+        "title": "No fills recorded",
+        "message": "Strategy execution events will register here once positions are initialized."
+      },
+      "table": {
+        "instrument": "Instrument",
+        "side": "Side",
+        "size": "Size",
+        "price": "Price",
+        "pnl": "PnL",
+        "time": "Time"
+      }
+    },
+    "logs": {
+      "executionLogs": "Execution history",
+      "loading": "Loading execution history and recent signals.",
+      "events": "{count} events",
+      "logSearch": "Search logs by source or message...",
+      "noLogs": "No execution logs match the current filters.",
+      "signalStream": "Recent signals",
+      "signalSearch": "Filter by symbol, action, or status...",
+      "noSignals": "No recent signals match the current filters.",
+      "levels": {
+        "all": "All",
+        "error": "Error",
+        "warn": "Warn",
+        "info": "Info",
+        "debug": "Debug"
+      },
+      "actions": {
+        "buy": "Buy",
+        "sell": "Sell"
+      },
+      "status": {
+        "executed": "Executed",
+        "pending": "Pending",
+        "rejected": "Rejected"
+      },
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "source": "Source",
+        "message": "Message",
+        "symbol": "Symbol",
+        "action": "Action",
+        "status": "Status"
+      }
+    }
+  },
+  "Decision": {
+    "page": {
+      "title": "Decision Dashboard",
+      "sync": "Sync Telemetry",
+      "triage": "Subscription Triage",
+      "retry": "Retry",
+      "error": {
+        "title": "Dashboard Error",
+        "message": "Failed to load decisions"
+      },
+      "performanceErrorTitle": "Failed to load portfolio performance",
+      "performanceErrorMessage": "Could not load portfolio performance right now.",
+      "performanceLoadingTitle": "Loading portfolio performance",
+      "performanceLoadingMessage": "Fetching equity curve and allocation.",
+      "overviewErrorTitle": "Failed to load portfolio metrics",
+      "overviewErrorMessage": "Could not load portfolio metrics right now.",
+      "overviewLoadingTitle": "Loading portfolio metrics",
+      "overviewLoadingMessage": "Fetching summary and account health.",
+      "subscriptionsLoadingMessage": "Fetching active subscriptions and risk signals."
+    },
+    "filter": {
+      "title": "Decision filters",
+      "showing": "Showing {resultCount} of {totalCount} subscriptions",
+      "searchLabel": "Search subscriptions by bot name",
+      "searchPlaceholder": "Search bot name...",
+      "all": "All Bots ({count})",
+      "active": "Active ({count})",
+      "atRisk": "At-Risk ({count})"
+    },
+    "row": {
+      "solid": "Solid",
+      "reviewAction": "Review",
+      "highRisk": "High Risk",
+      "slipping": "Slipping",
+      "risk": "Risk: {value}%",
+      "winRate": "Win rate",
+      "maxDd": "Max DD",
+      "signals": "Signals",
+      "pnlLabel": "PnL: ",
+      "returnLabel": "Return: ",
+      "review": "Review",
+      "unsubscribe": "Unsubscribe"
+    },
+    "subscriptions": {
+      "unsubscribed": "{botName} unsubscribed.",
+      "error": "Unable to unsubscribe.",
+      "empty": {
+        "title": "No subscriptions found",
+        "message": "Adjust filters or search parameters."
+      },
+      "confirm": {
+        "title": "Confirm Unsubscribe",
+        "message": "Are you sure you want to unsubscribe from {botName}? This action will halt active executions for this bot on {exchange}.",
+        "action": "Confirm"
+      },
+      "cancel": "Cancel",
+      "processing": "Processing..."
+    },
+    "equityOverview": {
+      "equityCurve": "Equity Curve (Out-of-Sample / Live)",
+      "points": "{count} points",
+      "allocationTitle": "Capital Allocation by Exchange",
+      "allocated": "Allocated",
+      "empty": "No allocation data available"
+    },
+    "portfolioMetrics": {
+      "title": "Portfolio Telemetry",
+      "offline": "Offline",
+      "neverSynced": "Never synced",
+      "live": "Live",
+      "syncedMinutes": "Synced {value}m ago",
+      "syncedHours": "Synced {value}h ago",
+      "syncedDays": "Synced {value}d ago",
+      "activeFleet": "Active fleet",
+      "lastSync": "Last sync",
+      "dataState": "Data state",
+      "staleAccounts": "Stale accounts",
+      "ok": "OK",
+      "warn": "WARN",
+      "alert": "ALERT",
+      "stable": "STABLE",
+      "totalEquity": {
+        "label": "Total equity",
+        "subtext": "Base capital + float PnL"
+      },
+      "openPnl": {
+        "label": "Open PnL",
+        "subtext": "Portfolio unrealized delta"
+      },
+      "winRate": {
+        "label": "Win rate (24h)",
+        "healthy": "Healthy signal quality",
+        "below": "Below target"
+      },
+      "atRisk": {
+        "label": "At-risk subscriptions",
+        "urgent": "Urgent attention required",
+        "optimal": "Optimal risk levels"
+      }
+    },
+    "portfolioOverview": {
+      "title": "Portfolio overview",
+      "status": {
+        "offline": "Offline",
+        "live": "Live",
+        "neverSynced": "Never synced",
+        "syncedMinutes": "Synced {value}m ago",
+        "syncedHours": "Synced {value}h ago",
+        "syncedDays": "Synced {value}d ago"
+      },
+      "stats": {
+        "totalEquity": {
+          "label": "Total equity",
+          "detail": "Base capital + floating profit"
+        },
+        "openPnl": {
+          "label": "Open PnL",
+          "detail": "Unrealized portfolio delta"
+        },
+        "winRate": {
+          "label": "Win rate (24h)",
+          "healthy": "Healthy signal quality",
+          "below": "Needs monitoring"
+        },
+        "atRiskSubscriptions": {
+          "label": "At-risk subscriptions",
+          "review": "Needs review now",
+          "ok": "No urgent alerts"
+        }
+      },
+      "activeBots": "Active bots",
+      "syncedAt": "Synced at",
+      "data": "Data",
+      "freshness": {
+        "fresh": "FRESH",
+        "partial": "PARTIAL",
+        "stale": "STALE"
+      },
+      "staleAccounts": "{count} stale account",
+      "staleAccountsPlural": "{count} stale accounts"
+    }
+  },
+  "TerminalProfile": {
+    "success": "Profile updated successfully.",
+    "error": "Failed to update profile. Please try again.",
+    "profile": "Profile",
+    "basicInfo": "Basic account information",
+    "role": "Role: {role}",
+    "username": "Username",
+    "email": "Email",
+    "save": "Save profile",
+    "guestLocked": "Guest accounts cannot update profile settings.",
+    "identity": "Identity",
+    "uid": "UID: {userId}",
+    "identitySummary": "{email} · Role {role}"
+  },
+  "DeveloperConsole": {
+    "eyebrow": "Operator Console",
+    "title": "Algorithm Health and API",
+    "platformConnection": "Platform Connection",
+    "overallStatus": "Overall Status",
+    "checkedAt": "Checked at {value}",
+    "schema": "Signal JSON Schema",
+    "recentSignals": "Recent Signals",
+    "records": "{count} records",
+    "table": {
+      "signalId": "Signal ID",
+      "bot": "Bot",
+      "symbol": "Symbol",
+      "action": "Action",
+      "status": "Status"
+    },
+    "streamingLog": "Streaming Log",
+    "connected": "Connected",
+    "degraded": "Degraded"
+  },
+  "TerminalBot": {
+    "eyebrow": "Bot Analytics",
+    "description": "Runtime bot performance, backtest history, and closed trades for {exchange}.",
+    "export": "Export JSON",
+    "review": "Review Bot",
+    "blockTitles": {
+      "totalData": "Total Data",
+      "historical": "Historical",
+      "outOfSample": "Out-of-sample"
+    },
+    "metrics": {
+      "annualReturn": "Estimated annual return",
+      "maxDrawdown": "Maximum drawdown",
+      "sharpeRatio": "Sharpe ratio"
+    },
+    "sections": {
+      "chart": "Performance chart",
+      "metrics": "Performance metrics",
+      "trades": "Trade Logs"
+    },
+    "table": {
+      "timestamp": "Timestamp",
+      "pair": "Pair",
+      "side": "Side",
+      "pnl": "Net PnL"
+    },
+    "chart": {
+      "insufficientData": "Insufficient data for performance chart",
+      "outOfSampleStart": "Out-of-sample start",
+      "historical": "Historical",
+      "outOfSample": "Out-of-sample",
+      "normalizedReturnAxis": "Y-axis: normalized return (%)"
+    }
+  },
+  "BotAnalytics": {
+    "empty": {
+      "title": "No live/OOS performance yet",
+      "message": "Analytics will appear after the bot has enough historical and live/dry run runtime data."
+    },
+    "metric": "Metric",
+    "summarySource": "Summary cards follow {source}.",
+    "sample": "{days} days | {trades} trades",
+    "blockTitles": {
+      "totalData": "Total Data",
+      "historical": "Historical",
+      "outOfSample": "Live / Dry Run"
+    },
+    "metrics": {
+      "annualReturn": "Annual return",
+      "maxDrawdown": "Max drawdown",
+      "sharpeRatio": "Sharpe ratio",
+      "sortinoRatio": "Sortino ratio",
+      "calmarRatio": "Calmar ratio",
+      "profitFactor": "Profit factor",
+      "winRate": "Win rate",
+      "sampleDays": "Sample days",
+      "closedTrades": "Closed trades"
+    },
+    "chart": {
+      "livePerformance": "Live Performance",
+      "backtestPerformance": "Backtest Performance",
+      "outOfSamplePaper": "Out-of-sample paper",
+      "simulationEnvironment": "Simulation Environment",
+      "liveTradingInactive": "Live Trading Inactive",
+      "backtestDataInactive": "Backtest Data Inactive",
+      "liveTradingInactiveMessage": "Paper trading has not started yet. Subscribe and deploy this bot to initialize out-of-sample performance tracking.",
+      "backtestDataInactiveMessage": "Historical performance has not populated yet. Wait for backtest data to render the simulation track.",
+      "days": "{count} Days",
+      "points": "{count} Points",
+      "liveMode": "Live Mode",
+      "historicalBacktest": "Historical Backtest",
+      "insufficientData": "Insufficient performance data available"
+    }
+  },
+  "Leaderboard": {
+    "page": {
+      "error": {
+        "title": "Leaderboard unavailable",
+        "message": "Unable to load leaderboard right now."
+      },
+      "retry": "Retry"
+    },
+    "tabs": {
+      "main": "Main Leaderboard",
+      "proving": "Proving Grounds"
+    },
+    "risk": {
+      "badge": "Risk",
+      "title": "Risk Warning",
+      "message": "Historical backtest data does not guarantee future results. These bots have not been verified in live markets. Capital at risk."
+    },
+    "sort": {
+      "cagr": "Sort by CAGR",
+      "sharpe": "Sort by Sharpe"
+    },
+    "rank": "Rank #{rank}",
+    "by": "By {creator}",
+    "details": "Details",
+    "dataSource": {
+      "oos": "OOS",
+      "backtest": "Backtest"
+    },
+    "metrics": {
+      "cagr": "CAGR",
+      "drawdown": "Drawdown",
+      "sharpe": "Sharpe"
+    },
+    "table": {
+      "rank": "Rank",
+      "bot": "Bot",
+      "creator": "Creator",
+      "cagr": "CAGR",
+      "maxDd": "Max DD",
+      "sharpe": "Sharpe"
+    },
+    "empty": {
+      "mainTitle": "No main leaderboard rows yet",
+      "mainMessage": "The live leaderboard has not returned any DRY_RUN rows yet.",
+      "provingTitle": "No proving grounds rows yet",
+      "provingMessage": "The historical leaderboard has not returned any backtest rows yet."
+    },
+    "summary": "Showing {count} bots · {source} · Sorted by {sortBy}"
+  }
+}

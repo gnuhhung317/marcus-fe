@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Languages } from 'lucide-react';
 import { usePathname, useRouter } from '@/lib/navigation';
 
@@ -8,6 +8,7 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations('Common.languageSwitcher');
 
   function onLocaleChange(nextLocale: string) {
     router.replace(pathname, { locale: nextLocale as 'en' | 'vi' });
@@ -20,10 +21,10 @@ export function LanguageSwitcher() {
         value={locale}
         onChange={(event) => onLocaleChange(event.target.value)}
         className="bg-transparent text-sm outline-none"
-        aria-label="Language"
+        aria-label={t('label')}
       >
-        <option value="en">English</option>
-        <option value="vi">Tiếng Việt</option>
+        <option value="en">{t('en')}</option>
+        <option value="vi">{t('vi')}</option>
       </select>
     </label>
   );

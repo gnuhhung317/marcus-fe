@@ -138,7 +138,7 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
       queryParams: { limit: 8, status: 'ALL' },
     }),
     requestContractJson<ExecutionLogPageResponse>('system-execution-logs', {
-      queryParams: { limit: 10 },
+      queryParams: { limit: 100 },
     }),
   ]);
 

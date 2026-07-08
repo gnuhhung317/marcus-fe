@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { unsubscribeFromBot } from '@/lib/contracts/client';
+import { useCallback, useDeferredValue, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { BotDecisionCard } from '@/lib/contracts/types';
+import { useUnsubscribeFromDecisionBot } from '@/lib/hooks/use-portfolio-decisions';
 import { BotDecisionRow } from './bot-decision-row';
 import { DecisionFilter } from '@/app/[locale]/terminal/decision/decision-filter';
 import { EmptyStateCard } from '@/components/shared/api-state';
@@ -20,8 +21,9 @@ interface SubscriptionListProps {
     totalCount: number;
     activeCount: number;
     reviewNeededCount: number;
-  highRiskCount: number;
+    highRiskCount: number;
   };
+  isFiltering?: boolean;
 }
 
 export function SubscriptionList({
@@ -30,17 +32,30 @@ export function SubscriptionList({
   onStatusFilterChange,
   onRefreshRequested,
   summary,
+  isFiltering = false,
 }: SubscriptionListProps) {
+  const t = useTranslations('Decision.subscriptions');
   const [searchTerm, setSearchTerm] = useState('');
   const [busyBotId, setBusyBotId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<{ tone: 'success' | 'error'; message: string } | null>(null);
   const [confirmingBot, setConfirmingBot] = useState<BotDecisionCard | null>(null);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
+  const unsubscribe = useUnsubscribeFromDecisionBot();
 
-  const filteredCards = cards.filter((card) => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return true;
-    return card.botName.toLowerCase().includes(query) || card.exchange.toLowerCase().includes(query);
-  });
+  const filteredCards = useMemo(() => {
+    const query = deferredSearchTerm.trim().toLowerCase();
+    if (!query) {
+      return cards;
+    }
+
+    return cards.filter(
+      (card) => card.botName.toLowerCase().includes(query) || card.exchange.toLowerCase().includes(query)
+    );
+  }, [cards, deferredSearchTerm]);
+
+  const handleOpenUnsubscribeConfirm = useCallback((card: BotDecisionCard) => {
+    setConfirmingBot(card);
+  }, []);
 
   const handleUnsubscribe = async () => {
     if (!confirmingBot) return;
@@ -48,14 +63,14 @@ export function SubscriptionList({
     setBusyBotId(botId);
     setFeedback(null);
     try {
-      await unsubscribeFromBot(botId);
-      setFeedback({ tone: 'success', message: `${confirmingBot.botName} unsubscribed.` });
+      await unsubscribe(botId);
+      setFeedback({ tone: 'success', message: t('unsubscribed', { botName: confirmingBot.botName }) });
       setConfirmingBot(null);
       await onRefreshRequested();
     } catch (error) {
       setFeedback({
         tone: 'error',
-        message: error instanceof Error ? error.message : 'Unable to unsubscribe.',
+        message: error instanceof Error ? error.message : t('error'),
       });
     } finally {
       setBusyBotId(null);
@@ -71,6 +86,7 @@ export function SubscriptionList({
         onSearchTermChange={setSearchTerm}
         resultCount={filteredCards.length}
         totalCount={summary.totalCount}
+        isFiltering={isFiltering}
         counts={{
           active: summary.activeCount,
           atRisk: summary.reviewNeededCount + summary.highRiskCount,
@@ -85,7 +101,7 @@ export function SubscriptionList({
       )}
 
       {filteredCards.length === 0 ? (
-        <EmptyStateCard title="No subscriptions found" message="Adjust filters or search parameters." />
+        <EmptyStateCard title={t('empty.title')} message={t('empty.message')} />
       ) : (
         <div className="flex flex-col gap-2">
           {filteredCards.map((card) => (
@@ -93,7 +109,7 @@ export function SubscriptionList({
               key={card.subscriptionId}
               card={card}
               isBusy={busyBotId === card.botId}
-              onUnsubscribe={() => setConfirmingBot(card)}
+              onUnsubscribe={handleOpenUnsubscribeConfirm}
             />
           ))}
         </div>
@@ -102,10 +118,9 @@ export function SubscriptionList({
       {confirmingBot && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur-sm">
           <Card variant="glass-strong" className="w-full max-w-md p-5">
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-negative">Confirm Unsubscribe</h4>
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-negative">{t('confirm.title')}</h4>
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Are you sure you want to unsubscribe from <span className="font-semibold text-main">{confirmingBot.botName}</span>?
-              This action will halt active executions for this bot on {confirmingBot.exchange}.
+              {t('confirm.message', { botName: confirmingBot.botName, exchange: confirmingBot.exchange })}
             </p>
             <div className="mt-5 flex justify-end gap-2">
               <Button
@@ -113,7 +128,7 @@ export function SubscriptionList({
                 variant="outline"
                 onClick={() => setConfirmingBot(null)}
               >
-                Cancel
+                {t('cancel')}
               </Button>
               <Button
                 type="button"
@@ -121,7 +136,7 @@ export function SubscriptionList({
                 onClick={() => void handleUnsubscribe()}
                 disabled={busyBotId === confirmingBot.botId}
               >
-                {busyBotId === confirmingBot.botId ? 'Processing...' : 'Confirm'}
+                {busyBotId === confirmingBot.botId ? t('processing') : t('confirm.action')}
               </Button>
             </div>
           </Card>

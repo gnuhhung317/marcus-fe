@@ -1,5 +1,7 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useDeveloperDashboard } from '@/lib/hooks/use-developer-dashboard';
 import { DeveloperBotList } from './developer-bot-list';
 import { BotDetailCard } from './bot-detail-card';
@@ -13,6 +15,8 @@ interface BotConsoleClientProps {
 }
 
 export function BotConsoleClient({ initialData, botId }: BotConsoleClientProps) {
+  const t = useTranslations('DeveloperDashboard');
+  const router = useRouter();
   const { data, optimisticallyUpdateBotStatus } = useDeveloperDashboard(botId, initialData);
 
   const activeBot = data?.activeBot || initialData.activeBot;
@@ -20,7 +24,7 @@ export function BotConsoleClient({ initialData, botId }: BotConsoleClientProps) 
   if (!activeBot) {
     return (
       <div className="text-center py-12">
-        <p className="text-sm text-muted">Bot console data could not be loaded.</p>
+        <p className="text-sm text-muted">{t('consoleError')}</p>
       </div>
     );
   }
@@ -28,7 +32,21 @@ export function BotConsoleClient({ initialData, botId }: BotConsoleClientProps) 
   return (
     <div className="grid gap-6 lg:grid-cols-[300px_1fr] min-h-screen items-start">
       <aside className="w-full lg:sticky lg:top-8">
-        <DeveloperBotList bots={data?.bots ?? initialData.bots} activeBotId={botId} />
+        <DeveloperBotList
+          bots={data?.bots ?? initialData.bots}
+          activeBotId={botId}
+          onSelectBot={(nextBotId) => {
+            if (!nextBotId) {
+              router.push('/terminal/developer-dashboard');
+              return;
+            }
+
+            if (nextBotId !== botId) {
+              router.push(`/terminal/developer-dashboard/${nextBotId}`);
+            }
+          }}
+          onRegisterClick={() => router.push('/terminal/create-bot')}
+        />
       </aside>
 
       <main className="w-full min-w-0">
@@ -39,6 +57,7 @@ export function BotConsoleClient({ initialData, botId }: BotConsoleClientProps) 
           signals={data?.signals ?? []}
           isSwitching={false}
           onStatusChange={optimisticallyUpdateBotStatus}
+          onBackToFleet={() => router.push('/terminal/developer-dashboard')}
         />
       </main>
     </div>

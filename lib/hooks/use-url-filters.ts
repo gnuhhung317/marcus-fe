@@ -1,4 +1,5 @@
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter } from '@/lib/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useTransition } from 'react';
 
 export function useUrlFilters() {

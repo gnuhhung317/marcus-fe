@@ -1,3 +1,6 @@
+ 'use client';
+
+import { useTranslations } from 'next-intl';
 import { DeveloperSubscriptionSummary } from '@/lib/contracts/types';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -8,6 +11,8 @@ interface BotSubscribersTabProps {
 }
 
 export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribersTabProps) {
+  const t = useTranslations('DeveloperDashboard.botDetail.subscribers');
+  const tStatus = useTranslations('Common.labels');
   const subscriberCount = subscriptions.length;
   const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
@@ -16,10 +21,10 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">Active Subscribers</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">{t('title')}</h2>
         </div>
         <Badge variant="outline" className="rounded-lg px-2.5 py-1 text-[9px] font-mono">
-          {subscriberCount} Sessions
+          {t('sessions', { count: subscriberCount })}
         </Badge>
       </div>
 
@@ -30,15 +35,15 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
         </div>
       ) : subscriptions.length === 0 ? (
         <Card className="rounded-xl border-dashed border-border/40 p-6 text-center text-xs text-muted font-sans">
-          No active subscriber sessions found.
+          {t('empty')}
         </Card>
       ) : (
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { label: 'Subscribers', value: subscriberCount },
-              { label: 'Connected', value: connectedCount },
-              { label: 'Active', value: activeCount },
+              { label: t('subscribers'), value: subscriberCount },
+              { label: t('connected'), value: connectedCount },
+              { label: t('active'), value: activeCount },
             ].map((item) => (
               <Card key={item.label} className="p-3 font-mono">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted font-sans">{item.label}</p>
@@ -51,8 +56,8 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
             <table className="min-w-full border-collapse text-left text-[11px] leading-relaxed">
               <thead className="border-b border-border/40 bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-muted font-sans">
                 <tr>
-                  <th className="px-4 py-3">Subscriber</th>
-                  <th className="px-4 py-3 text-right">Status</th>
+                  <th className="px-4 py-3">{t('subscriber')}</th>
+                  <th className="px-4 py-3 text-right">{t('status')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
@@ -61,12 +66,12 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
                   return (
                     <tr key={`${sub.botId}-${index}`} className="text-main">
                       <td className="px-4 py-3 font-medium font-sans">
-                        Subscriber #{index + 1}
+                        {t('subscriberLabel', { index: index + 1 })}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <Badge variant={isActive ? 'success' : 'outline'} className="rounded-lg px-2.5 py-1 text-[9px]">
                           <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-positive' : 'bg-muted'}`} />
-                          {sub.status}
+                          {sub.status === 'ACTIVE' ? t('active') : sub.status === 'CONNECTED' ? t('connected') : tStatus('unknown')}
                         </Badge>
                       </td>
                     </tr>

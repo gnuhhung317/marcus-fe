@@ -1,22 +1,28 @@
 import { z } from 'zod';
 
-export const loginSchema = z.object({
-  username: z.string().min(1, 'Username or email is required'),
-  password: z.string().min(1, 'Password is required'),
-});
+type MessageFn = (key: string, values?: Record<string, string | number>) => string;
 
-export type LoginFormValues = z.infer<typeof loginSchema>;
+export function createLoginSchema(t: MessageFn) {
+  return z.object({
+    username: z.string().min(1, t('usernameRequired')),
+    password: z.string().min(1, t('passwordRequired')),
+  });
+}
 
-export const registerSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  displayName: z.string().min(1, 'Display name is required').trim(),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[a-z]/, 'Password must include at least one lowercase letter')
-    .regex(/[A-Z]/, 'Password must include at least one uppercase letter')
-    .regex(/\d/, 'Password must include at least one number'),
-  role: z.enum(['TRADER', 'DEVELOPER']),
-});
+export type LoginFormValues = z.infer<ReturnType<typeof createLoginSchema>>;
 
-export type RegisterFormValues = z.infer<typeof registerSchema>;
+export function createRegisterSchema(t: MessageFn) {
+  return z.object({
+    email: z.string().email(t('emailInvalid')),
+    displayName: z.string().min(1, t('displayNameRequired')).trim(),
+    password: z
+      .string()
+      .min(8, t('passwordMin'))
+      .regex(/[a-z]/, t('passwordLowercase'))
+      .regex(/[A-Z]/, t('passwordUppercase'))
+      .regex(/\d/, t('passwordNumber')),
+    role: z.enum(['TRADER', 'DEVELOPER']),
+  });
+}
+
+export type RegisterFormValues = z.infer<ReturnType<typeof createRegisterSchema>>;

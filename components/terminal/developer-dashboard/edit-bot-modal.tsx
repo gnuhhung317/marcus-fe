@@ -2,8 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { DeveloperBotDetail } from '@/lib/contracts/types';
-import { registerBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
+import { createRegisterBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
 import { Form, FormField } from '@/components/ui/form-primitive';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,9 @@ interface EditBotModalProps {
 
 export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
   const router = useRouter();
+  const t = useTranslations('DeveloperDashboard.editBot');
+  const tValidation = useTranslations('Common.validation');
+  const registerBotSchema = createRegisterBotSchema(tValidation);
   const { updateMetadata } = useBotMutations();
 
   if (!isOpen) return null;
@@ -29,9 +33,9 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <div className="space-y-1">
-            <p className="text-xs font-bold uppercase tracking-wider text-positive">Config Management</p>
-            <DialogTitle>Edit Bot Configuration</DialogTitle>
-            <DialogDescription>Update the bot metadata exposed to operators and trading workflows.</DialogDescription>
+            <p className="text-xs font-bold uppercase tracking-wider text-positive">{t('eyebrow')}</p>
+            <DialogTitle>{t('title')}</DialogTitle>
+            <DialogDescription>{t('description')}</DialogDescription>
           </div>
           <Button type="button" variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-lg text-muted hover:bg-surface hover:text-main">
             <X className="h-4 w-4" />
@@ -69,25 +73,25 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
         >
           {({ register, formState: { errors } }) => (
             <>
-              <FormField label="Bot Name" error={errors.botName?.message}>
-                <Input type="text" placeholder="e.g. BTC_BREAKOUT_BOT" {...register('botName')} />
+              <FormField label={t('form.botName')} error={errors.botName?.message}>
+                <Input type="text" placeholder={t('form.botNamePlaceholder')} {...register('botName')} />
               </FormField>
 
-              <FormField label="Description" error={errors.description?.message}>
-                <Textarea placeholder="e.g. Algorithmic grid bot running custom Python webhook alerts." rows={3} {...register('description')} />
+              <FormField label={t('form.description')} error={errors.description?.message}>
+                <Textarea placeholder={t('form.descriptionPlaceholder')} rows={3} {...register('description')} />
               </FormField>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <FormField label="Exchange Venue" error={errors.exchange?.message}>
+                <FormField label={t('form.exchange')} error={errors.exchange?.message}>
                   <Select {...register('exchange')}>
-                    <option value="BINANCE">Binance</option>
-                    <option value="BYBIT">Bybit</option>
-                    <option value="OKX">OKX</option>
+                    <option value="BINANCE">{t('venues.binance')}</option>
+                    <option value="BYBIT">{t('venues.bybit')}</option>
+                    <option value="OKX">{t('venues.okx')}</option>
                   </Select>
                 </FormField>
 
-                <FormField label="Trading Pair" error={errors.tradingPair?.message}>
-                  <Input type="text" placeholder="BTC/USDT" className="font-mono" {...register('tradingPair')} />
+                <FormField label={t('form.tradingPair')} error={errors.tradingPair?.message}>
+                  <Input type="text" placeholder={t('form.tradingPairPlaceholder')} className="font-mono" {...register('tradingPair')} />
                 </FormField>
               </div>
 
@@ -99,14 +103,14 @@ export function EditBotModal({ isOpen, onClose, bot }: EditBotModalProps) {
 
               <DialogFooter className="px-0 pb-0">
                 <Button type="button" variant="outline" onClick={onClose} className="h-10 px-4 text-xs font-bold uppercase tracking-wider">
-                  Cancel
+                  {t('cancel')}
                 </Button>
                 <Button
                   type="submit"
                   isLoading={updateMetadata.isPending}
                   className="h-10 px-5 text-xs font-bold uppercase tracking-wider"
                 >
-                  Save Changes
+                  {t('submit')}
                 </Button>
               </DialogFooter>
             </>

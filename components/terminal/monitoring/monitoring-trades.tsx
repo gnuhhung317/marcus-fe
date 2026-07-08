@@ -1,13 +1,15 @@
+'use client';
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { EmptyStateCard } from '@/components/shared/api-state';
-import type { DashboardPageData } from '@/lib/contracts/types';
+import { EmptyStateCard, ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
+import { useMonitoringOverviewQuery, useRefreshMonitoringData } from '@/lib/hooks/use-monitoring-data';
 import { cn } from '@/lib/utils';
 import { History, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface MonitoringTradesProps {
-  dashboard: DashboardPageData;
   className?: string;
 }
 
@@ -31,7 +33,26 @@ function formatDate(value: string) {
   return parsed.toLocaleDateString();
 }
 
-export function MonitoringTrades({ dashboard, className }: MonitoringTradesProps) {
+export function MonitoringTrades({ className }: MonitoringTradesProps) {
+  const t = useTranslations('Monitoring.trades');
+  const { data: dashboard, error } = useMonitoringOverviewQuery();
+  const { refresh } = useRefreshMonitoringData();
+
+  if (error) {
+    return (
+      <ErrorStateCard
+        title={t('title')}
+        message={error instanceof Error ? error.message : t('empty.message')}
+        onAction={refresh}
+        actionLabel="Retry"
+      />
+    );
+  }
+
+  if (!dashboard) {
+    return <LoadingStateCard title={t('title')} message={t('empty.message')} />;
+  }
+
   return (
     <Card variant="glass-strong" className={cn('flex h-full flex-col p-5', className)}>
       <div className="flex items-center justify-between gap-4 border-b border-border pb-4">
@@ -40,11 +61,11 @@ export function MonitoringTrades({ dashboard, className }: MonitoringTradesProps
             <History className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-main">Recent Executions</h2>
+            <h2 className="text-base font-semibold text-main">{t('title')}</h2>
           </div>
         </div>
         <Badge variant="outline" className="text-[11px]">
-          {dashboard.botTrades.length} fills
+          {t('fills', { count: dashboard.botTrades.length })}
         </Badge>
       </div>
 
@@ -52,8 +73,8 @@ export function MonitoringTrades({ dashboard, className }: MonitoringTradesProps
         {dashboard.botTrades.length === 0 ? (
           <div className="p-8">
             <EmptyStateCard
-              title="No fills recorded"
-              message="Strategy execution events will register here once positions are initialized."
+              title={t('empty.title')}
+              message={t('empty.message')}
             />
           </div>
         ) : (
@@ -61,12 +82,12 @@ export function MonitoringTrades({ dashboard, className }: MonitoringTradesProps
             <table className="w-full border-collapse text-left text-xs">
               <thead className="sticky top-0 z-10 border-b border-border bg-surface-strong text-[10px] uppercase tracking-wider text-muted">
                 <tr>
-                  <th className="px-3 py-2.5">Instrument</th>
-                  <th className="px-3 py-2.5">Side</th>
-                  <th className="px-3 py-2.5 text-right">Size</th>
-                  <th className="px-3 py-2.5 text-right">Price</th>
-                  <th className="px-3 py-2.5 text-right">PnL</th>
-                  <th className="px-3 py-2.5 text-right">Time</th>
+                  <th className="px-3 py-2.5">{t('table.instrument')}</th>
+                  <th className="px-3 py-2.5">{t('table.side')}</th>
+                  <th className="px-3 py-2.5 text-right">{t('table.size')}</th>
+                  <th className="px-3 py-2.5 text-right">{t('table.price')}</th>
+                  <th className="px-3 py-2.5 text-right">{t('table.pnl')}</th>
+                  <th className="px-3 py-2.5 text-right">{t('table.time')}</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,115 +1,89 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { getDashboardPageData, getDecisionDashboardData } from '@/lib/contracts/client';
-import { AllocationSlice, BotDecisionCard, PortfolioOverview, TimeSeriesValue } from '@/lib/contracts/types';
+import { useCallback, useTransition } from 'react';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
+import { getDashboardOverviewData, getDashboardPerformanceSeries, getPortfolioDecisions, getPortfolioOverview, unsubscribeFromBot } from '@/lib/contracts/client';
 
 export type DecisionStatusFilter = 'ALL' | 'ACTIVE' | 'AT_RISK';
 
-type DecisionDashboardData = Awaited<ReturnType<typeof getDecisionDashboardData>>;
-type DashboardPageData = Awaited<ReturnType<typeof getDashboardPageData>>;
+const atRiskReasons = new Set<DecisionReason>([DecisionReason.NEEDS_REVIEW, DecisionReason.HIGH_RISK]);
 
-interface UsePortfolioDecisionsOptions {
-  enabled?: boolean;
-  initialStatusFilter?: DecisionStatusFilter;
+export const decisionKeys = {
+  root: ['decision-dashboard'] as const,
+  overview: () => [...decisionKeys.root, 'overview'] as const,
+  performance: () => [...decisionKeys.root, 'performance'] as const,
+  subscriptions: () => [...decisionKeys.root, 'subscriptions'] as const,
+};
+
+export function useDecisionOverviewQuery() {
+  return useQuery({
+    queryKey: decisionKeys.overview(),
+    queryFn: getPortfolioOverview,
+  });
 }
 
-export interface UsePortfolioDecisionsResult {
-  overview: PortfolioOverview | null;
-  summary: DecisionDashboardData['decisions']['summary'] | null;
-  decisions: BotDecisionCard[];
-  performanceSeries: TimeSeriesValue[];
-  allocations: AllocationSlice[];
-  isLoading: boolean;
-  isRefreshing: boolean;
-  error: string | null;
-  statusFilter: DecisionStatusFilter;
-  setStatusFilter: (status: DecisionStatusFilter) => void;
-  refresh: () => Promise<void>;
-}
+export function useDecisionPerformanceQuery() {
+  return useQuery({
+    queryKey: decisionKeys.performance(),
+    queryFn: async () => {
+      const [dashboard, performanceSeries] = await Promise.all([
+        getDashboardOverviewData(),
+        getDashboardPerformanceSeries('7D'),
+      ]);
 
-export function usePortfolioDecisions({
-  enabled = true,
-  initialStatusFilter = 'ALL',
-}: UsePortfolioDecisionsOptions = {}): UsePortfolioDecisionsResult {
-  const [statusFilter, setStatusFilter] = useState<DecisionStatusFilter>(initialStatusFilter);
-  const [data, setData] = useState<{ decisionData: DecisionDashboardData; dashboardData: DashboardPageData } | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const requestIdRef = useRef(0);
-  const hasLoadedRef = useRef(false);
-
-  const loadData = useCallback(
-    async (filter: DecisionStatusFilter, mode: 'initial' | 'refresh') => {
-      const requestId = ++requestIdRef.current;
-      const loadingState = mode === 'initial';
-
-      if (loadingState) {
-        setIsLoading(true);
-      } else {
-        setIsRefreshing(true);
-      }
-
-      setError(null);
-
-      try {
-        const [decisionData, dashboardData] = await Promise.all([
-          getDecisionDashboardData(filter),
-          getDashboardPageData(),
-        ]);
-
-        if (requestId !== requestIdRef.current) {
-          return;
-        }
-
-        setData({ decisionData, dashboardData });
-        hasLoadedRef.current = true;
-      } catch (err) {
-        if (requestId !== requestIdRef.current) {
-          return;
-        }
-
-        setError(err instanceof Error ? err.message : 'Failed to load decision dashboard data');
-      } finally {
-        if (requestId !== requestIdRef.current) {
-          return;
-        }
-
-        setIsLoading(false);
-        setIsRefreshing(false);
-      }
+      return {
+        allocations: dashboard.allocations,
+        performanceSeries,
+      };
     },
-    []
-  );
+  });
+}
 
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+export function matchesDecisionStatusFilter(card: BotDecisionCard, statusFilter: DecisionStatusFilter) {
+  switch (statusFilter) {
+    case 'AT_RISK':
+      return atRiskReasons.has(card.reason);
+    case 'ACTIVE':
+      return !atRiskReasons.has(card.reason);
+    case 'ALL':
+    default:
+      return true;
+  }
+}
 
-    void loadData(statusFilter, hasLoadedRef.current ? 'refresh' : 'initial');
-  }, [enabled, loadData, statusFilter]);
+export function useDecisionSubscriptionsQuery() {
+  return useQuery({
+    queryKey: decisionKeys.subscriptions(),
+    queryFn: () => getPortfolioDecisions('ALL'),
+  });
+}
 
-  const refresh = useCallback(async () => {
-    if (!enabled) {
-      return;
-    }
+export function useRefreshDecisionData() {
+  const queryClient = useQueryClient();
+  const [isPending, startTransition] = useTransition();
+  const isFetching = useIsFetching({ queryKey: decisionKeys.root }) > 0;
 
-    await loadData(statusFilter, hasLoadedRef.current ? 'refresh' : 'initial');
-  }, [enabled, loadData, statusFilter]);
+  const refresh = useCallback(() => {
+    startTransition(() => {
+      void queryClient.invalidateQueries({ queryKey: decisionKeys.root });
+    });
+  }, [queryClient, startTransition]);
 
   return {
-    overview: data?.decisionData.overview ?? null,
-    summary: data?.decisionData.decisions.summary ?? null,
-    decisions: data?.decisionData.decisions.decisions ?? [],
-    performanceSeries: data?.dashboardData.performanceSeries ?? [],
-    allocations: data?.dashboardData.allocations ?? [],
-    isLoading,
-    isRefreshing,
-    error,
-    statusFilter,
-    setStatusFilter,
     refresh,
+    isRefreshing: isFetching || isPending,
   };
+}
+
+export function useUnsubscribeFromDecisionBot() {
+  const queryClient = useQueryClient();
+
+  return useCallback(
+    async (botId: string) => {
+      await unsubscribeFromBot(botId);
+      await queryClient.invalidateQueries({ queryKey: decisionKeys.root });
+    },
+    [queryClient]
+  );
 }

@@ -106,7 +106,7 @@ export function TerminalSidebar({ role }: { role: string }) {
             </div>
             <div className={cn('min-w-0', isCollapsed && 'lg:sr-only')}>
               <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">{t('sidebar.navigation')}</p>
-              <p className="truncate text-sm font-medium text-main">Navigation</p>
+              <p className="truncate text-sm font-medium text-main">{t('sidebar.title')}</p>
             </div>
           </div>
 

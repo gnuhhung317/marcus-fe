@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { BotProvisioningCredentials, RegisterBotInput } from '@/lib/contracts/types';
 
 interface DeploySnippetCardProps {
@@ -6,6 +7,7 @@ interface DeploySnippetCardProps {
 }
 
 export function DeploySnippetCard({ formValues, credentials }: DeploySnippetCardProps) {
+  const t = useTranslations('DeveloperDashboard.deploySnippet');
   const botId = credentials?.botId ?? '<botId-from-response>';
   const apiKey = credentials?.apiKey ?? '<apiKey-from-response>';
   const rawSecret = credentials?.rawSecret ?? '<rawSecret-from-response>';
@@ -27,7 +29,7 @@ Content-Type: application/json
 
   return (
     <article className="glass rounded-2xl p-6">
-      <h2 className="font-display text-2xl text-main">Deploy Integration Snippet</h2>
+      <h2 className="font-display text-2xl text-main">{t('title')}</h2>
 
       <pre className="mt-4 overflow-auto rounded-xl border border-border bg-surface p-4 text-xs text-main">
         {snippet}

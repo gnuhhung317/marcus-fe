@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface RiskBarProps {
@@ -18,6 +19,7 @@ export function RiskBar({
   className,
   showText = false,
 }: RiskBarProps) {
+  const t = useTranslations('Common.labels');
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
   const getBarColor = () => {
@@ -36,7 +38,7 @@ export function RiskBar({
       </div>
       {showText && (
         <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider text-muted">
-          <span>Risk Level</span>
+          <span>{t('riskLevel')}</span>
           <span className="font-semibold text-main">{percentage.toFixed(0)}%</span>
         </div>
       )}

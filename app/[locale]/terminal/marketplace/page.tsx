@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getTranslations } from 'next-intl/server';
 import { EmptyStateCard, ErrorStateCard } from '@/components/shared/api-state';
 import { getMarketplacePageData } from '@/lib/contracts/client';
 import { MarketplaceQueryParams, MarketplaceSortBy } from '@/lib/contracts/types';
@@ -31,9 +32,9 @@ function parseMarketplaceSearchParams(searchParams?: MarketplaceSearchParams): M
   return {
     search: toSingleValue(searchParams?.search)?.trim() || undefined,
     sortBy:
-      sortBy === 'DRAWDOWN' || sortBy === 'SUBSCRIBERS' || sortBy === 'RETURN_30D'
+      sortBy === 'CAGR' || sortBy === 'DRAWDOWN' || sortBy === 'SUBSCRIBERS' || sortBy === 'RETURN_30D'
         ? (sortBy as MarketplaceSortBy)
-        : 'RETURN_30D',
+        : 'CAGR',
     page: parseInteger(toSingleValue(searchParams?.page), 1),
     pageSize: parseInteger(toSingleValue(searchParams?.pageSize), 12),
   };
@@ -57,19 +58,20 @@ function buildMarketplaceHref(query: MarketplaceQueryParams, page: number) {
   return queryString ? `/terminal/marketplace?${queryString}` : '/terminal/marketplace';
 }
 
-function sortLabel(sortBy: MarketplaceSortBy) {
+function sortLabel(sortBy: MarketplaceSortBy, t: (key: string) => string) {
   if (sortBy === 'DRAWDOWN') {
-    return 'Lowest Drawdown';
+    return t('sort.lowestDrawdown');
   }
 
   if (sortBy === 'SUBSCRIBERS') {
-    return 'Most Subscribers';
+    return t('sort.mostSubscribers');
   }
 
-  return 'Highest Return';
+  return t('sort.highestCagr');
 }
 
 export default async function TerminalMarketplacePage({ searchParams }: { searchParams?: MarketplaceSearchParams }) {
+  const t = await getTranslations('TerminalMarketplace');
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
 
@@ -85,9 +87,9 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
   } catch (error) {
     return (
       <ErrorStateCard
-        title="Marketplace unavailable"
-        message={error instanceof Error ? error.message : 'Unable to load marketplace bots right now.'}
-        actionLabel="Retry"
+        title={t('error.title')}
+        message={error instanceof Error ? error.message : t('error.message')}
+        actionLabel={t('retry')}
         actionHref="/terminal/marketplace"
       />
     );
@@ -102,11 +104,9 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
     <div className="space-y-5">
       <header className="space-y-3">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Marketplace</p>
-          <h1 className="mt-1 text-2xl font-bold text-main">Bot marketplace</h1>
-          <p className="mt-1 text-xs text-muted">
-            Compare verified active strategy bots, inspect bot-level analytics, and review deployment routing before subscribing.
-          </p>
+          <p className="text-[10px] uppercase tracking-[0.16em] text-muted">{t('eyebrow')}</p>
+          <h1 className="mt-1 text-2xl font-bold text-main">{t('title')}</h1>
+          <p className="mt-1 text-xs text-muted">{t('description')}</p>
         </div>
 
         <MarketplaceFilter query={query} />
@@ -114,16 +114,16 @@ export default async function TerminalMarketplacePage({ searchParams }: { search
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
         <p>
-          Showing {start}-{end} of {marketplacePage.total} active bots / {sortLabel(query.sortBy ?? 'RETURN_30D')}
+          {t('results', { start, end, total: marketplacePage.total, sort: sortLabel(query.sortBy ?? 'CAGR', t) })}
         </p>
-        <p>Page {marketplacePage.page}</p>
+        <p>{t('page', { page: marketplacePage.page })}</p>
       </div>
 
       {marketplacePage.bots.length === 0 ? (
         <EmptyStateCard
-          title="No bots match the current filters"
-          message="Try changing the search term, sort order, or page size."
-          actionLabel="Reset filters"
+          title={t('empty.title')}
+          message={t('empty.message')}
+          actionLabel={t('resetFilters')}
           actionHref="/terminal/marketplace"
         />
       ) : (

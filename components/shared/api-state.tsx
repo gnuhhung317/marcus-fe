@@ -1,4 +1,7 @@
-import Link from 'next/link';
+'use client';
+
+import { useTranslations } from 'next-intl';
+import { Link } from '@/lib/navigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -11,9 +14,11 @@ interface ApiStateCardProps {
 }
 
 export function LoadingStateCard({ title, message }: Pick<ApiStateCardProps, 'title' | 'message'>) {
+  const t = useTranslations('Common.apiState');
+
   return (
     <Card variant="glass-strong" className="p-5">
-      <p className="text-xs uppercase tracking-[0.16em] text-muted">Loading</p>
+      <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('loading')}</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{message}</p>
       <div className="mt-4 h-2 w-2/3 animate-pulse rounded-full bg-border" />
@@ -21,20 +26,22 @@ export function LoadingStateCard({ title, message }: Pick<ApiStateCardProps, 'ti
   );
 }
 
-export function ErrorStateCard({ title, message, actionLabel = 'Retry', onAction, actionHref }: ApiStateCardProps) {       
+export function ErrorStateCard({ title, message, actionLabel, onAction, actionHref }: ApiStateCardProps) {
+  const t = useTranslations('Common.apiState');
+
   return (
     <Card variant="glass-strong" className="p-5">
-      <p className="text-xs uppercase tracking-[0.16em] text-negative">Error</p>
+      <p className="text-xs uppercase tracking-[0.16em] text-negative">{t('error')}</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-negative">{message}</p>
       <div className="mt-4">
         {actionHref ? (
           <Button variant="outline" size="sm" asChild>
-            <Link href={actionHref}>{actionLabel}</Link>
+            <Link href={actionHref}>{actionLabel ?? t('retry')}</Link>
           </Button>
         ) : (
           <Button variant="outline" size="sm" onClick={onAction}>
-            {actionLabel}
+            {actionLabel ?? t('retry')}
           </Button>
         )}
       </div>
@@ -42,20 +49,18 @@ export function ErrorStateCard({ title, message, actionLabel = 'Retry', onAction
   );
 }
 
-// Note: I added asChild support to Button above, wait, I didn't. I'll need to add it if I want to use Link.
-// Or just wrap Link inside Button if Button is just a div/span, but my Button is a button element.
-// I'll update Button to support asChild (Radix-like) or just provide an Anchor variant.
-
 export function EmptyStateCard({ title, message, actionLabel, actionHref }: Omit<ApiStateCardProps, 'onAction'>) {
+  const t = useTranslations('Common.apiState');
+
   return (
     <Card variant="glass-strong" className="p-5">
-      <p className="text-xs uppercase tracking-[0.16em] text-muted">Empty</p>
+      <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('empty')}</p>
       <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
       <p className="mt-2 text-sm text-muted">{message}</p>
       {actionLabel && actionHref && (
         <div className="mt-4">
           <Button variant="outline" size="sm" asChild>
-             <Link href={actionHref}>{actionLabel}</Link>
+            <Link href={actionHref}>{actionLabel}</Link>
           </Button>
         </div>
       )}
@@ -68,15 +73,17 @@ interface DashboardSkeletonCardProps {
   lines?: number;
 }
 
-export function DashboardSkeletonCard({ title = 'Loading dashboard block', lines = 4 }: DashboardSkeletonCardProps) {      
+export function DashboardSkeletonCard({ title, lines = 4 }: DashboardSkeletonCardProps) {
+  const t = useTranslations('Common.apiState');
+
   return (
     <Card variant="glass-strong" className="p-5">
-      <p className="text-xs uppercase tracking-[0.16em] text-muted">Loading</p>
-      <h3 className="mt-2 text-lg font-semibold text-white">{title}</h3>
+      <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('loading')}</p>
+      <h3 className="mt-2 text-lg font-semibold text-white">{title ?? t('dashboardBlock')}</h3>
       <div className="mt-4 space-y-2">
         {Array.from({ length: lines }).map((_, index) => (
           <div
-            key={`${title}-${index}`}
+            key={`${title ?? 'dashboard-block'}-${index}`}
             className={`h-3 animate-pulse rounded-full bg-border ${index === lines - 1 ? 'w-2/3' : 'w-full'}`}
           />
         ))}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-primitive';
@@ -15,6 +16,7 @@ interface AdminUserBanDialogProps {
 }
 
 export function AdminUserBanDialog({ open, user, onOpenChange, onSubmit }: AdminUserBanDialogProps) {
+  const t = useTranslations('Admin.Users.dialogs.ban');
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,7 +31,7 @@ export function AdminUserBanDialog({ open, user, onOpenChange, onSubmit }: Admin
   const submit = async () => {
     const normalizedReason = reason.trim();
     if (!normalizedReason) {
-      setError('Reason is required');
+      setError(t('requiredReason'));
       return;
     }
 
@@ -39,7 +41,7 @@ export function AdminUserBanDialog({ open, user, onOpenChange, onSubmit }: Admin
       await onSubmit(normalizedReason);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update ban state');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -49,14 +51,14 @@ export function AdminUserBanDialog({ open, user, onOpenChange, onSubmit }: Admin
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>{user?.banned ? 'Unban user' : 'Ban user'}</DialogTitle>
+          <DialogTitle>{user?.banned ? t('titleUnban') : t('titleBan')}</DialogTitle>
           <DialogDescription>
-            {user?.banned ? 'Restore account access with a reason.' : 'Block account access with a reason.'}
+            {user?.banned ? t('descriptionUnban') : t('descriptionBan')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 px-6 py-5">
-          <FormField label="Reason" error={error ?? undefined} hint="Required for audit history.">
+          <FormField label={t('reasonLabel')} error={error ?? undefined} hint={t('hint')}>
             <Textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={4} />
           </FormField>
 
@@ -69,10 +71,10 @@ export function AdminUserBanDialog({ open, user, onOpenChange, onSubmit }: Admin
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button variant={user?.banned ? 'secondary' : 'destructive'} onClick={() => void submit()} isLoading={isSubmitting} type="button">
-            {user?.banned ? 'Unban user' : 'Ban user'}
+            {user?.banned ? t('submitUnban') : t('submitBan')}
           </Button>
         </DialogFooter>
       </DialogContent>

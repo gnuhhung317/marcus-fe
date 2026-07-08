@@ -1,69 +1,116 @@
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/shared/status-dot';
-import { BotMetricBlock } from '@/lib/contracts/types';
+import { BotMetricBlock, BotPerformance, BotPerformanceSource } from '@/lib/contracts/types';
 
 interface MarketplaceBotRuntimeSnapshotProps {
   isActive: boolean;
-  primaryBlock: BotMetricBlock | null;
+  performance?: BotPerformance;
+  performanceSource?: BotPerformanceSource | null;
+  summaryBlock?: BotMetricBlock | null;
   status: string;
 }
 
-function formatMetric(value: string | undefined | null) {
-  return value && value.length ? value : 'N/A';
+function formatPercent(value: number | undefined | null, alwaysSign = false) {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
+
+  const percentValue = value * 100;
+  const prefix = alwaysSign && percentValue >= 0 ? '+' : '';
+  return `${prefix}${percentValue.toFixed(2)}%`;
 }
 
-function getTrendColor(valStr: string | null | undefined) {
-  if (!valStr || valStr === 'N/A' || valStr === '0.00%') return 'text-main';
+function formatDrawdown(value: number | undefined | null) {
+  if (value === undefined || value === null) {
+    return 'N/A';
+  }
+
+  return `-${(Math.abs(value) * 100).toFixed(2)}%`;
+}
+
+function formatRatio(value: number | undefined | null) {
+  if (value === undefined || value === null || Number.isNaN(value)) {
+    return 'N/A';
+  }
+
+  return value.toFixed(2);
+}
+
+function getTrendColor(valStr: string) {
+  if (!valStr || valStr === 'N/A') return 'text-main';
+  const normalized = valStr.replace(/^[+-]/, '');
+  if (normalized === '0.00%') return 'text-main';
   return valStr.startsWith('-') ? 'text-negative' : 'text-positive';
+}
+
+function getSourceLabel(source: BotPerformanceSource | null | undefined, t: ReturnType<typeof useTranslations>) {
+  switch (source) {
+    case 'DRY_RUN':
+      return t('sources.dryRun');
+    case 'HISTORICAL':
+      return t('sources.historical');
+    case 'SIGNAL_BASED':
+      return t('sources.signalBasedFallback');
+    default:
+      return t('sources.unavailable');
+  }
 }
 
 export function MarketplaceBotRuntimeSnapshot({
   isActive,
-  primaryBlock,
+  performance,
+  performanceSource,
+  summaryBlock,
   status,
 }: MarketplaceBotRuntimeSnapshotProps) {
-  if (!primaryBlock) {
+  const t = useTranslations('Marketplace.snapshot');
+  if (!performance) {
     return null;
   }
 
+  const annualReturn = formatPercent(performance.annualReturn, true);
+  const maxDrawdown = formatDrawdown(performance.maxDrawdown);
+  const sharpe = formatRatio(performance.sharpe);
+  const winRate = formatPercent(performance.winRate);
   const snapshotMetrics = [
     {
-      label: 'Annual return',
-      value: formatMetric(primaryBlock.annualReturn),
-      tone: getTrendColor(primaryBlock.annualReturn),
+      label: t('annualReturn'),
+      value: annualReturn,
+      tone: getTrendColor(annualReturn),
     },
     {
-      label: 'Max drawdown',
-      value: formatMetric(primaryBlock.maxDrawdown),
+      label: t('maxDrawdown'),
+      value: maxDrawdown,
       tone: 'text-negative',
     },
     {
-      label: 'Sharpe ratio',
-      value: formatMetric(primaryBlock.sharpe),
+      label: t('sharpeRatio'),
+      value: sharpe,
       tone: 'text-main',
     },
     {
-      label: 'Win rate',
-      value: formatMetric(primaryBlock.winRate),
+      label: t('winRate'),
+      value: winRate,
       tone: 'text-main',
     },
   ];
 
-  const snapshotPills = [
-    { label: 'Sample days', value: String(primaryBlock.sampleSizeDays ?? 0) },
-    { label: 'Closed trades', value: String(primaryBlock.sampleSizeTrades ?? 0) },
-  ];
+  const snapshotPills = summaryBlock
+    ? [
+        { label: t('sampleDays'), value: String(summaryBlock.sampleSizeDays ?? 0) },
+        { label: t('closedTrades'), value: String(summaryBlock.sampleSizeTrades ?? 0) },
+      ]
+    : [];
 
   return (
     <Card variant="glass-strong" className="p-6 shadow-[var(--shadow-soft)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.16em] text-muted">Overview</p>
-          <h2 className="mt-2 text-2xl font-semibold text-main">Runtime Snapshot</h2>
-          <p className="mt-3 max-w-2xl text-sm text-muted">
-            Live and dry-run metrics for the current marketplace subscription state.
-          </p>
+          <p className="text-xs uppercase tracking-[0.16em] text-muted">{t('eyebrow')}</p>
+          <h2 className="mt-2 text-2xl font-semibold text-main">{t('title')}</h2>
+          <p className="mt-3 max-w-2xl text-sm text-muted">{t('description')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={isActive ? 'success' : 'warning'}>
@@ -71,11 +118,11 @@ export function MarketplaceBotRuntimeSnapshot({
             {status}
           </Badge>
           <Badge variant="outline" className="border-primary/20 bg-primary-soft text-primary">
-            {primaryBlock.title === 'Out-of-sample' ? 'Live / Dry Run' : primaryBlock.title}
+            {getSourceLabel(performanceSource, t)}
           </Badge>
-          {primaryBlock.warning ? (
+          {summaryBlock?.warning ? (
             <div className="max-w-[18rem] rounded-xl border border-warning/20 bg-warning/10 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-warning">
-              {primaryBlock.warning}
+              {summaryBlock.warning}
             </div>
           ) : null}
         </div>

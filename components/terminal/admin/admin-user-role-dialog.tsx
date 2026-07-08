@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
@@ -22,6 +23,8 @@ function getDefaultRole(currentRole?: string): AdminAssignableUserRole {
 }
 
 export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: AdminUserRoleDialogProps) {
+  const t = useTranslations('Admin.Users.dialogs.role');
+  const tRoles = useTranslations('Common.roles');
   const [role, setRole] = useState<AdminAssignableUserRole>('TRADER');
   const [reason, setReason] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +41,7 @@ export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: Admi
   const submit = async () => {
     const normalizedReason = reason.trim();
     if (!normalizedReason) {
-      setError('Reason is required');
+      setError(t('requiredReason'));
       return;
     }
 
@@ -48,7 +51,7 @@ export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: Admi
       await onSubmit({ role, reason: normalizedReason });
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update role');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -58,12 +61,12 @@ export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: Admi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Change role</DialogTitle>
-          <DialogDescription>Update the account role for {user?.username ?? 'selected user'}.</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description', { username: user?.username ?? t('selectedUser') })}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 px-6 py-5">
-          <FormField label="Role">
+          <FormField label={t('roleLabel')}>
             <Select
               value={role}
               onChange={(event) => {
@@ -74,13 +77,13 @@ export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: Admi
             >
               {ADMIN_ASSIGNABLE_USER_ROLES.map((item) => (
                 <option key={item} value={item}>
-                  {item === 'TRADER' ? 'Trader' : 'Developer'}
+                  {tRoles(item)}
                 </option>
               ))}
             </Select>
           </FormField>
 
-          <FormField label="Reason" error={error ?? undefined}>
+          <FormField label={t('reasonLabel')} error={error ?? undefined}>
             <Textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={4} />
           </FormField>
 
@@ -93,10 +96,10 @@ export function AdminUserRoleDialog({ open, user, onOpenChange, onSubmit }: Admi
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button variant="primary" onClick={() => void submit()} isLoading={isSubmitting} type="button">
-            Update role
+            {t('submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

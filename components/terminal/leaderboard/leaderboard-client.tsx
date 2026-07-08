@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,13 +23,21 @@ function formatPercent(value: number, showSign = true): string {
   return `${sign}${value.toFixed(2)}%`;
 }
 
-function getDataSourceBadge(dataSource?: string) {
+function buildDetailHref(row: LeaderboardRow): string {
+  if (row.dataSource === 'DRY_RUN' || row.dataSource === 'HISTORICAL') {
+    return `/terminal/marketplace/${row.botId}?source=${row.dataSource}`;
+  }
+
+  return `/terminal/marketplace/${row.botId}`;
+}
+
+function getDataSourceBadge(dataSource: string | undefined, t: ReturnType<typeof useTranslations>) {
   if (dataSource === 'DRY_RUN') {
-    return <Badge variant="success">OOS</Badge>;
+    return <Badge variant="success">{t('dataSource.oos')}</Badge>;
   }
 
   if (dataSource === 'HISTORICAL') {
-    return <Badge variant="warning">Backtest</Badge>;
+    return <Badge variant="warning">{t('dataSource.backtest')}</Badge>;
   }
 
   return null;
@@ -65,10 +74,12 @@ function PodiumCard({
   row,
   rank,
   variant,
+  t,
 }: {
   row: LeaderboardRow;
   rank: number;
   variant: PodiumVariant;
+  t: ReturnType<typeof useTranslations>;
 }) {
   const isCenter = rank === 1;
   const style = getPodiumPresentation(variant);
@@ -83,47 +94,48 @@ function PodiumCard({
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <Badge variant={style.badge}>Rank #{rank}</Badge>
-        {getDataSourceBadge(row.dataSource)}
+        <Badge variant={style.badge}>{t('rank', { rank })}</Badge>
+        {getDataSourceBadge(row.dataSource, t)}
       </div>
 
       <div className={cn('rounded-2xl border border-border/40 p-4', style.accent)}>
         <h2 className="line-clamp-1 text-2xl font-semibold text-main">{row.botName}</h2>
-        <p className="mt-1 text-sm text-muted">By {row.creatorName}</p>
+        <p className="mt-1 text-sm text-muted">{t('by', { creator: row.creatorName })}</p>
       </div>
 
       <div className="mt-auto grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 grid-cols-3 divide-x divide-border/40">
         <div className="p-3">
-          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">CAGR</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">{t('metrics.cagr')}</p>
           <p className={cn('mt-1 text-2xl font-semibold', row.cagr >= 0 ? 'text-positive' : 'text-negative')}>
             {formatPercent(row.cagr)}
           </p>
         </div>
         <div className="p-3">
-          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Drawdown</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">{t('metrics.drawdown')}</p>
           <p className="mt-1 text-2xl font-semibold text-main">{Math.abs(row.drawdown).toFixed(2)}%</p>
         </div>
         <div className="p-3">
-          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">Sharpe</p>
+          <p className="text-[10px] uppercase tracking-[0.12em] text-muted">{t('metrics.sharpe')}</p>
           <p className="mt-1 text-2xl font-semibold text-main">{row.sharpe.toFixed(2)}</p>
         </div>
       </div>
 
       <Button asChild className="w-full">
-        <Link href={`/terminal/bots/${row.botId}`}>View Details</Link>
+        <Link href={buildDetailHref(row)}>{t('details')}</Link>
       </Button>
     </Card>
   );
 }
 
 function PodiumSection({ top3 }: { top3: LeaderboardRow[] }) {
+  const t = useTranslations('Leaderboard');
   const [first, second, third] = top3;
 
   return (
     <section className="grid gap-5 lg:grid-cols-[1fr_1.3fr_1fr] lg:items-end">
       {second ? (
         <div className="order-2 lg:order-1">
-          <PodiumCard row={second} rank={2} variant="silver" />
+          <PodiumCard row={second} rank={2} variant="silver" t={t} />
         </div>
       ) : (
         <div className="order-2 lg:order-1" />
@@ -131,13 +143,13 @@ function PodiumSection({ top3 }: { top3: LeaderboardRow[] }) {
 
       {first ? (
         <div className="order-1 lg:order-2">
-          <PodiumCard row={first} rank={1} variant="gold" />
+          <PodiumCard row={first} rank={1} variant="gold" t={t} />
         </div>
       ) : null}
 
       {third ? (
         <div className="order-3 lg:order-3">
-          <PodiumCard row={third} rank={3} variant="bronze" />
+          <PodiumCard row={third} rank={3} variant="bronze" t={t} />
         </div>
       ) : null}
     </section>
@@ -145,6 +157,7 @@ function PodiumSection({ top3 }: { top3: LeaderboardRow[] }) {
 }
 
 function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: number }) {
+  const t = useTranslations('Leaderboard');
   if (rows.length === 0) return null;
 
   return (
@@ -152,12 +165,12 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
       <table className="w-full border-collapse text-left text-sm">
         <thead className="bg-surface-strong text-xs uppercase tracking-[0.12em] text-muted">
           <tr>
-            <th className="px-4 py-3">Rank</th>
-            <th className="px-4 py-3">Bot</th>
-            <th className="px-4 py-3">Creator</th>
-            <th className="px-4 py-3 text-right">CAGR</th>
-            <th className="px-4 py-3 text-right">Max DD</th>
-            <th className="px-4 py-3 text-right">Sharpe</th>
+            <th className="px-4 py-3">{t('table.rank')}</th>
+            <th className="px-4 py-3">{t('table.bot')}</th>
+            <th className="px-4 py-3">{t('table.creator')}</th>
+            <th className="px-4 py-3 text-right">{t('table.cagr')}</th>
+            <th className="px-4 py-3 text-right">{t('table.maxDd')}</th>
+            <th className="px-4 py-3 text-right">{t('table.sharpe')}</th>
             <th className="px-4 py-3" />
           </tr>
         </thead>
@@ -168,7 +181,7 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
               <td className="px-4 py-3.5 font-medium text-main">
                 <div className="flex items-center gap-2">
                   <span>{row.botName}</span>
-                  {getDataSourceBadge(row.dataSource)}
+                  {getDataSourceBadge(row.dataSource, t)}
                 </div>
               </td>
               <td className="px-4 py-3.5 text-muted">{row.creatorName}</td>
@@ -179,7 +192,7 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
               <td className="px-4 py-3.5 text-right text-main">{row.sharpe.toFixed(2)}</td>
               <td className="px-4 py-3.5 text-right">
                 <Button asChild variant="link" size="sm" className="px-0">
-                  <Link href={`/terminal/bots/${row.botId}`}>Details</Link>
+                  <Link href={buildDetailHref(row)}>{t('details')}</Link>
                 </Button>
               </td>
             </tr>
@@ -191,6 +204,7 @@ function DetailTable({ rows, startRank }: { rows: LeaderboardRow[]; startRank: n
 }
 
 export default function LeaderboardClient({ initialData }: LeaderboardClientProps) {
+  const t = useTranslations('Leaderboard');
   const [activeTab, setActiveTab] = useState<TabKey>('main');
   const [sortBy, setSortBy] = useState<SortKey>('CAGR');
 
@@ -224,7 +238,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="space-y-3">
             <h1 className="font-display text-4xl font-semibold text-main uppercase">
-              {activeTab === 'main' ? 'Main Leaderboard' : 'Proving Grounds'}
+          {activeTab === 'main' ? t('tabs.main') : t('tabs.proving')}
             </h1>
           </div>
         </div>
@@ -235,27 +249,24 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             variant={activeTab === 'main' ? 'primary' : 'outline'}
             onClick={() => setActiveTab('main')}
           >
-            Main Leaderboard
-          </Button>
+              {t('tabs.main')}
+            </Button>
           <Button
             type="button"
             variant={activeTab === 'proving-grounds' ? 'primary' : 'outline'}
             onClick={() => setActiveTab('proving-grounds')}
           >
-            Proving Grounds
-          </Button>
-        </div>
+              {t('tabs.proving')}
+            </Button>
+          </div>
 
         {activeTab === 'proving-grounds' ? (
           <Card variant="glass-strong" className="border-warning/20 bg-warning/5 p-4">
             <div className="flex items-start gap-3">
-              <Badge variant="warning">Risk</Badge>
+              <Badge variant="warning">{t('risk.badge')}</Badge>
               <div>
-                <h3 className="font-semibold text-warning">Risk Warning</h3>
-                <p className="mt-1 text-sm text-muted">
-                  Historical backtest data does not guarantee future results. These bots have not been verified in live
-                  markets. Capital at risk.
-                </p>
+                <h3 className="font-semibold text-warning">{t('risk.title')}</h3>
+                <p className="mt-1 text-sm text-muted">{t('risk.message')}</p>
               </div>
             </div>
           </Card>
@@ -267,25 +278,25 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
             variant={sortBy === 'CAGR' ? 'primary' : 'outline'}
             onClick={() => setSortBy('CAGR')}
           >
-            Sort by CAGR
+            {t('sort.cagr')}
           </Button>
           <Button
             type="button"
             variant={sortBy === 'SHARPE' ? 'primary' : 'outline'}
             onClick={() => setSortBy('SHARPE')}
           >
-            Sort by Sharpe
+            {t('sort.sharpe')}
           </Button>
         </div>
       </header>
 
       {!hasRows ? (
         <EmptyStateCard
-          title={activeTab === 'main' ? 'No main leaderboard rows yet' : 'No proving grounds rows yet'}
+          title={activeTab === 'main' ? t('empty.mainTitle') : t('empty.provingTitle')}
           message={
             activeTab === 'main'
-              ? 'The live leaderboard has not returned any DRY_RUN rows yet.'
-              : 'The historical leaderboard has not returned any backtest rows yet.'
+              ? t('empty.mainMessage')
+              : t('empty.provingMessage')
           }
         />
       ) : (
@@ -296,7 +307,7 @@ export default function LeaderboardClient({ initialData }: LeaderboardClientProp
 
           <Card variant="glass-strong" className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
             <span className="text-muted">
-              Showing {sortedRows.length} bots · {activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL'} · Sorted by {sortBy}
+              {t('summary', { count: sortedRows.length, source: activeTab === 'main' ? 'DRY_RUN (OOS)' : 'HISTORICAL', sortBy })}
             </span>
           </Card>
         </>

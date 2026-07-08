@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
@@ -19,6 +20,8 @@ interface AdminBotStatusDialogProps {
 }
 
 export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: AdminBotStatusDialogProps) {
+  const t = useTranslations('Admin.Bots.detail.statusDialog');
+  const tStatus = useTranslations('Common.botStatus');
   const [status, setStatus] = useState<AdminBotRow['status']>('PAUSED');
   const [reason, setReason] = useState('');
   const [cancelActiveSubscriptions, setCancelActiveSubscriptions] = useState(false);
@@ -37,7 +40,7 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
   const submit = async () => {
     const normalizedReason = reason.trim();
     if (!normalizedReason) {
-      setError('Reason is required');
+      setError(t('requiredReason'));
       return;
     }
 
@@ -47,7 +50,7 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
       await onSubmit({ status, reason: normalizedReason, cancelActiveSubscriptions });
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update bot status');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -57,12 +60,12 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Update bot status</DialogTitle>
-          <DialogDescription>Change the lifecycle state for {bot?.name ?? 'selected bot'}.</DialogDescription>
+          <DialogTitle>{t('title')}</DialogTitle>
+          <DialogDescription>{t('description', { botName: bot?.name ?? t('selectedBot') })}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 px-6 py-5">
-          <FormField label="Status">
+          <FormField label={t('statusLabel')}>
             <Select
               value={status}
               onChange={(event) => {
@@ -73,13 +76,13 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
             >
               {ADMIN_BOT_STATUSES.map((item) => (
                 <option key={item} value={item}>
-                  {item === 'ACTIVE' ? 'Active' : item === 'PAUSED' ? 'Paused' : item === 'DOWN' ? 'Down' : 'Deleted'}
+                  {tStatus(item)}
                 </option>
               ))}
             </Select>
           </FormField>
 
-          <FormField label="Reason" error={error ?? undefined}>
+          <FormField label={t('reasonLabel')} error={error ?? undefined}>
             <Textarea value={reason} onChange={(event) => setReason(event.target.value)} rows={4} />
           </FormField>
 
@@ -91,8 +94,8 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
               className="mt-1 h-4 w-4 rounded border-border bg-surface text-primary"
             />
             <span>
-              Cancel active subscriptions
-              <span className="block text-xs text-muted">Use this when pausing or deleting a bot to protect traders.</span>
+              {t('cancelActiveSubscriptions')}
+              <span className="block text-xs text-muted">{t('cancelActiveSubscriptionsHint')}</span>
             </span>
           </label>
 
@@ -105,10 +108,10 @@ export function AdminBotStatusDialog({ open, bot, onOpenChange, onSubmit }: Admi
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button onClick={() => void submit()} isLoading={isSubmitting} type="button">
-            Update status
+            {t('submit')}
           </Button>
         </DialogFooter>
       </DialogContent>

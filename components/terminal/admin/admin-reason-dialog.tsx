@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ export function AdminReasonDialog({
   destructive = true,
   defaultReason = '',
 }: AdminReasonDialogProps) {
+  const t = useTranslations('Admin.Bots.detail.reasonDialog');
   const [reason, setReason] = useState(defaultReason);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +43,7 @@ export function AdminReasonDialog({
   const handleSubmit = async () => {
     const normalized = reason.trim();
     if (!normalized) {
-      setError('Reason is required');
+      setError(t('requiredReason'));
       return;
     }
 
@@ -51,7 +53,7 @@ export function AdminReasonDialog({
       await onSubmit(normalized);
       onOpenChange(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Action failed');
+      setError(err instanceof Error ? err.message : t('failed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -61,19 +63,19 @@ export function AdminReasonDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <div>
+        <div>
             <DialogTitle>{title}</DialogTitle>
             <DialogDescription className="mt-1">{description}</DialogDescription>
           </div>
         </DialogHeader>
 
         <div className="space-y-4 px-6 py-5">
-          <FormField label="Reason" error={error ?? undefined} hint="Required for audit history.">
+          <FormField label={t('reasonLabel')} error={error ?? undefined} hint={t('hint')}>
             <Textarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               rows={4}
-              placeholder="Enter the reason"
+              placeholder={t('placeholder')}
             />
           </FormField>
           {error ? (
@@ -85,7 +87,7 @@ export function AdminReasonDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} type="button">
-            Cancel
+            {t('cancel')}
           </Button>
           <Button variant={destructive ? 'destructive' : 'primary'} isLoading={isSubmitting} onClick={handleSubmit} type="button">
             {confirmLabel}

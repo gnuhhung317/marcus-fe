@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -12,19 +12,31 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { loginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
+import { createLoginSchema, type LoginFormValues } from '@/lib/validations/auth.schema';
 import { clearBrowserAccessToken, setBrowserAccessToken } from '@/lib/api/http';
 
 interface LoginClientProps {
   initialNextPath: string;
   initialError?: string;
+  initialIsAuthenticated?: boolean;
   initialLoggedOut?: boolean;
+  initialRole?: string;
+  initialUsername?: string;
 }
 
 const LOGIN_ROUTE = '/api/auth/login';
 
-export default function LoginClient({ initialNextPath, initialError, initialLoggedOut }: LoginClientProps) {
+export default function LoginClient({
+  initialNextPath,
+  initialError,
+  initialIsAuthenticated,
+  initialLoggedOut,
+  initialRole,
+  initialUsername,
+}: LoginClientProps) {
   const t = useTranslations('Login');
+  const tValidation = useTranslations('Common.validation');
+  const loginSchema = createLoginSchema(tValidation);
   const [formError, setFormError] = useState<string | undefined>(undefined);
 
   const getErrorMessage = (error?: string) => {
@@ -99,12 +111,12 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden shell-grid bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.14),transparent_46%),radial-gradient(circle_at_80%_10%,hsl(var(--info)/0.10),transparent_34%),hsl(var(--background))] text-main">
+    <div className="relative flex flex-col min-h-screen overflow-hidden shell-grid bg-[radial-gradient(circle_at_top_left,hsl(var(--primary)/0.14),transparent_46%),radial-gradient(circle_at_80%_10%,hsl(var(--info)/0.10),transparent_34%),hsl(var(--background))] text-main">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--foreground)/0.08),transparent_55%)]" />
 
-      <SiteHeader isAuthenticated={false} />
+      <SiteHeader isAuthenticated={initialIsAuthenticated} role={initialRole} username={initialUsername} />
 
-      <main className="relative z-10 flex flex-grow items-center justify-center px-4 py-12 md:py-16">
+      <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-12 md:py-16">
         <section className="mx-auto grid w-full max-w-5xl gap-8 lg:grid-cols-[1.1fr_0.9fr] items-stretch">
           <Card variant="glass-strong" className="flex flex-col justify-between p-8 md:p-10">
             <div className="flex flex-col gap-4">
@@ -173,7 +185,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
                     type="text"
                     required
                     autoComplete="username"
-                    placeholder="duchung02st@gmail.com"
+                    placeholder={t('placeholders.username')}
                     className="h-12 pl-10"
                   />
                 </div>
@@ -181,7 +193,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
               </label>
 
               <label className="flex flex-col gap-2">
-                <span className="text-xs font-medium uppercase tracking-widest text-muted">{t('Auth.password')}</span>
+                <span className="text-xs font-medium uppercase tracking-widest text-muted">{t('password')}</span>
                 <div className="relative">
                   <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                   <Input
@@ -189,7 +201,7 @@ export default function LoginClient({ initialNextPath, initialError, initialLogg
                     type="password"
                     required
                     autoComplete="current-password"
-                    placeholder="********"
+                    placeholder={t('placeholders.password')}
                     className="h-12 pl-10"
                   />
                 </div>

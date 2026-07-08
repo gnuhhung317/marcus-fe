@@ -1,0 +1,340 @@
+{
+  "Auth": {
+    "loginTitle": "Login to your account",
+    "registerTitle": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit"
+  },
+  "Login": {
+    "ecosystem": "Marcus Trading Ecosystem",
+    "headline": "Next-Gen Algorithmic Trading",
+    "description": "Unlock professional quantitative execution, real-time portfolio intelligence, and secure API bot operations in a unified workspace.",
+    "securityTitle": "Institutional Security",
+    "securityDesc": "Enterprise session encryption, secure MFA authorization, and isolated API-key bots safeguard your trades.",
+    "latencyTitle": "Low-Latency Execution",
+    "latencyDesc": "Execute bots with direct-to-exchange routing, zero execution lags, and live telemetry.",
+    "terminalAccess": "Terminal Access",
+    "welcomeBack": "Welcome back",
+    "instructions": "Use your Marcus credentials to access the terminal.",
+    "usernameOrEmail": "Username or email",
+    "password": "Password",
+    "signingIn": "Signing In...",
+    "signIn": "Sign In",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "errors": {
+      "missingCredentials": "Please enter both username/email and password.",
+      "invalidCredentials": "Login failed. Please check your credentials and try again.",
+      "serviceUnavailable": "Login service is temporarily unavailable.",
+      "genericFail": "Login failed with status {status}.",
+      "noTokens": "Login completed but authentication tokens were not issued.",
+      "invalidUserPass": "Invalid username/email or password."
+    },
+    "placeholders": {
+      "username": "you@example.com",
+      "password": "Enter your password"
+    }
+  },
+  "Home": {
+    "badge": "Engine Online · {activeBots} Active Bots",
+    "headline": "High-Frequency Algorithmic Trading.",
+    "description": "Design, backtest, and deploy high-frequency bots with institutional-grade telemetry and ultra-low latency execution for retail and prop traders.",
+    "launchTerminal": "Launch Terminal",
+    "readDocs": "Developer Docs",
+    "stats": {
+      "developers": "Developers",
+      "executors": "Executors",
+      "uptime": "Core Uptime",
+      "exchanges": "Supported Exchanges"
+    },
+    "lifecycle": {
+      "title": "Quant Lifecycle",
+      "subtitle": "From strategy code to validated signals and trader-side execution.",
+      "docsCta": "Read guide",
+      "step1": {
+        "title": "Learn & Backtest",
+        "desc": "Access the Academy for institutional quant bots. Run historical backtests on years of tick data, in-browser, within seconds."
+      },
+      "step2": {
+        "title": "Build & Simulate",
+        "desc": "Use Quant Signal SDK to model signals, run backtests, upload historical results, and publish signed live or dry-run signals."
+      },
+      "step3": {
+        "title": "Deploy & Scale",
+        "desc": "Run the Marcus Local Executor Client as the trader-side runtime that receives signals and executes through your exchange account."
+      }
+    },
+    "hub": {
+      "title": "Join The Hub",
+      "desc": "Connect with quantitative developers, share bots, and get priority support from the Marcus engineering team.",
+      "discord": "Discord Server",
+      "forums": "Developer Forums"
+    },
+    "terminal": {
+      "badge": "quant-signal-sdk · local-executor",
+      "install": "$ pip install quant-signal-sdk",
+      "collecting": "Collecting quant-signal-sdk...",
+      "installed": "Successfully installed quant-signal-sdk-0.2.0",
+      "deploy": "$ quant-sdk backtest --bot-file my_bot.py --data-csv candles.csv --initial-cash 1000",
+      "ok": "OK",
+      "validating": "Validating SignalPayload schema...",
+      "connecting": "Preparing signed signal transport...",
+      "provisioning": "Executor runtime: dry-run or live via CCXT",
+      "deployed": "Backtest Completed",
+      "routingId": "CLI: quant-sdk",
+      "latency": "Executor: local-executor via WebSocket + CCXT"
+    }
+  },
+  "DeveloperDocs": {
+    "eyebrow": "Developer docs",
+    "badge": "SDK + Executor guide",
+    "title": "Build signals with the SDK, run execution with the local executor",
+    "description": "A practical guide for using the published Quant Signal SDK and the Marcus Local Executor Client without mixing their responsibilities.",
+    "hero": {
+      "pypiCta": "Open PyPI",
+      "credentialsCta": "Provision credentials"
+    },
+    "overview": {
+      "sdkTitle": "Quant Signal SDK",
+      "sdkDescription": "The Python package for modeling, validating, backtesting, uploading, and publishing Marcus trading signals.",
+      "executorTitle": "Local Executor Client",
+      "executorDescription": "The trader-side runtime that connects to the dispatcher, receives signals, and executes orders through an exchange account.",
+      "flowTitle": "Operating flow",
+      "flowDescription": "Developers publish signed signals. Traders run the executor with their own exchange credentials and execution mode."
+    },
+    "sdk": {
+      "eyebrow": "SDK quickstart",
+      "title": "Quant Signal SDK",
+      "description": "Install the published package from PyPI, build SignalPayload objects, send them through QuantSignalClient, and use quant-sdk for local backtests and uploads.",
+      "signalLabel": "Signal publish example",
+      "backtestLabel": "CLI backtest and upload",
+      "capabilities": {
+        "models": "Pydantic signal models and enums for actions, market type, order type, status, and execution policies.",
+        "strategy": "BaseStrategy and runtime interfaces keep strategy logic separate from transport and signing.",
+        "backtest": "PortfolioBacktestRunner replays OHLCV data locally without placing exchange orders.",
+        "upload": "Backtest upload can publish historical results to the Marcus backend as a batch report.",
+        "sync": "Dry-run sync helpers persist paper-trading state separately from historical backtests.",
+        "telemetry": "TelemetryClient is reserved for operational metrics such as CPU, latency, and heartbeat-style signals."
+      }
+    },
+    "executor": {
+      "eyebrow": "Executor quickstart",
+      "title": "Marcus Local Executor Client",
+      "description": "Run the executor as a local or Dockerized runtime. It maintains WebSocket connectivity, validates signal frames, records local SQLite state, and routes orders through CCXT in dry-run or live mode.",
+      "envLabel": "Required environment",
+      "localLabel": "Local run",
+      "dockerLabel": "Docker compose run",
+      "requirements": {
+        "wsUrl": "SYSTEM_WS_URL points to the Marcus executor WebSocket endpoint for the deployment you are using.",
+        "wsToken": "SYSTEM_WS_TOKEN authenticates the executor WebSocket handshake.",
+        "botId": "BOT_ID binds the runtime to the provisioned Marcus bot.",
+        "exchange": "Exchange credentials stay on the trader side and are required for live mode.",
+        "amount": "DEFAULT_ORDER_AMOUNT provides the fallback order amount when a signal does not include one.",
+        "mode": "EXECUTION_MODE must be dry-run for safe logging or live for real exchange orders."
+      }
+    },
+    "boundaries": {
+      "eyebrow": "Boundaries",
+      "title": "Keep SDK and executor responsibilities separate",
+      "description": "This distinction is important for security, product truthfulness, and support.",
+      "notes": {
+        "sdkNoExchange": "The SDK does not place real exchange orders. It creates, validates, signs, backtests, uploads, and publishes signals.",
+        "executorRuntime": "The executor is the runtime that receives accepted signals and executes them in dry-run or live mode through the trader exchange account.",
+        "deploymentConfig": "Backend and WebSocket URLs are deployment configuration. They should not be treated as hard-coded product branding."
+      }
+    },
+    "next": {
+      "label": "Next step",
+      "description": "Provision bot credentials in the terminal, store the raw secret once, then wire the SDK and executor with the generated bot ID and secrets.",
+      "cta": "Create bot credentials"
+    }
+  },
+  "Register": {
+    "title": "Create an account",
+    "subtitle": "Create your Marcus Trading account to start exploring bots, simulations, and live execution tools.",
+    "form": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "username": "Username",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "accountType": "Account type",
+      "hints": {
+        "email": "Use a reachable email for account recovery.",
+        "accountType": "Select developer if you plan to publish bots or integrations.",
+        "password": "At least 8 chars, with upper/lowercase and a number."
+      },
+      "roles": {
+        "trader": "Trader",
+        "developer": "Developer"
+      },
+      "terms": "By creating an account, you agree to system access and audit policies.",
+      "submit": "Create Account",
+      "submitting": "Creating Account...",
+      "success": "Account created successfully! Redirecting to login...",
+      "errors": {
+        "generic": "Registration failed. Please try again.",
+        "emailTaken": "This email is already registered.",
+        "usernameTaken": "This username is already taken."
+      }
+    }
+  },
+  "Market": {
+    "title": "Market Leaderboard",
+    "rankedBots": "{count} ranked bots",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "error": {
+      "title": "Market leaderboard unavailable",
+      "message": "Unable to load the public leaderboard right now."
+    },
+    "empty": {
+      "title": "No market leaderboard rows yet",
+      "message": "The public benchmark feed has not returned any rows yet."
+    },
+    "table": {
+      "rank": "Rank",
+      "bot": "Bot",
+      "creator": "Creator",
+      "cagr": "CAGR",
+      "drawdown": "Drawdown",
+      "sharpe": "Sharpe",
+      "status": "Status"
+    }
+  },
+  "Training": {
+    "eyebrow": "Trading Academy",
+    "badge": "Coming Soon",
+    "title": "The Academy is being prepared for a public launch",
+    "description": "We are shaping a clearer training path for traders moving from discretionary execution to systematic workflows.",
+    "availabilityNote": "Public enrollment is not open yet. This page will switch to real academy content only after the curriculum, labs, and enrollment flow have a proper source of truth.",
+    "primaryCta": "Read Research",
+    "secondaryCta": "Open Terminal",
+    "status": {
+      "label": "Current status",
+      "title": "Prelaunch, not live training",
+      "description": "The public route stays visible so users can understand what is coming next, but it intentionally does not present placeholder KPIs or mock course progress as if they were live.",
+      "curriculumLabel": "Curriculum",
+      "curriculumValue": "Practical modules are being structured around repeatable trading routines.",
+      "labsLabel": "Execution labs",
+      "labsValue": "Hands-on labs will be tied to real Marcus product flows before launch.",
+      "enrollmentLabel": "Enrollment",
+      "enrollmentValue": "Public enrollment remains closed until the rollout is operationally ready."
+    },
+    "roadmap": {
+      "eyebrow": "Planned rollout",
+      "title": "What will ship on this page",
+      "description": "The goal is a smaller, more truthful academy surface that only exposes capabilities once they are ready to support real users.",
+      "curriculum": {
+        "title": "Curriculum Foundations",
+        "description": "Core modules will focus on market structure, risk discipline, and system thinking before any advanced automation claims are shown."
+      },
+      "labs": {
+        "title": "Execution Labs",
+        "description": "Interactive labs will be wired to existing research and terminal flows so learners can move from concept to operating workflow."
+      },
+      "enrollment": {
+        "title": "Enrollment Flow",
+        "description": "Public enrollment and course actions will only appear after the supporting backend and ownership model are ready."
+      }
+    },
+    "footnote": {
+      "label": "Available now",
+      "description": "Until the academy is ready, the real value is in the research feed, the live product surface, and the existing account flows.",
+      "cta": "Create Account"
+    }
+  },
+  "Research": {
+    "eyebrow": "Research Library",
+    "badge": "Coming Soon",
+    "title": "The research library is being prepared for launch",
+    "description": "We are keeping the research route visible, but published briefings and downloadable reports are not live yet.",
+    "availabilityNote": "This page will switch to real research content only after the editorial review flow, report metadata, and file library have a production source of truth.",
+    "primaryCta": "Open Terminal",
+    "secondaryCta": "Create Account",
+    "status": {
+      "label": "Current status",
+      "title": "Prelaunch, not live research",
+      "description": "The route no longer presents placeholder reports or PDF files as if they were already published research.",
+      "reportsLabel": "Reports",
+      "reportsValue": "Quant briefings are being drafted and reviewed before public release.",
+      "libraryLabel": "File library",
+      "libraryValue": "Downloadable files will appear only after storage, metadata, and access policy are ready.",
+      "publishingLabel": "Publishing",
+      "publishingValue": "Public timestamps and report cards remain hidden until they come from a real publishing workflow."
+    },
+    "roadmap": {
+      "eyebrow": "Planned rollout",
+      "title": "What will ship on this page",
+      "description": "Research will return as a smaller, verified library instead of a realistic-looking placeholder feed.",
+      "methodology": {
+        "title": "Methodology Notes",
+        "description": "Public explainers will document how Marcus evaluates signals, market regimes, and risk controls."
+      },
+      "briefings": {
+        "title": "Quant Briefings",
+        "description": "Research posts will be published only after review, source tagging, and product alignment are in place."
+      },
+      "library": {
+        "title": "Verified Library",
+        "description": "PDF and report downloads will be tied to real files with explicit ownership and versioning."
+      }
+    },
+    "footnote": {
+      "label": "Available now",
+      "description": "Until research publishing is ready, users can explore the live product surface and account flows that already exist.",
+      "cta": "Create Account"
+    }
+  },
+  "Blog": {
+    "eyebrow": "Intelligence Feed",
+    "badge": "Coming Soon",
+    "title": "The Marcus blog is still in prelaunch",
+    "description": "Editorial notes, market explainers, and product updates are being prepared, but the public blog is not a live content feed yet.",
+    "availabilityNote": "We are keeping this route visible so visitors understand what is coming next. It will show real posts only after the publishing workflow is active.",
+    "primaryCta": "Open Terminal",
+    "secondaryCta": "Create Account",
+    "status": {
+      "label": "Current status",
+      "title": "Prelaunch, not a live blog",
+      "description": "The page intentionally avoids placeholder alerts, fake read times, and mock article cards until real posts exist.",
+      "postsLabel": "Posts",
+      "postsValue": "Editorial drafts are not published on the public route yet.",
+      "reviewLabel": "Review",
+      "reviewValue": "Content needs a real review and ownership process before appearing here.",
+      "publishingLabel": "Publishing",
+      "publishingValue": "The blog feed will open only after it is connected to a production publishing source."
+    },
+    "roadmap": {
+      "eyebrow": "Planned rollout",
+      "title": "What will ship on this page",
+      "description": "The blog will return with verified posts and clear authorship instead of static placeholders.",
+      "editorial": {
+        "title": "Editorial Calendar",
+        "description": "The team will publish product notes and trading workflow explainers on a consistent cadence."
+      },
+      "research": {
+        "title": "Research Summaries",
+        "description": "Blog posts will summarize research themes without pretending unpublished reports are already available."
+      },
+      "publishing": {
+        "title": "Publishing Workflow",
+        "description": "Posts will appear once review, timestamps, and source ownership are wired to a real content process."
+      }
+    },
+    "footnote": {
+      "label": "Available now",
+      "description": "Until the blog launches, the active product surface remains the terminal and the account flows around it.",
+      "cta": "Create Account"
+    }
+  },
+  "Marketing": {
+    "footer": {
+      "copyright": "2026 Marcus Trading Systems. Operational Intelligence Layer.",
+      "research": "Research",
+      "blog": "Blog",
+      "apiDocs": "API Docs"
+    }
+  }
+}

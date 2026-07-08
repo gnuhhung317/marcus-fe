@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +12,7 @@ interface FleetFiltersBarProps {
 }
 
 export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
+  const t = useTranslations('DeveloperDashboard.fleetFilters');
   const { getFilter, setFilter, resetFilters } = useUrlFilters();
 
   const searchQuery = getFilter('q', '');
@@ -25,7 +27,7 @@ export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
         <Input
           type="text"
-          placeholder="Search by bot name or ID..."
+          placeholder={t('searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setFilter('q', e.target.value)}
           className="h-11 pl-10 text-xs"
@@ -39,11 +41,11 @@ export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
             onChange={(e) => setFilter('status', e.target.value)}
             className="h-11 w-auto min-w-[10rem] text-xs"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="ACTIVE">Active Only</option>
-            <option value="PAUSED">Paused Only</option>
-            <option value="DOWN">Down Only</option>
-            <option value="DELETED">Deleted Only</option>
+            <option value="ALL">{t('status.all')}</option>
+            <option value="ACTIVE">{t('status.active')}</option>
+            <option value="PAUSED">{t('status.paused')}</option>
+            <option value="DOWN">{t('status.down')}</option>
+            <option value="DELETED">{t('status.deleted')}</option>
           </Select>
         </label>
 
@@ -53,7 +55,7 @@ export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
             onChange={(e) => setFilter('venue', e.target.value)}
             className="h-11 w-auto min-w-[10rem] text-xs"
           >
-            <option value="ALL">All Venues</option>
+            <option value="ALL">{t('venues.all')}</option>
             {uniqueExchanges.map((ex) => (
               <option key={ex} value={ex.toUpperCase()}>
                 {ex}
@@ -64,7 +66,7 @@ export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
 
         {hasActiveFilters ? (
           <Button variant="ghost" size="sm" onClick={() => resetFilters(['q', 'status', 'venue'])} className="h-9 px-3 text-xs font-bold">
-            Clear Filters
+            {t('clear')}
           </Button>
         ) : null}
       </div>

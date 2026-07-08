@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
+import { redirect } from '@/lib/navigation';
 
 /**
  * Terminal dashboard router.
@@ -11,20 +12,21 @@ export default async function TerminalDashboardPage() {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
   const normalizedRole = role === 'USER' ? 'TRADER' : role;
+  const locale = await getLocale();
 
   if (normalizedRole === 'ADMIN') {
-    redirect('/terminal/admin');
+    redirect({ href: '/terminal/admin', locale });
   }
 
   if (normalizedRole === 'DEVELOPER') {
-    redirect('/terminal/developer-dashboard');
+    redirect({ href: '/terminal/developer-dashboard', locale });
   }
 
   const dashboardV2Enabled = process.env.NEXT_PUBLIC_FEATURE_FLAG_DASHBOARD_V2 === 'true';
 
   if (dashboardV2Enabled) {
-    redirect('/terminal/decision');
+    redirect({ href: '/terminal/decision', locale });
   } else {
-    redirect('/terminal/monitoring');
+    redirect({ href: '/terminal/monitoring', locale });
   }
 }

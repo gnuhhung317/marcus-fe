@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
+import { useFormatter, useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -16,9 +17,12 @@ interface AdminBotsFilterBarProps {
 
 export function AdminBotsFilterBar({ filters, totalElements }: AdminBotsFilterBarProps) {
   const { setFilters } = useUrlFilters();
+  const t = useTranslations('Admin.Bots.filters');
+  const tStatus = useTranslations('Common.botStatus');
   const [query, setQuery] = useState(filters.query ?? '');
   const [status, setStatus] = useState(filters.status ?? '');
   const [developerId, setDeveloperId] = useState(filters.developerId ?? '');
+  const formatter = useFormatter();
   const debouncedQuery = useDebouncedValue(query, 350);
   const debouncedDeveloperId = useDebouncedValue(developerId, 350);
 
@@ -71,24 +75,24 @@ export function AdminBotsFilterBar({ filters, totalElements }: AdminBotsFilterBa
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search bot name, id, pair, or developer"
+            placeholder={t('searchPlaceholder')}
             className="pl-10"
           />
         </label>
 
         <Select value={status} onChange={(event) => setStatus(event.target.value)}>
-          <option value="">All statuses</option>
-          <option value="ACTIVE">Active</option>
-          <option value="PAUSED">Paused</option>
-          <option value="DOWN">Down</option>
-          <option value="DELETED">Deleted</option>
+          <option value="">{t('statusAll')}</option>
+          <option value="ACTIVE">{tStatus('ACTIVE')}</option>
+          <option value="PAUSED">{tStatus('PAUSED')}</option>
+          <option value="DOWN">{tStatus('DOWN')}</option>
+          <option value="DELETED">{tStatus('DELETED')}</option>
         </Select>
 
-        <Input value={developerId} onChange={(event) => setDeveloperId(event.target.value)} placeholder="Developer id" />
+        <Input value={developerId} onChange={(event) => setDeveloperId(event.target.value)} placeholder={t('developerId')} />
       </div>
 
       <p className="mt-3 text-xs text-muted">
-        Live filter updates. Showing {totalElements} bots.
+        {t('liveUpdate', { count: formatter.number(totalElements) })}
       </p>
     </Card>
   );

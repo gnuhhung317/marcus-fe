@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { createChart, LineSeries, LineStyle, Time } from 'lightweight-charts';
 import {
   createChartLayoutOptions,
@@ -28,6 +29,7 @@ function toChartTime(timestamp: string): Time {
 }
 
 export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps) {
+  const t = useTranslations('TerminalBot.chart');
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -88,7 +90,7 @@ export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps
         lineWidth: 1,
         lineStyle: LineStyle.Dashed,
         axisLabelVisible: false,
-        title: 'Out-of-sample start',
+        title: t('outOfSampleStart'),
       });
     }
 
@@ -102,7 +104,7 @@ export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps
   if (!data || data.length < 2) {
     return (
       <div className="panel flex h-80 items-center justify-center text-sm text-muted">
-        Insufficient data for performance chart
+        {t('insufficientData')}
       </div>
     );
   }
@@ -113,13 +115,13 @@ export function PerformanceChart({ data, splitTimestamp }: PerformanceChartProps
       <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted">
         <span className="inline-flex items-center gap-2">
           <span className="h-2 w-5 rounded-full bg-border" />
-          Historical
+          {t('historical')}
         </span>
         <span className="inline-flex items-center gap-2">
           <span className="h-2 w-5 rounded-full bg-positive" />
-          Out-of-sample
+          {t('outOfSample')}
         </span>
-        <span className="ml-auto">Y-axis: normalized return (%)</span>
+        <span className="ml-auto">{t('normalizedReturnAxis')}</span>
       </div>
     </div>
   );

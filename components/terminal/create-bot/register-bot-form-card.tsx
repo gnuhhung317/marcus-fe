@@ -1,5 +1,6 @@
+import { useTranslations } from 'next-intl';
 import { Form, FormField } from '@/components/ui/form-primitive';
-import { registerBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
+import { createRegisterBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
 
 interface RegisterBotFormCardProps {
   isSubmitting: boolean;
@@ -12,10 +13,14 @@ export function RegisterBotFormCard({
   submitError,
   onSubmit,
 }: RegisterBotFormCardProps) {
+  const t = useTranslations('CreateBot.form');
+  const tValidation = useTranslations('Common.validation');
+  const registerBotSchema = createRegisterBotSchema(tValidation);
+
   return (
     <article className="glass rounded-2xl p-6">
-      <h2 className="font-display text-2xl text-main">Register Bot</h2>
-      <p className="mt-2 text-sm text-muted">Required fields map directly to RegisterBotRequest.</p>
+      <h2 className="font-display text-2xl text-main">{t('title')}</h2>
+      <p className="mt-2 text-sm text-muted">{t('description')}</p>
 
       <Form<RegisterBotFormValues>
         schema={registerBotSchema}
@@ -30,29 +35,29 @@ export function RegisterBotFormCard({
         {({ register, formState: { errors } }) => (
           <>
             <div className="grid gap-4 md:grid-cols-2">
-              <FormField label="Bot Name" error={errors.botName?.message}>
+              <FormField label={t('botName')} error={errors.botName?.message}>
                 <input
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('botName')}
                 />
               </FormField>
 
-              <FormField label="Exchange" error={errors.exchange?.message}>
+              <FormField label={t('exchange')} error={errors.exchange?.message}>
                 <select
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('exchange')}
                 >
-                  <option value="BINANCE">BINANCE</option>
-                  <option value="BYBIT">BYBIT</option>
-                  <option value="OKX">OKX</option>
+                  <option value="BINANCE">{t('venues.binance')}</option>
+                  <option value="BYBIT">{t('venues.bybit')}</option>
+                  <option value="OKX">{t('venues.okx')}</option>
                 </select>
               </FormField>
 
-              <FormField label="Trading Pair" error={errors.tradingPair?.message}>
+              <FormField label={t('tradingPair')} error={errors.tradingPair?.message}>
                 <input
                   className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-main outline-none focus:border-positive/50"
                   {...register('tradingPair')}
-                  placeholder="e.g. BTC/USDT"
+                  placeholder={t('tradingPairPlaceholder')}
                 />
               </FormField>
             </div>
@@ -65,7 +70,7 @@ export function RegisterBotFormCard({
                 className="rounded-xl cta-primary px-4 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-60" 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Generating Secret...' : 'Create Bot'}
+                {isSubmitting ? t('submitting') : t('submit')}
               </button>
             </div>
           </>

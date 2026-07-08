@@ -28,7 +28,7 @@ export interface TimeSeriesValue {
 
 export interface AllocationSlice {
   name: string;
-  value: number;
+  percent: number;
 }
 
 export interface BotTrade {

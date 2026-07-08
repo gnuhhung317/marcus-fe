@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { PortfolioOverview } from '@/lib/contracts/types';
 
 function statusClasses(status: 'offline' | 'live' | 'stale' | 'aging') {
@@ -11,6 +12,7 @@ function statusClasses(status: 'offline' | 'live' | 'stale' | 'aging') {
 }
 
 export function PortfolioOverviewStats({ overview }: { overview: PortfolioOverview }) {
+  const t = useTranslations('Decision.portfolioOverview');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -32,10 +34,10 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
   const hasStaleAccounts = (overview.staleAccountsCount ?? 0) > 0;
   const freshnessState = overview.dataFreshness ?? (hasStaleAccounts ? 'PARTIAL' : 'FRESH');
 
-  let statusLabel = 'Offline';
+  let statusLabel = t('status.offline');
   let statusState: 'offline' | 'live' | 'stale' | 'aging' = 'offline';
   let pulseColor = 'bg-negative';
-  let lastUpdatedText = 'Never synced';
+  let lastUpdatedText = t('status.neverSynced');
 
   if (mounted && overview.lastUpdated) {
     const lastUpdatedDate = new Date(overview.lastUpdated);
@@ -45,16 +47,16 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
     lastUpdatedText = lastUpdatedDate.toLocaleTimeString();
 
     if (diffMins < 5) {
-      statusLabel = 'Live';
+      statusLabel = t('status.live');
       statusState = 'live';
       pulseColor = 'bg-positive';
     } else if (diffMins < 60) {
-      statusLabel = `Synced ${diffMins}m ago`;
+      statusLabel = t('status.syncedMinutes', { value: diffMins });
       statusState = 'stale';
       pulseColor = 'bg-warning';
     } else {
       const hours = Math.floor(diffMins / 60);
-      statusLabel = hours < 24 ? `Synced ${hours}h ago` : `Synced ${Math.floor(hours / 24)}d ago`;
+      statusLabel = hours < 24 ? t('status.syncedHours', { value: hours }) : t('status.syncedDays', { value: Math.floor(hours / 24) });
       statusState = 'aging';
       pulseColor = 'bg-muted';
     }
@@ -62,36 +64,46 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
 
   const statItems = [
     {
-      label: 'Total equity',
+      label: t('stats.totalEquity.label'),
       value: `$${formatNumber(overview.totalEquity, 2)}`,
-      detail: 'Base capital + floating profit',
+      detail: t('stats.totalEquity.detail'),
       colorClass: 'text-main',
     },
     {
-      label: 'Open PnL',
+      label: t('stats.openPnl.label'),
       value: formatCurrency(overview.aggregateOpenPnL),
-      detail: 'Unrealized portfolio delta',
+      detail: t('stats.openPnl.detail'),
       colorClass: overview.aggregateOpenPnL >= 0 ? 'text-positive' : 'text-negative',
     },
     {
-      label: 'Win rate (24h)',
+      label: t('stats.winRate.label'),
       value: `${winRatePercent}%`,
-      detail: overview.aggregateWinRate24h >= 0.6 ? 'Healthy signal quality' : 'Needs monitoring',
+      detail: overview.aggregateWinRate24h >= 0.6 ? t('stats.winRate.healthy') : t('stats.winRate.below'),
       colorClass: winRateColor,
     },
     {
-      label: 'At-risk subscriptions',
+      label: t('stats.atRiskSubscriptions.label'),
       value: overview.atRiskSubscriptionCount,
-      detail: overview.atRiskSubscriptionCount > 0 ? 'Needs review now' : 'No urgent alerts',
+      detail: overview.atRiskSubscriptionCount > 0 ? t('stats.atRiskSubscriptions.review') : t('stats.atRiskSubscriptions.ok'),
       colorClass: atRiskColor,
     },
   ];
+
+  const freshnessLabel =
+    freshnessState === 'FRESH'
+      ? t('freshness.fresh')
+      : freshnessState === 'PARTIAL'
+        ? t('freshness.partial')
+        : t('freshness.stale');
+
+  const staleAccountsLabel =
+    (overview.staleAccountsCount ?? 0) === 1 ? t('staleAccounts', { count: 1 }) : t('staleAccountsPlural', { count: overview.staleAccountsCount ?? 0 });
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-main">Portfolio overview</h2>
+          <h2 className="text-lg font-semibold text-main">{t('title')}</h2>
         </div>
         {mounted && (
           <div className={`flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>
@@ -106,10 +118,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
 
       <div className="grid items-stretch grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {statItems.map((item) => (
-          <div
-            key={item.label}
-            className="panel h-full min-h-[118px] p-4"
-          >
+          <div key={item.label} className="panel h-full min-h-[118px] p-4">
             <div className="flex h-full flex-col">
               <div className="flex-1 space-y-2">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{item.label}</p>
@@ -123,17 +132,17 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
 
       <div className="flex flex-wrap gap-2 text-xs text-muted">
         <span className="rounded-full border border-border bg-surface px-3 py-1">
-          Active bots: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
+          {t('activeBots')}: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
         </span>
         <span className="rounded-full border border-border bg-surface px-3 py-1">
-          Synced at: <span className="font-semibold text-main">{lastUpdatedText}</span>
+          {t('syncedAt')}: <span className="font-semibold text-main">{lastUpdatedText}</span>
         </span>
         <span className={`rounded-full border px-3 py-1 ${freshnessState === 'FRESH' ? 'border-positive/20 bg-positive/8 text-positive' : freshnessState === 'PARTIAL' ? 'border-warning/20 bg-warning/8 text-warning' : 'border-negative/20 bg-negative/8 text-negative'}`}>
-          Data: <span className="font-semibold text-main">{freshnessState}</span>
+          {t('data')}: <span className="font-semibold text-main">{freshnessLabel}</span>
         </span>
         {hasStaleAccounts && (
           <span className="rounded-full border border-warning/20 bg-warning/8 px-3 py-1 text-warning">
-            {overview.staleAccountsCount} stale account{overview.staleAccountsCount === 1 ? '' : 's'}
+            {staleAccountsLabel}
           </span>
         )}
       </div>

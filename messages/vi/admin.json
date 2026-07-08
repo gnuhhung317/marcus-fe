@@ -1,0 +1,251 @@
+{
+  "Admin": {
+    "Overview": {
+      "title": "Tổng quan quản trị",
+      "description": "Bề mặt điều khiển vận hành cho Marcus Trading.",
+      "stats": {
+        "users": "Người dùng",
+        "banned": "Bị khóa",
+        "bots": "Bots",
+        "activeSubscriptions": "Đăng ký đang hoạt động"
+      },
+      "panels": {
+        "operationalMix": {
+          "title": "Cơ cấu vận hành",
+          "description": "Phân bố trạng thái trên toàn bộ đội bot."
+        },
+        "recentActions": {
+          "title": "Hành động gần đây",
+          "description": "Các thay đổi quản trị mới nhất từ nhật ký kiểm toán."
+        }
+      },
+      "states": {
+        "active": "Hoạt động",
+        "paused": "Tạm dừng",
+        "deleted": "Đã xóa",
+        "disconnectedExecutors": "Executor mất kết nối",
+        "checkedAt": "Đã kiểm tra lúc"
+      },
+      "actions": {
+        "systemLogs": "Nhật ký hệ thống",
+        "manageUsers": "Quản lý người dùng",
+        "inspectBots": "Kiểm tra bots",
+        "reviewSystemHealth": "Xem sức khỏe hệ thống"
+      },
+      "emptyAudit": "Chưa có sự kiện kiểm toán nào."
+    },
+    "Users": {
+      "page": {
+        "title": "Người dùng",
+        "description": "Tìm kiếm, thăng quyền, khóa và kiểm tra tài khoản người dùng."
+      },
+      "filters": {
+        "searchPlaceholder": "Tìm tên đăng nhập, email, hoặc user id",
+        "roleAll": "Tất cả vai trò",
+        "roleAdmin": "Quản trị",
+        "roleTrader": "Nhà giao dịch",
+        "roleDeveloper": "Nhà phát triển",
+        "banAll": "Tất cả người dùng",
+        "banActive": "Hoạt động",
+        "banBanned": "Bị khóa",
+        "liveUpdate": "Bộ lọc cập nhật trực tiếp. Đang hiển thị {count} người dùng."
+      },
+      "table": {
+        "user": "Người dùng",
+        "role": "Vai trò",
+        "banState": "Trạng thái khóa",
+        "meta": "Meta",
+        "actions": "Hành động",
+        "roleButton": "Vai trò",
+        "banButton": "Khóa",
+        "unbanButton": "Mở khóa",
+        "noUsersFound": "Không tìm thấy người dùng nào.",
+        "noReasonStored": "Không có lý do được lưu",
+        "unknown": "Không rõ"
+      },
+      "dialogs": {
+        "role": {
+          "title": "Đổi vai trò",
+          "description": "Cập nhật vai trò tài khoản cho {username}.",
+          "roleLabel": "Vai trò",
+          "reasonLabel": "Lý do",
+          "cancel": "Hủy",
+          "submit": "Cập nhật vai trò",
+          "requiredReason": "Cần nhập lý do",
+          "failed": "Không thể cập nhật vai trò",
+          "selectedUser": "người dùng đã chọn",
+          "trader": "Nhà giao dịch",
+          "developer": "Nhà phát triển"
+        },
+        "ban": {
+          "titleBan": "Khóa người dùng",
+          "titleUnban": "Mở khóa người dùng",
+          "descriptionBan": "Chặn quyền truy cập tài khoản kèm lý do.",
+          "descriptionUnban": "Khôi phục quyền truy cập tài khoản kèm lý do.",
+          "reasonLabel": "Lý do",
+          "hint": "Bắt buộc cho lịch sử kiểm toán.",
+          "cancel": "Hủy",
+          "submitBan": "Khóa người dùng",
+          "submitUnban": "Mở khóa người dùng",
+          "requiredReason": "Cần nhập lý do",
+          "failed": "Không thể cập nhật trạng thái khóa",
+          "protectTraders": "Dùng khi tạm dừng hoặc xóa bot để bảo vệ nhà giao dịch.",
+          "selectedUser": "người dùng đã chọn"
+        }
+      },
+      "state": {
+        "loadingTitle": "Đang tải người dùng",
+        "loadingMessage": "Đang lấy danh sách người dùng quản trị mới nhất.",
+        "errorTitle": "Không thể tải người dùng",
+        "errorMessage": "Hiện không thể tải người dùng.",
+        "emptyTitle": "Không tìm thấy người dùng nào",
+        "emptyMessage": "Hãy thử điều chỉnh bộ lọc tìm kiếm, vai trò hoặc trạng thái khóa."
+      },
+      "toast": {
+        "roleUpdatedTitle": "Đã cập nhật vai trò",
+        "roleUpdatedMessage": "{username} hiện là {role}.",
+        "userBannedTitle": "Đã khóa người dùng",
+        "userUnbannedTitle": "Đã mở khóa người dùng"
+      },
+      "pagination": {
+        "pageOfItems": "Trang {page} / {totalPages} · {totalElements} người dùng"
+      }
+    },
+    "Bots": {
+      "page": {
+        "title": "Bots",
+        "description": "Kiểm tra và điều khiển toàn bộ bot trên nền tảng."
+      },
+      "filters": {
+        "searchPlaceholder": "Tìm tên bot, id, cặp giao dịch hoặc nhà phát triển",
+        "statusAll": "Tất cả trạng thái",
+        "developerId": "Developer id",
+        "liveUpdate": "Bộ lọc cập nhật trực tiếp. Đang hiển thị {count} bot."
+      },
+      "table": {
+        "bot": "Bot",
+        "developer": "Nhà phát triển",
+        "status": "Trạng thái",
+        "subscribers": "Người đăng ký",
+        "actions": "Hành động",
+        "open": "Mở",
+        "statusButton": "Trạng thái",
+        "noBotsFound": "Không tìm thấy bot nào.",
+        "noPairSet": "Chưa đặt cặp giao dịch"
+      },
+      "state": {
+        "loadingTitle": "Đang tải bot",
+        "loadingMessage": "Đang lấy danh sách bot quản trị mới nhất.",
+        "errorTitle": "Không thể tải bot",
+        "errorMessage": "Hiện không thể tải bot.",
+        "emptyTitle": "Không tìm thấy bot nào",
+        "emptyMessage": "Hãy thử điều chỉnh từ khóa tìm kiếm, trạng thái hoặc bộ lọc nhà phát triển."
+      },
+      "toast": {
+        "statusUpdatedTitle": "Đã cập nhật trạng thái bot",
+        "subscriptionCanceledTitle": "Đã hủy đăng ký"
+      },
+      "detail": {
+        "page": {
+          "description": "Kiểm tra bot, xem đăng ký và ghi đè trạng thái."
+        },
+        "header": {
+          "descriptionFallback": "Không có mô tả.",
+          "updateStatus": "Cập nhật trạng thái",
+          "developer": "Nhà phát triển",
+          "tradingPair": "Cặp giao dịch",
+          "subscribers": "Người đăng ký",
+          "signals": "Tín hiệu",
+          "unset": "Chưa đặt"
+        },
+        "tabs": {
+          "overview": "Tổng quan",
+          "signals": "Tín hiệu",
+          "subscribers": "Người đăng ký",
+          "audit": "Nhật ký kiểm toán"
+        },
+        "overview": {
+          "exchange": "Sàn",
+          "riskLevel": "Mức rủi ro",
+          "activeSubscribers": "Người đăng ký đang hoạt động",
+          "unset": "Chưa đặt"
+        },
+        "signals": {
+          "emptyTitle": "Không tìm thấy tín hiệu nào",
+          "emptyMessage": "Bot này chưa phát ra tín hiệu nào.",
+          "signal": "Tín hiệu",
+          "action": "Hành động",
+          "symbol": "Mã",
+          "status": "Trạng thái",
+          "time": "Thời gian",
+          "unknown": "Không rõ"
+        },
+        "subscribers": {
+          "emptyTitle": "Không tìm thấy người đăng ký nào",
+          "emptyMessage": "Bot này chưa có phiên executor nào được liên kết.",
+          "subscriber": "Người đăng ký",
+          "status": "Trạng thái",
+          "executor": "Executor",
+          "lifecycle": "Vòng đời",
+          "actions": "Hành động",
+          "connected": "Đã kết nối",
+          "disconnected": "Mất kết nối",
+          "noEmail": "Không có email",
+          "unknown": "Không rõ",
+          "forceCancel": "Buộc hủy"
+        },
+        "audit": {
+          "emptyTitle": "Không tìm thấy sự kiện kiểm toán nào",
+          "emptyMessage": "Hiện chưa có lịch sử kiểm toán cho bot này.",
+          "action": "Hành động",
+          "target": "Đối tượng",
+          "reason": "Lý do",
+          "time": "Thời gian",
+          "noReasonStored": "Không có lý do được lưu",
+          "unknown": "Không rõ"
+        },
+        "statusDialog": {
+          "title": "Cập nhật trạng thái bot",
+          "description": "Thay đổi trạng thái vòng đời cho {botName}.",
+          "statusLabel": "Trạng thái",
+          "reasonLabel": "Lý do",
+          "cancelActiveSubscriptions": "Hủy các đăng ký đang hoạt động",
+          "cancelActiveSubscriptionsHint": "Dùng khi tạm dừng hoặc xóa bot để bảo vệ nhà giao dịch.",
+          "requiredReason": "Cần nhập lý do",
+          "failed": "Không thể cập nhật trạng thái bot",
+          "cancel": "Hủy",
+          "submit": "Cập nhật trạng thái",
+          "selectedBot": "bot đã chọn"
+        },
+        "reasonDialog": {
+          "title": "Buộc hủy đăng ký",
+          "description": "Hủy đăng ký đang hoạt động của {subscriberName}.",
+          "confirm": "Hủy đăng ký",
+          "reasonLabel": "Lý do",
+          "hint": "Bắt buộc cho lịch sử kiểm toán.",
+          "placeholder": "Nhập lý do",
+          "requiredReason": "Cần nhập lý do",
+          "failed": "Hành động thất bại",
+          "cancel": "Hủy",
+          "selectedTrader": "nhà giao dịch này"
+        }
+      }
+    },
+    "System": {
+      "page": {
+        "title": "Sức khỏe hệ thống",
+        "description": "Quyền truy cập quản trị vào kết nối và nhật ký thực thi."
+      },
+      "connectivity": {
+        "title": "Kết nối",
+        "description": "Ảnh chụp nhanh trạng thái executor và hạ tầng hiện tại.",
+        "checkedAt": "Đã kiểm tra lúc"
+      },
+      "logs": {
+        "title": "Nhật ký thực thi",
+        "description": "Các sự kiện hệ thống gần đây."
+      },
+      "emptyLogs": "Chưa có nhật ký thực thi nào."
+    }
+  }
+}

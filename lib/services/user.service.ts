@@ -77,6 +77,7 @@ interface DashboardOverviewResponse {
   freshAccountsCount?: number;
   staleAccountsCount?: number;
   dataFreshness?: string;
+  lastUpdated?: string | null;
 }
 
 interface ExchangeAllocationItemResponse {
@@ -101,6 +102,13 @@ interface TradeLogPageResponse {
 interface TimeSeriesPointResponse {
   timestamp?: string;
   value?: number;
+}
+
+function clampPercent(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, value));
 }
 
 export interface ApiKeyCreateRequest {
@@ -343,22 +351,19 @@ export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActi
   return (response.items ?? []).map((activity, index) => mapLoginActivity(activity, index));
 }
 
-export async function getDashboardPageData(range: string = '7D'): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
-  const [overview, allocationItems, tradeLogPage, equitySeriesResponse] = await Promise.all([
+export async function getDashboardOverviewData(): Promise<DashboardPageData> {
+  const [overview, allocationItems, tradeLogPage] = await Promise.all([
     requestContractJson<DashboardOverviewResponse>('dashboard-overview'),
     requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'),
     requestContractJson<TradeLogPageResponse>('dashboard-trades', {
       queryParams: { page: 0, size: 8 },
-    }),
-    requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
-      queryParams: { range },
     }),
   ]);
 
   const mappedAllocations = allocationItems
     .map((item) => ({
       name: item.exchange ?? 'Unknown Exchange',
-      value: Math.max(0, toNumber(item.percentage)),
+      percent: clampPercent(toNumber(item.percentage)),
     }))
     .filter((item) => item.name.length > 0);
 
@@ -366,17 +371,44 @@ export async function getDashboardPageData(range: string = '7D'): Promise<Dashbo
     .map((item) => mapTradeLogItem(item))
     .filter((item): item is BotTrade => item !== null);
 
-  const performanceSeries = (equitySeriesResponse ?? [])
-    .map((point) => ({
-      timestamp: point.timestamp ?? new Date().toISOString(),
-      value: toNumber(point.value),
-    }))
-    .filter((point) => Number.isFinite(point.value));
-
   return {
     terminalKpis: overview ? mapDashboardKpis(overview) : [],
     botTrades: mappedTrades,
     allocations: mappedAllocations,
+    lastUpdated: overview?.lastUpdated ?? null,
+  };
+}
+
+export async function getDashboardPerformanceSeries(range: string = '7D'): Promise<TimeSeriesValue[]> {
+  const equitySeriesResponse = await requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
+    queryParams: { range },
+  });
+
+  return (equitySeriesResponse ?? [])
+    .flatMap((point) => {
+      if (typeof point?.timestamp !== 'string' || point.timestamp.length === 0) {
+        return [];
+      }
+
+      if (typeof point.value !== 'number' || !Number.isFinite(point.value)) {
+        return [];
+      }
+
+      return [{
+        timestamp: point.timestamp,
+        value: point.value,
+      }];
+    });
+}
+
+export async function getDashboardPageData(range: string = '7D'): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
+  const [dashboard, performanceSeries] = await Promise.all([
+    getDashboardOverviewData(),
+    getDashboardPerformanceSeries(range),
+  ]);
+
+  return {
+    ...dashboard,
     performanceSeries,
   };
 }

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ErrorStateCard, LoadingStateCard } from '@/components/shared/api-state';
 import { useToast } from '@/components/providers/toast-provider';
 import { useAdminBotMutations } from '@/lib/hooks/use-admin-mutations';
@@ -20,26 +21,32 @@ interface AdminBotDetailClientProps {
   initialData: AdminBotDetailPageData;
 }
 
-export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClientProps) {
-  const { pushToast } = useToast();
-  const query = useAdminBotDetailQuery(botId, initialData);
-  const { updateStatus, forceCancelSubscription } = useAdminBotMutations();
-  const [activeTab, setActiveTab] = useState<AdminBotDetailTab>('overview');
-  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
-  const [cancelTarget, setCancelTarget] = useState<AdminBotDetailPageData['subscribers']['items'][number] | null>(null);
+interface AdminBotDetailContentProps extends AdminBotDetailClientProps {
+  onUpdateStatus: () => void;
+  onForceCancel: (subscriber: AdminBotDetailPageData['subscribers']['items'][number]) => void;
+}
 
+const AdminBotDetailContent = memo(function AdminBotDetailContent({
+  botId,
+  initialData,
+  onUpdateStatus,
+  onForceCancel,
+}: AdminBotDetailContentProps) {
+  const t = useTranslations('Admin.Bots.detail');
+  const tRoot = useTranslations('Admin.Bots');
+  const query = useAdminBotDetailQuery(botId, initialData);
+  const [activeTab, setActiveTab] = useState<AdminBotDetailTab>('overview');
   const data = query.data ?? initialData;
 
   if (query.isLoading && !query.data) {
-    return <LoadingStateCard title="Loading bot detail" message="Fetching audit, signals, and subscriber data." />;
+    return <LoadingStateCard title={tRoot('state.loadingTitle')} message={tRoot('state.loadingMessage')} />;
   }
 
   if (query.error && !query.data) {
     return (
       <ErrorStateCard
-        title="Bot detail unavailable"
-        message={query.error instanceof Error ? query.error.message : 'Unable to load this bot right now.'}
-        actionLabel="Retry"
+        title={tRoot('state.errorTitle')}
+        message={query.error instanceof Error ? query.error.message : tRoot('state.errorMessage')}
         onAction={() => void query.refetch()}
       />
     );
@@ -47,7 +54,7 @@ export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClien
 
   return (
     <div className="space-y-6">
-      <AdminBotDetailHeader data={data} onUpdateStatus={() => setStatusDialogOpen(true)} />
+      <AdminBotDetailHeader data={data} onUpdateStatus={onUpdateStatus} />
 
       <AdminBotDetailTabs activeTab={activeTab} onChange={setActiveTab} />
 
@@ -56,14 +63,42 @@ export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClien
       {activeTab === 'subscribers' ? (
         <AdminBotSubscribersTab
           subscribers={data.subscribers.items}
-          onForceCancel={(subscriber) => setCancelTarget(subscriber)}
+          onForceCancel={onForceCancel}
         />
       ) : null}
       {activeTab === 'audit' ? <AdminBotAuditTab auditEvents={data.auditEvents.items} /> : null}
+    </div>
+  );
+});
+
+export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClientProps) {
+  const { pushToast } = useToast();
+  const t = useTranslations('Admin.Bots.detail');
+  const tRoot = useTranslations('Admin.Bots');
+  const { updateStatus, forceCancelSubscription } = useAdminBotMutations();
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<AdminBotDetailPageData['subscribers']['items'][number] | null>(null);
+
+  const handleOpenStatusDialog = useCallback(() => {
+    setStatusDialogOpen(true);
+  }, []);
+
+  const handleForceCancel = useCallback((subscriber: AdminBotDetailPageData['subscribers']['items'][number]) => {
+    setCancelTarget(subscriber);
+  }, []);
+
+  return (
+    <>
+      <AdminBotDetailContent
+        botId={botId}
+        initialData={initialData}
+        onUpdateStatus={handleOpenStatusDialog}
+        onForceCancel={handleForceCancel}
+      />
 
       <AdminBotStatusDialog
         open={statusDialogOpen}
-        bot={data.detail}
+        bot={initialData.detail}
         onOpenChange={(open) => setStatusDialogOpen(open)}
         onSubmit={async ({ status, reason, cancelActiveSubscriptions }) => {
           await updateStatus.mutateAsync({
@@ -74,8 +109,8 @@ export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClien
           });
 
           pushToast({
-            title: 'Bot status updated',
-            message: data.detail.name,
+            title: tRoot('toast.statusUpdatedTitle'),
+            message: initialData.detail.name,
             tone: 'success',
           });
         }}
@@ -83,9 +118,11 @@ export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClien
 
       <AdminReasonDialog
         open={cancelTarget !== null}
-        title="Force cancel subscription"
-        description={`Cancel the active subscription for ${cancelTarget?.username ?? cancelTarget?.userId ?? 'this trader'}.`}
-        confirmLabel="Cancel subscription"
+        title={t('reasonDialog.title')}
+        description={t('reasonDialog.description', {
+          subscriberName: cancelTarget?.username ?? cancelTarget?.userId ?? t('reasonDialog.selectedTrader'),
+        })}
+        confirmLabel={t('reasonDialog.confirm')}
         onOpenChange={(open) => {
           if (!open) setCancelTarget(null);
         }}
@@ -99,13 +136,13 @@ export function AdminBotDetailClient({ botId, initialData }: AdminBotDetailClien
           });
 
           pushToast({
-            title: 'Subscription canceled',
+            title: tRoot('toast.subscriptionCanceledTitle'),
             message: cancelTarget.username ?? cancelTarget.userId,
             tone: 'success',
           });
         }}
         defaultReason=""
       />
-    </div>
+    </>
   );
 }

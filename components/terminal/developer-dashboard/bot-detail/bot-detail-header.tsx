@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { ArrowLeft, Edit, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DeveloperBotDetail, DeveloperBotStatus, BotIntegrationHealth } from '@/lib/contracts/types';
@@ -14,6 +15,9 @@ interface BotDetailHeaderProps {
 }
 
 export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, onDelete, onBackToFleet }: BotDetailHeaderProps) {
+  const t = useTranslations('DeveloperDashboard.botDetail.header');
+  const tStatus = useTranslations('Common.botStatus');
+  const tHealth = useTranslations('Common.systemHealth');
   const isUp = integrationHealth?.overallStatus === 'UP';
   const isDegraded = integrationHealth?.overallStatus === 'DEGRADED';
   const statusVariant = localStatus === 'ACTIVE' ? 'success' : localStatus === 'PAUSED' ? 'warning' : 'error';
@@ -40,20 +44,20 @@ export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, o
               className="inline-flex items-center gap-1.5"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Fleet
+              {t('back')}
             </Link>
           </Button>
 
           <div className="flex flex-wrap items-center gap-2 font-mono">
             <Badge variant={statusVariant} className="rounded-lg px-2.5 py-1 text-[9px]">
               <span className={`h-1.5 w-1.5 rounded-full ${localStatus === 'ACTIVE' ? 'bg-positive' : localStatus === 'PAUSED' ? 'bg-warning' : 'bg-negative'}`} />
-              {localStatus}
+              {tStatus(localStatus as 'ACTIVE' | 'PAUSED' | 'DOWN' | 'DELETED')}
             </Badge>
 
             {integrationHealth && (
               <Badge variant={integrationVariant} className="rounded-lg px-2.5 py-1 text-[9px]">
                 <span className={`h-1.5 w-1.5 rounded-full ${isUp ? 'bg-positive' : isDegraded ? 'bg-warning' : 'bg-negative'}`} />
-                {integrationHealth.overallStatus}
+                {tHealth(integrationHealth.overallStatus as 'UP' | 'DEGRADED' | 'DOWN')}
               </Badge>
             )}
 
@@ -73,21 +77,21 @@ export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, o
 
           <div className="grid overflow-hidden rounded-xl border border-border/40 bg-surface/30 font-mono sm:grid-cols-2 xl:grid-cols-3">
             <div className="px-4 py-3">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Venue • Pair</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">{t('venuePair')}</p>
               <p className="mt-1 text-xs font-bold text-main">
-                {bot.exchange ?? 'N/A'} • {bot.tradingPair ?? 'N/A'}
+                {bot.exchange ?? t('na')} • {bot.tradingPair ?? t('na')}
               </p>
             </div>
             <div className="border-t border-border/40 px-4 py-3 sm:border-l sm:border-t-0">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Developer ID</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">{t('developerId')}</p>
               <p className="mt-1 text-xs font-bold text-main">
-                {bot.developerId ? `${bot.developerId.slice(0, 12)}...` : 'N/A'}
+                {bot.developerId ? `${bot.developerId.slice(0, 12)}...` : t('na')}
               </p>
             </div>
             <div className="border-t border-border/40 px-4 py-3 xl:border-l xl:border-t-0">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">Last Updated</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted font-sans">{t('lastUpdated')}</p>
               <p className="mt-1 text-xs font-bold text-main font-sans">
-                {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : 'N/A'}
+                {bot.updatedAt ? new Date(bot.updatedAt).toLocaleString() : t('na')}
               </p>
             </div>
           </div>
@@ -96,11 +100,11 @@ export function BotDetailHeader({ bot, localStatus, integrationHealth, onEdit, o
         <div className="flex shrink-0 flex-row gap-3 sm:flex-row lg:flex-col font-sans">
           <Button variant="secondary" onClick={onEdit} className="gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer h-9 px-4">
             <Edit className="h-3.5 w-3.5" />
-            Edit Bot
+            {t('edit')}
           </Button>
           <Button variant="danger" onClick={onDelete} className="gap-2 text-xs font-bold uppercase tracking-wider cursor-pointer h-9 px-4">
             <Trash2 className="h-3.5 w-3.5" />
-            Delete Bot
+            {t('delete')}
           </Button>
         </div>
       </div>

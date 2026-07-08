@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,7 @@ interface BotGridCardProps {
 }
 
 export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps) {
+  const t = useTranslations('DeveloperDashboard.botGridCard');
   const {
     isDropdownOpen,
     setIsDropdownOpen,
@@ -62,7 +64,7 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
               <>
                 <button
                   type="button"
-                  aria-label="Close status menu"
+                  aria-label={t('closeMenu')}
                   className="fixed inset-0 z-10 cursor-default bg-transparent"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -83,11 +85,11 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
                       className="h-9 w-full justify-start gap-2.5 px-2.5 text-[10px] font-bold uppercase tracking-wider text-main hover:bg-surface"
                     >
                       <span className={`h-1.5 w-1.5 rounded-full ${nextLifecycleStatus === 'ACTIVE' ? 'bg-positive' : 'bg-warning'}`} />
-                      {updatePending ? 'Updating...' : lifecycleLabel}
+                      {updatePending ? t('updating') : lifecycleLabel}
                     </Button>
                   ) : (
                     <div className="px-2.5 py-2 text-[10px] font-bold uppercase tracking-wider text-muted">
-                      No status action
+                      {t('noStatusAction')}
                     </div>
                   )}
                 </div>
@@ -100,7 +102,7 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
 
         <div className="flex items-center justify-between gap-4 py-1">
           <div className="space-y-1">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-muted/50">Performance</p>
+            <p className="text-[9px] font-bold uppercase tracking-wider text-muted/50">{t('performance')}</p>
             <p className={`text-sm font-bold ${isPositive ? 'text-positive' : 'text-negative'}`}>
               {isPositive ? '+' : ''}
               {pnlPct.toFixed(2)}%
@@ -134,7 +136,7 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
 
           <div className="flex items-center justify-between gap-3 border-t border-border/30 pt-4">
             <div className="min-w-0">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted/50">Runtime Key</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted/50">{t('runtimeKey')}</p>
               <p className="mt-1 truncate font-mono text-[11px] text-main/80" title={apiKey}>
                 {apiKey.length > 22 ? `${apiKey.slice(0, 10)}...${apiKey.slice(-10)}` : apiKey}
               </p>
@@ -160,7 +162,7 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
             onClick={() => onSelect?.(bot.botId)}
             className="h-8 gap-1.5 px-3 text-xs font-bold uppercase tracking-wider"
           >
-            Console
+            {t('console')}
             <ChevronRight className="h-3.5 w-3.5" />
           </Button>
         </div>

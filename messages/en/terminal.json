@@ -298,8 +298,9 @@
         "subscriber": "Subscriber",
         "status": "Status",
         "subscriberLabel": "Subscriber #{index}"
-      },
-      "deleteModal": {
+      }
+    },
+    "deleteModal": {
         "dangerZone": "Danger Zone",
         "title": "Delete Webhook Bot",
         "description": "Permanently remove this bot and revoke access for connected subscribers.",
@@ -389,7 +390,13 @@
         "noStatusAction": "No status action",
         "performance": "Performance",
         "runtimeKey": "Runtime Key",
-        "console": "Console"
+        "console": "Console",
+        "notAvailable": "Not available",
+        "lifecycleLabel": {
+          "stop": "Stop bot",
+          "resume": "Resume bot",
+          "locked": "Status locked"
+        }
       },
       "botSignalsTab": {
         "title": "Signal Feed",
@@ -406,7 +413,6 @@
         "apiKey": "API Key",
         "examplePayload": "Example HTTP Payload",
         "notAvailable": "Not available"
-      }
     },
     "registerBot": {
       "eyebrow": "Signal Gateway",
@@ -620,9 +626,13 @@
       "highRisk": "High Risk",
       "slipping": "Slipping",
       "risk": "Risk: {value}%",
-      "winRate": "Win rate",
+      "sync": "Sync",
+      "syncFresh": "Fresh",
+      "syncStale": "Stale",
+      "syncNever": "Unsynced",
       "maxDd": "Max DD",
-      "signals": "Signals",
+      "lastSignal": "Last signal",
+      "signalNone": "No recent signal",
       "pnlLabel": "PnL: ",
       "returnLabel": "Return: ",
       "review": "Review",
@@ -674,10 +684,10 @@
         "label": "Open PnL",
         "subtext": "Portfolio unrealized delta"
       },
-      "winRate": {
-        "label": "Win rate (24h)",
-        "healthy": "Healthy signal quality",
-        "below": "Below target"
+      "syncCoverage": {
+        "label": "Sync coverage",
+        "subtext": "{fresh}/{total} accounts fresh",
+        "none": "No synced accounts"
       },
       "atRisk": {
         "label": "At-risk subscriptions",
@@ -730,11 +740,24 @@
   "TerminalProfile": {
     "success": "Profile updated successfully.",
     "error": "Failed to update profile. Please try again.",
+    "passwordUpdated": "Password updated successfully.",
+    "passwordMismatch": "New password and confirmation do not match.",
     "profile": "Profile",
     "basicInfo": "Basic account information",
     "role": "Role: {role}",
     "username": "Username",
     "email": "Email",
+    "uidLabel": "User ID",
+    "roleLabel": "Role",
+    "passwordSection": "Security",
+    "changePasswordTitle": "Change password",
+    "changePasswordDescription": "Use your current password to set a new one. Identity fields on this page are read-only.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordHint": "Use at least 8 characters.",
+    "changePassword": "Update password",
+    "guestPasswordLocked": "Guest accounts cannot change password settings.",
     "save": "Save profile",
     "guestLocked": "Guest accounts cannot update profile settings.",
     "identity": "Identity",

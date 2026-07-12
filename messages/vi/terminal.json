@@ -298,8 +298,9 @@
         "subscriber": "Người đăng ký",
         "status": "Trạng thái",
         "subscriberLabel": "Người đăng ký #{index}"
-      },
-      "deleteModal": {
+      }
+    },
+    "deleteModal": {
         "dangerZone": "Khu vực nguy hiểm",
         "title": "Xóa bot webhook",
         "description": "Xóa vĩnh viễn bot này và thu hồi quyền truy cập của các subscriber đã kết nối.",
@@ -389,7 +390,13 @@
         "noStatusAction": "Không có thao tác trạng thái",
         "performance": "Hiệu năng",
         "runtimeKey": "Khóa runtime",
-        "console": "Console"
+        "console": "Console",
+        "notAvailable": "Không khả dụng",
+        "lifecycleLabel": {
+          "stop": "Dừng bot",
+          "resume": "Kích hoạt lại bot",
+          "locked": "Trạng thái bị khóa"
+        }
       },
       "botSignalsTab": {
         "title": "Luồng tín hiệu",
@@ -406,7 +413,6 @@
         "apiKey": "API Key",
         "examplePayload": "Ví dụ payload HTTP",
         "notAvailable": "Không khả dụng"
-      }
     },
     "registerBot": {
       "eyebrow": "Cổng tín hiệu",
@@ -620,9 +626,13 @@
       "highRisk": "Rủi ro cao",
       "slipping": "Đang giảm",
       "risk": "Rủi ro: {value}%",
-      "winRate": "Tỷ lệ thắng",
+      "sync": "Đồng bộ",
+      "syncFresh": "Mới",
+      "syncStale": "Cũ",
+      "syncNever": "Chưa sync",
       "maxDd": "Max DD",
-      "signals": "Tín hiệu",
+      "lastSignal": "Tín hiệu cuối",
+      "signalNone": "Chưa có tín hiệu gần đây",
       "pnlLabel": "PnL: ",
       "returnLabel": "Lợi nhuận: ",
       "review": "Xem xét",
@@ -674,10 +684,10 @@
         "label": "PnL mở",
         "subtext": "Độ lệch chưa thực hiện của danh mục"
       },
-      "winRate": {
-        "label": "Tỷ lệ thắng (24h)",
-        "healthy": "Chất lượng tín hiệu tốt",
-        "below": "Dưới mục tiêu"
+      "syncCoverage": {
+        "label": "Độ phủ sync",
+        "subtext": "{fresh}/{total} tài khoản còn tươi",
+        "none": "Chưa có tài khoản nào sync"
       },
       "atRisk": {
         "label": "Subscription có rủi ro",
@@ -730,11 +740,24 @@
   "TerminalProfile": {
     "success": "Cập nhật hồ sơ thành công.",
     "error": "Không thể cập nhật hồ sơ. Vui lòng thử lại.",
+    "passwordUpdated": "Đã cập nhật mật khẩu thành công.",
+    "passwordMismatch": "Mật khẩu mới và xác nhận không khớp.",
     "profile": "Hồ sơ",
     "basicInfo": "Thông tin tài khoản cơ bản",
     "role": "Vai trò: {role}",
     "username": "Tên đăng nhập",
     "email": "Email",
+    "uidLabel": "ID người dùng",
+    "roleLabel": "Vai trò",
+    "passwordSection": "Bảo mật",
+    "changePasswordTitle": "Đổi mật khẩu",
+    "changePasswordDescription": "Dùng mật khẩu hiện tại để đặt mật khẩu mới. Các trường danh tính ở trang này chỉ xem được.",
+    "currentPassword": "Mật khẩu hiện tại",
+    "newPassword": "Mật khẩu mới",
+    "confirmPassword": "Xác nhận mật khẩu mới",
+    "passwordHint": "Dùng ít nhất 8 ký tự.",
+    "changePassword": "Cập nhật mật khẩu",
+    "guestPasswordLocked": "Tài khoản Guest không thể đổi mật khẩu.",
     "save": "Lưu hồ sơ",
     "guestLocked": "Tài khoản Guest không thể cập nhật cài đặt hồ sơ.",
     "identity": "Danh tính",

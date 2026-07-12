@@ -120,6 +120,11 @@ export interface UpdateProfileRequest {
   email?: string;
 }
 
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export interface UpdatePreferencesRequest {
   timezone?: string;
   baseCurrency?: string;
@@ -278,6 +283,22 @@ export async function getCurrentUserProfile(): Promise<UserProfile> {
 
 export async function updateCurrentUserProfile(payload: UpdateProfileRequest): Promise<UserProfile> {
   const response = await requestContractJson<UserProfileResponse>('profile-update', {
+    init: {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    },
+  });
+
+  return {
+    userId: response?.userId ?? defaultProfile.userId,
+    username: response?.username ?? defaultProfile.username,
+    email: response?.email ?? defaultProfile.email,
+    role: response?.role ?? defaultProfile.role,
+  };
+}
+
+export async function changeCurrentUserPassword(payload: ChangePasswordRequest): Promise<UserProfile> {
+  const response = await requestContractJson<UserProfileResponse>('profile-password-update', {
     init: {
       method: 'PUT',
       body: JSON.stringify(payload),

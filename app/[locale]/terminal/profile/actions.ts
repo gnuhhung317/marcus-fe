@@ -2,12 +2,11 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
 import {
+  changeCurrentUserPassword,
   createCurrentUserApiKey,
   deleteCurrentUserApiKey,
   updateCurrentUserPreferences,
-  updateCurrentUserProfile,
 } from '@/lib/contracts/client';
 
 function toBool(value: FormDataEntryValue | null) {
@@ -72,31 +71,28 @@ export async function revokeApiKeyAction(formData: FormData) {
   }
 }
 
-export async function updateProfileAction(formData: FormData) {
-  const username = String(formData.get('username') ?? '').trim();
-  const email = String(formData.get('email') ?? '').trim();
+export async function changePasswordAction(formData: FormData) {
+  const currentPassword = String(formData.get('currentPassword') ?? '');
+  const newPassword = String(formData.get('newPassword') ?? '');
+  const confirmPassword = String(formData.get('confirmPassword') ?? '');
 
-  if (!username && !email) {
-    redirect('/terminal/profile?status=profile_failed');
+  if (!currentPassword || !newPassword) {
+    redirect('/terminal/profile?status=password_failed');
+  }
+
+  if (newPassword !== confirmPassword) {
+    redirect('/terminal/profile?status=password_mismatch');
   }
 
   try {
-    // Debug: check for server cookie presence when action runs
-    try {
-      const cookieStore = cookies();
-      const accessToken = cookieStore.get('marcus_access_token')?.value;
-      console.log('[debug] updateProfileAction - access token present:', !!accessToken);
-    } catch (err) {
-      console.log('[debug] updateProfileAction - failed to read cookies', err);
-    }
-    await updateCurrentUserProfile({
-      ...(username && { username }),
-      ...(email && { email }),
+    await changeCurrentUserPassword({
+      currentPassword,
+      newPassword,
     });
 
     revalidatePath('/terminal/profile');
-    redirect('/terminal/profile?status=profile_updated');
+    redirect('/terminal/profile?status=password_updated');
   } catch {
-    redirect('/terminal/profile?status=profile_failed');
+    redirect('/terminal/profile?status=password_failed');
   }
 }

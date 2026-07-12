@@ -119,15 +119,6 @@ export const contractRoutes: ContractRoute[] = [
     status: 'available',
   },
   {
-    id: 'bot-unsubscribe',
-    method: 'DELETE',
-    path: '/subscriptions/{botId}',
-    operationId: 'unsubscribeFromBot',
-    page: 'terminal/decision',
-    feature: 'Unsubscribe from a bot',
-    status: 'available',
-  },
-  {
     id: 'profile-me',
     method: 'GET',
     path: '/users/me',
@@ -143,6 +134,15 @@ export const contractRoutes: ContractRoute[] = [
     operationId: 'updateCurrentUserProfile',
     page: 'terminal/profile',
     feature: 'Update user profile',
+    status: 'available',
+  },
+  {
+    id: 'profile-password-update',
+    method: 'PUT',
+    path: '/users/me/password',
+    operationId: 'changeCurrentUserPassword',
+    page: 'terminal/profile',
+    feature: 'Change user password',
     status: 'available',
   },
   {

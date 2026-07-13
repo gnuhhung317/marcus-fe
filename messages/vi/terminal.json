@@ -515,14 +515,19 @@
       "refresh": "Làm mới",
       "status": {
         "connectivity": "Kết nối",
+        "heartbeat": "Heartbeat",
         "checking": "Đang kiểm tra",
-        "unavailable": "Không khả dụng"
+        "unavailable": "Không khả dụng",
+        "noHeartbeat": "Chưa ghi nhận heartbeat"
       },
       "kpis": {
         "errorTitle": "Không thể tải KPI giám sát",
         "errorMessage": "Không thể tải KPI giám sát",
         "loadingTitle": "Đang tải KPI",
-        "loadingMessage": "Đang lấy số liệu giám sát và sức khỏe hệ thống."
+        "loadingMessage": "Đang lấy số liệu giám sát và sức khỏe hệ thống.",
+        "signalLimit": "Tín hiệu: {count}/{limit}",
+        "executionLogLimit": "Log: {count}/{limit}",
+        "botTrades": "Giao dịch bot: {count}"
       }
     },
     "performance": {

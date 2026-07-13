@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/shared/status-dot';
 import { BotMetricBlock, BotPerformance, BotPerformanceSource } from '@/lib/contracts/types';
+import { formatRatioPercent } from '@/lib/utils';
 
 interface MarketplaceBotRuntimeSnapshotProps {
   isActive: boolean;
@@ -17,9 +18,7 @@ function formatPercent(value: number | undefined | null, alwaysSign = false) {
     return 'N/A';
   }
 
-  const percentValue = value * 100;
-  const prefix = alwaysSign && percentValue >= 0 ? '+' : '';
-  return `${prefix}${percentValue.toFixed(2)}%`;
+  return formatRatioPercent(value, 2, alwaysSign);
 }
 
 function formatDrawdown(value: number | undefined | null) {

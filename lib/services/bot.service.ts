@@ -15,6 +15,7 @@ import {
   TimeSeriesValue,
   BotTrade,
 } from '@/lib/contracts/types';
+import { formatRatioPercent, ratioToPercent } from '@/lib/utils';
 import {
   DEFAULT_BOT_ID,
   requestContractJson,
@@ -149,7 +150,7 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
   const hasPerformanceData = bot.annualReturn != null || bot.maxDrawdown != null || bot.winRate != null;
   const annualReturnPct = bot.annualReturn == null ? null : bot.annualReturn * 100;
   const maxDrawdownPct = bot.maxDrawdown == null ? null : Math.abs(bot.maxDrawdown) * 100;
-  const winRatePct = bot.winRate == null ? null : bot.winRate * 100;
+  const winRatePct = bot.winRate == null ? null : ratioToPercent(bot.winRate);
 
   const tags: string[] = [];
   if (bot.asset) {
@@ -285,7 +286,7 @@ function mapMetricBlock(title: BotMetricBlock['title'], block: BotAnalyticsMetri
     sortino: formatRatio(toNumber(block.sortino, 0), 2),
     calmar: formatRatio(toNumber(block.calmar, 0), 2),
     profitFactor: formatRatio(toNumber(block.profitFactor, 0), 2),
-    winRate: `${(toNumber(block.winRate, 0) * 100).toFixed(2)}%`,
+    winRate: formatRatioPercent(toNumber(block.winRate, 0), 2),
     sampleSizeDays: Math.max(0, Math.round(toNumber(block.sampleSizeDays, 0))),
     sampleSizeTrades: Math.max(0, Math.round(toNumber(block.sampleSizeTrades, 0))),
     warning: block.statisticalSignificanceWarning ?? null,
@@ -489,7 +490,7 @@ export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): P
     { label: 'Sortino ratio', value: formatRatio(toNumber(totalMetrics.sortino, 0), 2) },
     { label: 'Calmar ratio', value: formatRatio(toNumber(totalMetrics.calmar, 0), 2) },
     { label: 'Profit factor', value: formatRatio(toNumber(totalMetrics.profitFactor, 0), 2) },
-    { label: 'Win rate', value: `${(toNumber(totalMetrics.winRate, 0) * 100).toFixed(2)}%` },
+    { label: 'Win rate', value: formatRatioPercent(toNumber(totalMetrics.winRate, 0), 2) },
     { label: 'Sample days', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeDays, 0)))) },
     { label: 'Closed trades', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeTrades, 0)))) },
   ];

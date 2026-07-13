@@ -32,7 +32,10 @@ export function MonitoringKpis() {
   }
 
   const sparklineSeed = dashboard.terminalKpis.map((_, index) => dashboard.botTrades[index]?.pnl ?? index);
-  const connectivityStatus = normalizeConnectivityStatus(ops.connectivity.overallStatus);
+  const connectivityStatus = normalizeConnectivityStatus(
+    ops.connectivity.executorConnectionStatus ?? ops.connectivity.overallStatus,
+  );
+  const heartbeatStatus = normalizeConnectivityStatus(ops.connectivity.heartbeatStatus);
   const connectivityLabel = getConnectivityStatusLabel(connectivityStatus, {
     checking: t('status.checking'),
     up: tHealth('UP'),
@@ -48,13 +51,25 @@ export function MonitoringKpis() {
           {t('status.connectivity')}: {connectivityLabel}
         </Badge>
         <Badge variant="outline">
-          <span className="text-main">{ops.signalStream.length}</span>
+          <span className="text-main">{t('kpis.signalLimit', { count: ops.signalStream.length, limit: 8 })}</span>
         </Badge>
         <Badge variant="outline">
-          <span className="text-main">{ops.executionLogs.length}</span>
+          <span className="text-main">{t('kpis.executionLogLimit', { count: ops.executionLogs.length, limit: 100 })}</span>
         </Badge>
         <Badge variant="outline">
-          <span className="text-main">{dashboard.botTrades.length}</span>
+          <span className="text-main">{t('kpis.botTrades', { count: dashboard.botTrades.length })}</span>
+        </Badge>
+        <Badge
+          variant={getConnectivityBadgeVariant(heartbeatStatus)}
+          title={ops.connectivity.lastHeartbeatAt ?? t('status.noHeartbeat')}
+        >
+          {t('status.heartbeat')}: {getConnectivityStatusLabel(heartbeatStatus, {
+            checking: t('status.checking'),
+            up: tHealth('UP'),
+            degraded: tHealth('DEGRADED'),
+            down: tHealth('DOWN'),
+            unavailable: t('status.unavailable'),
+          })}
         </Badge>
       </div>
       <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">

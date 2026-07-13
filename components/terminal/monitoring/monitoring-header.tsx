@@ -15,7 +15,9 @@ export function MonitoringHeader() {
   const tHealth = useTranslations('Common.systemHealth');
   const { data: ops, isLoading } = useMonitoringOpsQuery();
   const { refresh, isRefreshing } = useRefreshMonitoringData();
-  const connectivityStatus = normalizeConnectivityStatus(ops?.connectivity.overallStatus);
+  const connectivityStatus = normalizeConnectivityStatus(
+    ops?.connectivity.executorConnectionStatus ?? ops?.connectivity.overallStatus,
+  );
   const isChecking = isLoading && !ops;
   const connectivityLabel = getConnectivityStatusLabel(
     connectivityStatus,

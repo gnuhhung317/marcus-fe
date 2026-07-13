@@ -6,6 +6,7 @@ import { PortfolioOverview } from '@/lib/contracts/types';
 import { MetricStrip } from '@/components/shared/metric-strip';
 import { StatusDot } from '@/components/shared/status-dot';
 import { Badge } from '@/components/ui/badge';
+import { formatRatioPercent } from '@/lib/utils';
 
 interface PortfolioMetricsProps {
   overview: PortfolioOverview;
@@ -18,10 +19,6 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
     return new Intl.NumberFormat('en-US', { maximumFractionDigits: decimals }).format(num);
   };
 
-  const formatPercent = (num: number) => {
-    return `${(num * 100).toFixed(1)}%`;
-  };
-
   const openPnLTrend: 'up' | 'down' | 'neutral' = overview.aggregateOpenPnL >= 0 ? 'up' : 'down';
 
   const atRiskCount = overview.atRiskSubscriptionCount;
@@ -31,7 +28,7 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
   const totalSyncAccounts = freshCount + staleCount;
   const syncCoverage = totalSyncAccounts > 0 ? freshCount / totalSyncAccounts : 0;
   const syncCoverageTrend: 'up' | 'down' | 'neutral' = totalSyncAccounts === 0 ? 'neutral' : syncCoverage >= 0.75 ? 'up' : 'down';
-  const syncCoverageText = totalSyncAccounts > 0 ? formatPercent(syncCoverage) : t('syncCoverage.none');
+  const syncCoverageText = totalSyncAccounts > 0 ? formatRatioPercent(syncCoverage, 1) : t('syncCoverage.none');
 
   const pnlPercentStr = overview.totalEquity > 0
     ? `${(overview.aggregateOpenPnL / overview.totalEquity * 100).toFixed(2)}%`

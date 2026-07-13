@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { PortfolioOverview } from '@/lib/contracts/types';
+import { formatRatioPercent } from '@/lib/utils';
 
 function statusClasses(status: 'offline' | 'live' | 'stale' | 'aging') {
   if (status === 'live') return 'bg-positive-soft text-positive';
@@ -28,7 +29,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
     return `${sign}$${formatNumber(Math.abs(num), 2)}`;
   };
 
-  const winRatePercent = (overview.aggregateWinRate24h * 100).toFixed(1);
+  const winRatePercent = formatRatioPercent(overview.aggregateWinRate24h, 1);
   const winRateColor = overview.aggregateWinRate24h >= 0.6 ? 'text-positive' : 'text-warning';
   const atRiskColor = overview.atRiskSubscriptionCount > 0 ? 'text-negative' : 'text-positive';
   const hasStaleAccounts = (overview.staleAccountsCount ?? 0) > 0;
@@ -77,7 +78,7 @@ export function PortfolioOverviewStats({ overview }: { overview: PortfolioOvervi
     },
     {
       label: t('stats.winRate.label'),
-      value: `${winRatePercent}%`,
+      value: winRatePercent,
       detail: overview.aggregateWinRate24h >= 0.6 ? t('stats.winRate.healthy') : t('stats.winRate.below'),
       colorClass: winRateColor,
     },

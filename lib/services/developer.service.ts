@@ -79,6 +79,9 @@ interface SignalItemResponse {
 
 interface ConnectivityHealthResponse {
   overallStatus?: string;
+  executorConnectionStatus?: string;
+  heartbeatStatus?: string;
+  lastHeartbeatAt?: string | null;
   checkedAt?: string;
   dependencies?: { name?: string; status?: string; latencyMs?: number }[];
 }
@@ -104,6 +107,9 @@ interface BotRegistrationResponse {
 
 const defaultConnectivity = {
   overallStatus: 'UNKNOWN',
+  executorConnectionStatus: 'UNKNOWN',
+  heartbeatStatus: 'UNKNOWN',
+  lastHeartbeatAt: null,
   checkedAt: new Date().toISOString(),
 };
 
@@ -128,7 +134,7 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
   if (role !== 'OPERATOR' && role !== 'ADMIN' && role !== 'TRADER') {
     return {
       connectivity: {
-        overallStatus: 'UNKNOWN',
+        ...defaultConnectivity,
         checkedAt: new Date().toISOString(),
       },
       signalStream: [],
@@ -149,6 +155,9 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
 
   const connectivity = {
     overallStatus: connectivityResponse?.overallStatus ?? defaultConnectivity.overallStatus,
+    executorConnectionStatus: connectivityResponse?.executorConnectionStatus ?? defaultConnectivity.executorConnectionStatus,
+    heartbeatStatus: connectivityResponse?.heartbeatStatus ?? defaultConnectivity.heartbeatStatus,
+    lastHeartbeatAt: connectivityResponse?.lastHeartbeatAt ?? defaultConnectivity.lastHeartbeatAt,
     checkedAt: connectivityResponse?.checkedAt ?? defaultConnectivity.checkedAt,
   };
 

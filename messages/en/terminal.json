@@ -515,14 +515,19 @@
       "refresh": "Refresh",
       "status": {
         "connectivity": "Connectivity",
+        "heartbeat": "Heartbeat",
         "checking": "Checking",
-        "unavailable": "Unavailable"
+        "unavailable": "Unavailable",
+        "noHeartbeat": "No heartbeat recorded"
       },
       "kpis": {
         "errorTitle": "Failed to load monitoring KPIs",
         "errorMessage": "Failed to load monitoring KPIs",
         "loadingTitle": "Loading KPIs",
-        "loadingMessage": "Fetching monitoring metrics and system health."
+        "loadingMessage": "Fetching monitoring metrics and system health.",
+        "signalLimit": "Signals: {count}/{limit}",
+        "executionLogLimit": "Logs: {count}/{limit}",
+        "botTrades": "Bot trades: {count}"
       }
     },
     "performance": {

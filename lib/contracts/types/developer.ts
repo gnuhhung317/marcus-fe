@@ -3,6 +3,9 @@ import { BotTrade } from './shared';
 
 export interface ConnectivityHealth {
   overallStatus: string;
+  executorConnectionStatus: string;
+  heartbeatStatus: string;
+  lastHeartbeatAt: string | null;
   checkedAt: string;
 }
 

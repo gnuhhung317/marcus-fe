@@ -6,6 +6,7 @@ import { DeveloperBotDetail, DeveloperBotStatus } from '@/lib/contracts/types';
 import { RiskBar } from '@/components/shared/risk-bar';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { formatRatioPercent } from '@/lib/utils';
 
 interface BotOverviewTabProps {
   bot: DeveloperBotDetail;
@@ -17,9 +18,7 @@ interface BotOverviewTabProps {
 
 function formatMetricPercent(val: number | null | undefined, alwaysSign = false, naLabel = 'N/A') {
   if (val === undefined || val === null) return naLabel;
-  const value = val * 100;
-  const prefix = alwaysSign && value >= 0 ? '+' : '';
-  return `${prefix}${value.toFixed(2)}%`;
+  return formatRatioPercent(val, 2, alwaysSign);
 }
 
 function formatDrawdownPercent(val: number | null | undefined, naLabel = 'N/A') {

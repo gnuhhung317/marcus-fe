@@ -9,6 +9,7 @@ import { MonitoringTrades } from '@/components/terminal/monitoring/monitoring-tr
 export default async function MonitoringDashboardPage() {
   const cookieStore = cookies();
   const role = cookieStore.get('marcus_role')?.value;
+  const canViewSystemOps = role === 'ADMIN';
 
   if (role === 'DEVELOPER') {
     redirect('/terminal/developer-dashboard');
@@ -20,8 +21,8 @@ export default async function MonitoringDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <MonitoringHeader />
-      <MonitoringKpis />
+      <MonitoringHeader showConnectivity={canViewSystemOps} />
+      <MonitoringKpis showSystemOps={canViewSystemOps} />
       <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
         <MonitoringPerformance />
         <MonitoringTrades />

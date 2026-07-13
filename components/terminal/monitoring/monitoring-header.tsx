@@ -10,10 +10,14 @@ import {
   normalizeConnectivityStatus,
 } from './connectivity-status';
 
-export function MonitoringHeader() {
+interface MonitoringHeaderProps {
+  showConnectivity?: boolean;
+}
+
+export function MonitoringHeader({ showConnectivity = true }: MonitoringHeaderProps) {
   const t = useTranslations('Monitoring.header');
   const tHealth = useTranslations('Common.systemHealth');
-  const { data: ops, isLoading } = useMonitoringOpsQuery();
+  const { data: ops, isLoading } = useMonitoringOpsQuery(showConnectivity);
   const { refresh, isRefreshing } = useRefreshMonitoringData();
   const connectivityStatus = normalizeConnectivityStatus(
     ops?.connectivity.executorConnectionStatus ?? ops?.connectivity.overallStatus,
@@ -50,9 +54,11 @@ export function MonitoringHeader() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Badge variant={getConnectivityBadgeVariant(connectivityStatus, isChecking)} className="px-3 py-2 text-sm">
-          {connectivityLabel}
-        </Badge>
+        {showConnectivity ? (
+          <Badge variant={getConnectivityBadgeVariant(connectivityStatus, isChecking)} className="px-3 py-2 text-sm">
+            {connectivityLabel}
+          </Badge>
+        ) : null}
         <Button
           variant="outline"
           onClick={refresh}

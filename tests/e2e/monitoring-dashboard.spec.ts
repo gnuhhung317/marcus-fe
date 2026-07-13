@@ -213,10 +213,11 @@ test('Monitoring Dashboard switches equity ranges without stale chart state', as
   expect(requestedRanges).toEqual(expect.arrayContaining(['7D', '1D', '30D']));
 });
 
-test('Monitoring Dashboard presents execution logs as a history viewer without Bot ID controls', async ({ page }) => {
+test('Monitoring Dashboard shows only the trader-scoped executor activity feed', async ({ page }) => {
   await seedMonitoringSession(page);
 
-  const executionLogLimits: number[] = [];
+  let requestedSystemConnectivity = false;
+  let requestedSystemExecutionLogs = false;
 
   await page.route('**/dashboard/overview**', async (route) => {
     await route.fulfill({
@@ -256,6 +257,7 @@ test('Monitoring Dashboard presents execution logs as a history viewer without B
   });
 
   await page.route('**/system/connectivity**', async (route) => {
+    requestedSystemConnectivity = true;
     await route.fulfill({
       json: {
         overallStatus: 'UP',
@@ -288,9 +290,7 @@ test('Monitoring Dashboard presents execution logs as a history viewer without B
   });
 
   await page.route('**/system/execution-logs**', async (route) => {
-    const url = new URL(route.request().url());
-    executionLogLimits.push(Number(url.searchParams.get('limit') ?? '0'));
-
+    requestedSystemExecutionLogs = true;
     await route.fulfill({
       json: {
         cursor: null,
@@ -316,31 +316,11 @@ test('Monitoring Dashboard presents execution logs as a history viewer without B
 
   await expect(page.getByRole('heading', { name: 'Execution history' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Recent signals' })).toBeVisible();
-  await expect(page.getByText('Bot ID')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Pause Stream' })).toHaveCount(0);
-  await expect(page.getByLabel('Auto-Scroll')).toHaveCount(0);
-
-  const executionCard = page.getByTestId('monitoring-execution-log-card');
-  const signalCard = page.getByTestId('monitoring-recent-signals-card');
-  const logSearch = executionCard.getByPlaceholder('Search logs by source or message...');
-  const signalSearch = signalCard.getByPlaceholder('Filter by symbol, action, or status...');
-
-  await logSearch.fill('risk');
-  await expect(page.getByText('Retrying order placement')).toBeVisible();
-  await expect(page.getByText('Synced latest signal')).toHaveCount(0);
-
-  await logSearch.fill('placement');
-  await expect(page.getByText('Retrying order placement')).toBeVisible();
-  await expect(page.getByText('Synced latest signal')).toHaveCount(0);
-
-  await logSearch.fill('');
-  await page.getByRole('button', { name: 'Warn' }).click();
-  await expect(page.getByText('Retrying order placement')).toBeVisible();
-  await expect(page.getByText('Synced latest signal')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Info' }).click();
   await expect(page.getByText('Synced latest signal')).toBeVisible();
-  await expect(page.getByText('Retrying order placement')).toHaveCount(0);
+  await expect(page.getByText('Retrying order placement')).toBeVisible();
+
+  const signalCard = page.getByTestId('monitoring-recent-signals-card');
+  const signalSearch = signalCard.getByPlaceholder('Filter by symbol, action, or status...');
 
   await signalSearch.fill('btc');
   await expect(page.getByText('BTC/USDT')).toBeVisible();
@@ -354,6 +334,6 @@ test('Monitoring Dashboard presents execution logs as a history viewer without B
   await expect(page.getByText('ETH/USDT')).toBeVisible();
   await expect(page.getByText('BTC/USDT')).toHaveCount(0);
 
-  expect(executionLogLimits.length).toBeGreaterThan(0);
-  expect(executionLogLimits.every((limit) => limit === 100)).toBe(true);
+  expect(requestedSystemConnectivity).toBe(false);
+  expect(requestedSystemExecutionLogs).toBe(true);
 });

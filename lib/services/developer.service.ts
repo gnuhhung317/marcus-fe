@@ -5,6 +5,7 @@ import {
   DeveloperConsolePageData,
   DeveloperDashboardPageData,
   DeveloperSignalItem,
+  ExecutionLogLine,
   RegisterBotInput,
   DeveloperBotStatus,
 } from '@/lib/contracts/types';
@@ -113,6 +114,15 @@ const defaultConnectivity = {
   checkedAt: new Date().toISOString(),
 };
 
+function mapExecutionLogs(response: ExecutionLogPageResponse): ExecutionLogLine[] {
+  return (response.items ?? []).map((log, index) => ({
+    timestamp: log.timestamp ?? new Date(Date.now() - index * 60000).toISOString(),
+    level: log.level ?? 'INFO',
+    source: log.source ?? 'runtime',
+    message: log.message ?? 'No message',
+  }));
+}
+
 // --- Service Functions ---
 
 export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePageData> {
@@ -130,8 +140,8 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
     }
   }
 
-  // If user is not OPERATOR, ADMIN, or TRADER, bypass backend calls to avoid unauthorized errors
-  if (role !== 'OPERATOR' && role !== 'ADMIN' && role !== 'TRADER') {
+  // Only operator/admin monitoring should hit system-level connectivity and execution log endpoints.
+  if (role !== 'OPERATOR' && role !== 'ADMIN') {
     return {
       connectivity: {
         ...defaultConnectivity,
@@ -170,18 +180,39 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
     generatedTimestamp: signal.generatedTimestamp ?? new Date().toISOString(),
   }));
 
-  const executionLogs = (executionResponse.items ?? []).map((log, index) => ({
-    timestamp: log.timestamp ?? new Date(Date.now() - index * 60000).toISOString(),
-    level: log.level ?? 'INFO',
-    source: log.source ?? 'runtime',
-    message: log.message ?? 'No message',
-  }));
+  const executionLogs = mapExecutionLogs(executionResponse);
 
   return {
     connectivity,
     signalStream: signalStream.length ? signalStream : [],
     executionLogs,
   };
+}
+
+/**
+ * The backend scopes this feed to the authenticated trader's executor subscriptions.
+ * Operators and administrators receive the global feed through the same contract.
+ */
+export async function getMonitoringExecutionLogs(limit: number = 100): Promise<ExecutionLogLine[]> {
+  const response = await requestContractJson<ExecutionLogPageResponse>('system-execution-logs', {
+    queryParams: { limit },
+  });
+  return mapExecutionLogs(response);
+}
+
+export async function getRecentSignalStreamData(limit: number = 8): Promise<DeveloperConsolePageData['signalStream']> {
+  const signalResponse = await requestContractJson<SignalItemResponse[]>('system-signals', {
+    queryParams: { limit, status: 'ALL' },
+  }).catch(() => []);
+
+  return signalResponse.map((signal, index) => ({
+    signalId: signal.signalId ?? `signal-${index + 1}`,
+    botId: signal.botId ?? 'bot_unknown',
+    symbol: signal.symbol ?? 'BTC/USDT',
+    action: signal.action ?? 'OPEN_LONG',
+    status: signal.status ?? 'PENDING',
+    generatedTimestamp: signal.generatedTimestamp ?? new Date().toISOString(),
+  }));
 }
 
 export async function getDeveloperDashboardPageData(activeBotId?: string): Promise<DeveloperDashboardPageData> {

@@ -2,13 +2,20 @@
 
 import { useCallback, useTransition } from 'react';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getDashboardOverviewData, getDashboardPerformanceSeries, getDeveloperConsolePageData } from '@/lib/contracts/client';
+import {
+  getDashboardOverviewData,
+  getDashboardPerformanceSeries,
+  getDeveloperConsolePageData,
+  getMonitoringExecutionLogs,
+  getRecentSignalStreamData,
+} from '@/lib/contracts/client';
 
 export const monitoringKeys = {
   root: ['monitoring'] as const,
   overview: () => [...monitoringKeys.root, 'overview'] as const,
   dashboard: (range: string) => [...monitoringKeys.root, 'dashboard', range] as const,
   ops: () => [...monitoringKeys.root, 'ops'] as const,
+  executionLogs: () => [...monitoringKeys.root, 'execution-logs'] as const,
 };
 
 export function useMonitoringOverviewQuery() {
@@ -27,10 +34,27 @@ export function useMonitoringDashboardQuery(range: string = '7D') {
   });
 }
 
-export function useMonitoringOpsQuery() {
+export function useMonitoringOpsQuery(enabled: boolean = true) {
   return useQuery({
     queryKey: monitoringKeys.ops(),
     queryFn: getDeveloperConsolePageData,
+    enabled,
+    refetchInterval: 10000,
+  });
+}
+
+export function useMonitoringSignalStreamQuery(limit: number = 8) {
+  return useQuery({
+    queryKey: [...monitoringKeys.root, 'signals', limit] as const,
+    queryFn: () => getRecentSignalStreamData(limit),
+    refetchInterval: 10000,
+  });
+}
+
+export function useMonitoringExecutionLogsQuery(limit: number = 100) {
+  return useQuery({
+    queryKey: [...monitoringKeys.executionLogs(), limit] as const,
+    queryFn: () => getMonitoringExecutionLogs(limit),
     refetchInterval: 10000,
   });
 }

@@ -7,7 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import type { ExecutionLogLine, SignalLogLine } from '@/lib/contracts/types';
-import { useMonitoringOpsQuery, useRefreshMonitoringData } from '@/lib/hooks/use-monitoring-data';
+import {
+  useMonitoringExecutionLogsQuery,
+  useMonitoringSignalStreamQuery,
+  useRefreshMonitoringData,
+} from '@/lib/hooks/use-monitoring-data';
 import { cn } from '@/lib/utils';
 import { Info, Search, SlidersHorizontal, Terminal } from 'lucide-react';
 
@@ -121,7 +125,8 @@ function sortByLatestSignal(signals: SignalLogLine[]) {
 
 export function MonitoringLogs() {
   const t = useTranslations('Monitoring.logs');
-  const { data: ops, error } = useMonitoringOpsQuery();
+  const { data: executionLogData, error } = useMonitoringExecutionLogsQuery();
+  const { data: recentSignalStream, error: signalError } = useMonitoringSignalStreamQuery();
   const { refresh } = useRefreshMonitoringData();
   const levelLabels = {
     error: t('levels.error'),
@@ -143,10 +148,13 @@ export function MonitoringLogs() {
   const [selectedLevel, setSelectedLevel] = useState<ExecutionLevelFilter>('ALL');
 
   const executionLogs = useMemo(
-    () => sortByLatestExecution(ops?.executionLogs ?? []),
-    [ops?.executionLogs]
+    () => sortByLatestExecution(executionLogData ?? []),
+    [executionLogData]
   );
-  const recentSignals = useMemo(() => sortByLatestSignal(ops?.signalStream ?? []), [ops?.signalStream]);
+  const recentSignals = useMemo(
+    () => sortByLatestSignal(recentSignalStream ?? []),
+    [recentSignalStream]
+  );
 
   const filteredLogs = useMemo(
     () =>
@@ -176,102 +184,108 @@ export function MonitoringLogs() {
     [recentSignals, signalSearch]
   );
 
-  if (error) {
+  if (error || signalError) {
     return (
       <ErrorStateCard
         title={t('executionLogs')}
-        message={error instanceof Error ? error.message : t('noLogs')}
+        message={
+          error instanceof Error
+            ? error.message
+            : signalError instanceof Error
+              ? signalError.message
+              : t('noLogs')
+        }
         onAction={refresh}
         actionLabel="Retry"
       />
     );
   }
 
-  if (!ops) {
+  if (!executionLogData || !recentSignalStream) {
     return <LoadingStateCard title={t('executionLogs')} message={t('loading')} />;
   }
 
   return (
     <section className="space-y-6">
       <Card
-        variant="glass-strong"
-        className="overflow-hidden p-5 shadow-[var(--shadow-soft)]"
-        data-testid="monitoring-execution-log-card"
-      >
-        <div className="flex flex-col gap-4 border-b border-border pb-4 lg:flex-row lg:items-end lg:justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface text-muted">
-              <Terminal className="h-4 w-4" />
+          variant="glass-strong"
+          className="overflow-hidden p-5 shadow-[var(--shadow-soft)]"
+          data-testid="monitoring-execution-log-card"
+        >
+          <div className="flex flex-col gap-4 border-b border-border pb-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-surface text-muted">
+                <Terminal className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-semibold text-main">{t('executionLogs')}</h2>
+              </div>
             </div>
-            <div>
-              <h2 className="text-base font-semibold text-main">{t('executionLogs')}</h2>
+
+            <Badge variant="outline" className="text-[11px]">
+              {t('events', { count: filteredLogs.length })}
+            </Badge>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2.5">
+            <div className="relative min-w-[220px] flex-1">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted/60" />
+              <Input
+                placeholder={t('logSearch')}
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                className="h-8 border-border bg-surface pl-8 text-xs placeholder:text-muted/50"
+              />
+            </div>
+
+            <div className="flex gap-1 rounded-md border border-border bg-surface p-0.5">
+              {(['ALL', 'INFO', 'WARN', 'ERROR'] as const).map((lvl) => (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => setSelectedLevel(lvl)}
+                  className={cn(
+                    'rounded px-2 py-1 text-[10px] font-semibold tracking-wider transition-colors',
+                    selectedLevel === lvl ? 'bg-surface-strong text-main' : 'text-muted hover:text-main'
+                  )}
+                >
+                  {lvl === 'ALL' ? t('levels.all') : levelLabels[lvl.toLowerCase() as 'error' | 'warn' | 'info' | 'debug']}
+                </button>
+              ))}
             </div>
           </div>
 
-          <Badge variant="outline" className="text-[11px]">
-            {t('events', { count: filteredLogs.length })}
-          </Badge>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2.5">
-          <div className="relative min-w-[220px] flex-1">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted/60" />
-            <Input
-              placeholder={t('logSearch')}
-              value={logSearch}
-              onChange={(e) => setLogSearch(e.target.value)}
-              className="h-8 border-border bg-surface pl-8 text-xs placeholder:text-muted/50"
-            />
-          </div>
-
-          <div className="flex gap-1 rounded-md border border-border bg-surface p-0.5">
-            {(['ALL', 'INFO', 'WARN', 'ERROR'] as const).map((lvl) => (
-              <button
-                key={lvl}
-                type="button"
-                onClick={() => setSelectedLevel(lvl)}
-                className={cn(
-                  'rounded px-2 py-1 text-[10px] font-semibold tracking-wider transition-colors',
-                  selectedLevel === lvl ? 'bg-surface-strong text-main' : 'text-muted hover:text-main'
-                )}
-              >
-                {lvl === 'ALL' ? t('levels.all') : levelLabels[lvl.toLowerCase() as 'error' | 'warn' | 'info' | 'debug']}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 h-[460px] overflow-auto rounded-lg border border-border bg-surface shadow-inner">
-          {filteredLogs.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
-              <Info className="h-6 w-6 text-muted/40" />
-              <p className="mt-2 text-xs text-muted">{t('noLogs')}</p>
-            </div>
-          ) : (
-            <table className="min-w-full border-collapse text-left font-mono text-[11px] leading-relaxed">
-              <thead className="sticky top-0 z-10 border-b border-border bg-surface-strong text-[10px] uppercase tracking-wider text-muted">
-                <tr>
-                  <th className="px-3 py-2">{t('table.time')}</th>
-                  <th className="px-3 py-2">{t('table.level')}</th>
-                  <th className="px-3 py-2">{t('table.source')}</th>
-                  <th className="px-3 py-2">{t('table.message')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => (
-                  <tr key={`${log.timestamp}-${log.source}-${log.message}`} className="border-b border-border/50 align-top transition-colors hover:bg-surface-strong">
-                    <td className="whitespace-nowrap px-3 py-2 text-muted/60">{formatDateTime(log.timestamp)}</td>
-                    <td className="px-3 py-2">{getLevelBadge(log.level, levelLabels)}</td>
-                    <td className="whitespace-nowrap px-3 py-2 font-semibold text-main/80">{log.source}</td>
-                    <td className={cn('px-3 py-2 select-text whitespace-pre-wrap break-words', getLevelTextClass(log.level))}>
-                      {log.message}
-                    </td>
+          <div className="mt-4 h-[460px] overflow-auto rounded-lg border border-border bg-surface shadow-inner">
+            {filteredLogs.length === 0 ? (
+              <div className="flex h-full flex-col items-center justify-center px-6 py-12 text-center">
+                <Info className="h-6 w-6 text-muted/40" />
+                <p className="mt-2 text-xs text-muted">{t('noLogs')}</p>
+              </div>
+            ) : (
+              <table className="min-w-full border-collapse text-left font-mono text-[11px] leading-relaxed">
+                <thead className="sticky top-0 z-10 border-b border-border bg-surface-strong text-[10px] uppercase tracking-wider text-muted">
+                  <tr>
+                    <th className="px-3 py-2">{t('table.time')}</th>
+                    <th className="px-3 py-2">{t('table.level')}</th>
+                    <th className="px-3 py-2">{t('table.source')}</th>
+                    <th className="px-3 py-2">{t('table.message')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                </thead>
+                <tbody>
+                  {filteredLogs.map((log) => (
+                    <tr key={`${log.timestamp}-${log.source}-${log.message}`} className="border-b border-border/50 align-top transition-colors hover:bg-surface-strong">
+                      <td className="whitespace-nowrap px-3 py-2 text-muted/60">{formatDateTime(log.timestamp)}</td>
+                      <td className="px-3 py-2">{getLevelBadge(log.level, levelLabels)}</td>
+                      <td className="whitespace-nowrap px-3 py-2 font-semibold text-main/80">{log.source}</td>
+                      <td className={cn('px-3 py-2 select-text whitespace-pre-wrap break-words', getLevelTextClass(log.level))}>
+                        {log.message}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
       </Card>
 
       <Card

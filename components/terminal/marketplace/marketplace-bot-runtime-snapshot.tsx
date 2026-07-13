@@ -8,7 +8,7 @@ interface MarketplaceBotRuntimeSnapshotProps {
   isActive: boolean;
   performance?: BotPerformance;
   performanceSource?: BotPerformanceSource | null;
-  summaryBlock?: BotMetricBlock | null;
+  selectedMetricBlock?: BotMetricBlock | null;
   status: string;
 }
 
@@ -62,18 +62,18 @@ export function MarketplaceBotRuntimeSnapshot({
   isActive,
   performance,
   performanceSource,
-  summaryBlock,
+  selectedMetricBlock,
   status,
 }: MarketplaceBotRuntimeSnapshotProps) {
   const t = useTranslations('Marketplace.snapshot');
-  if (!performance) {
+  if (!selectedMetricBlock && !performance) {
     return null;
   }
 
-  const annualReturn = formatPercent(performance.annualReturn, true);
-  const maxDrawdown = formatDrawdown(performance.maxDrawdown);
-  const sharpe = formatRatio(performance.sharpe);
-  const winRate = formatPercent(performance.winRate);
+  const annualReturn = selectedMetricBlock?.annualReturn ?? formatPercent(performance?.annualReturn, true);
+  const maxDrawdown = selectedMetricBlock?.maxDrawdown ?? formatDrawdown(performance?.maxDrawdown);
+  const sharpe = selectedMetricBlock?.sharpe ?? formatRatio(performance?.sharpe);
+  const winRate = selectedMetricBlock?.winRate ?? formatPercent(performance?.winRate);
   const snapshotMetrics = [
     {
       label: t('annualReturn'),
@@ -97,10 +97,10 @@ export function MarketplaceBotRuntimeSnapshot({
     },
   ];
 
-  const snapshotPills = summaryBlock
+  const snapshotPills = selectedMetricBlock
     ? [
-        { label: t('sampleDays'), value: String(summaryBlock.sampleSizeDays ?? 0) },
-        { label: t('closedTrades'), value: String(summaryBlock.sampleSizeTrades ?? 0) },
+        { label: t('sampleDays'), value: String(selectedMetricBlock.sampleSizeDays ?? 0) },
+        { label: t('closedTrades'), value: String(selectedMetricBlock.sampleSizeTrades ?? 0) },
       ]
     : [];
 
@@ -120,9 +120,9 @@ export function MarketplaceBotRuntimeSnapshot({
           <Badge variant="outline" className="border-primary/20 bg-primary-soft text-primary">
             {getSourceLabel(performanceSource, t)}
           </Badge>
-          {summaryBlock?.warning ? (
+          {selectedMetricBlock?.warning ? (
             <div className="max-w-[18rem] rounded-xl border border-warning/20 bg-warning/10 px-3 py-2 text-left text-[10px] font-semibold uppercase tracking-[0.16em] text-warning">
-              {summaryBlock.warning}
+              {selectedMetricBlock.warning}
             </div>
           ) : null}
         </div>

@@ -60,6 +60,25 @@ function getPanelMode(subscription: ViewerSubscription | null, pendingAction: Pa
   return 'unsubscribe' as const;
 }
 
+function mergeViewerSubscription(
+  current: ViewerSubscription | null,
+  next: ViewerSubscription | null,
+  didBotChange: boolean,
+) {
+  if (didBotChange) {
+    return next;
+  }
+
+  if (!next) {
+    return current;
+  }
+
+  return {
+    ...next,
+    wsToken: next.wsToken ?? current?.wsToken ?? null,
+  };
+}
+
 export function SubscribeBotPanel({ botId, botStatus, initialSubscription }: SubscribeBotPanelProps) {
   const router = useRouter();
   const t = useTranslations('Marketplace.subscribe');
@@ -95,13 +114,7 @@ export function SubscribeBotPanel({ botId, botStatus, initialSubscription }: Sub
     previousBotIdRef.current = botId;
     setPendingAction(null);
     setError(null);
-    setSubscription((current) => {
-      if (didBotChange) {
-        return normalizedInitialSubscription;
-      }
-
-      return normalizedInitialSubscription ?? current;
-    });
+    setSubscription((current) => mergeViewerSubscription(current, normalizedInitialSubscription, didBotChange));
   }, [botId, initialSubscription]);
 
   const subscribeMutation = useMutation<SubscriptionResult, Error, void, { previousSubscription: ViewerSubscription | null }>({

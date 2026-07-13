@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useBotMutations } from '@/lib/hooks/use-bot-mutations';
 import { DeveloperBotStatus, DeveloperBotSummary } from '@/lib/contracts/types';
 
@@ -27,7 +28,7 @@ const statusStyles: Record<DeveloperBotStatus, { badge: string; dot: string; lab
   },
 };
 
-function getSeededBotData(botId: string) {
+function getSeededBotData(botId: string, customPnlPct?: number | null) {
   let hash = 0;
 
   for (let i = 0; i < botId.length; i++) {
@@ -35,7 +36,7 @@ function getSeededBotData(botId: string) {
   }
 
   const absHash = Math.abs(hash);
-  const pnlPct = (absHash % 2000) / 100 - 5;
+  const pnlPct = customPnlPct !== undefined && customPnlPct !== null ? customPnlPct : ((absHash % 2000) / 100 - 5);
   const isPositive = pnlPct >= 0;
 
   const points: number[] = [];
@@ -47,6 +48,19 @@ function getSeededBotData(botId: string) {
     const step = (seed - Math.floor(seed)) * 24 - 12;
     currentVal = Math.max(10, Math.min(90, currentVal + step));
     points.push(currentVal);
+  }
+
+  if (customPnlPct !== undefined && customPnlPct !== null) {
+    const startsAt = points[0];
+    const endsAt = points[points.length - 1];
+    const actualTrendIsPositive = endsAt >= startsAt;
+    const targetTrendIsPositive = customPnlPct >= 0;
+    if (actualTrendIsPositive !== targetTrendIsPositive) {
+      for (let i = 1; i < points.length; i++) {
+        const diff = points[i] - startsAt;
+        points[i] = startsAt - diff;
+      }
+    }
   }
 
   const width = 120;
@@ -76,11 +90,16 @@ function getSeededBotData(botId: string) {
 }
 
 export function useBotStatus(bot: DeveloperBotSummary, onStatusChange?: (botId: string, newStatus: DeveloperBotStatus) => void) {
+  const t = useTranslations('DeveloperDashboard.botGridCard');
+  const tStatus = useTranslations('Common.botStatus');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
   const [localStatus, setLocalStatus] = useState<DeveloperBotStatus>(bot.status);
   const { updateStatus } = useBotMutations();
-  const { pnlPct, isPositive, linePath, areaPath } = getSeededBotData(bot.botId);
+  const { pnlPct, isPositive, linePath, areaPath } = getSeededBotData(
+    bot.botId,
+    bot.annualReturn !== undefined && bot.annualReturn !== null ? bot.annualReturn * 100 : undefined
+  );
 
   useEffect(() => {
     setLocalStatus(bot.status);
@@ -110,15 +129,24 @@ export function useBotStatus(bot: DeveloperBotSummary, onStatusChange?: (botId: 
     localStatus === 'ACTIVE' ? 'PAUSED' : localStatus === 'PAUSED' || localStatus === 'DOWN' ? 'ACTIVE' : null;
 
   const lifecycleLabel =
-    nextLifecycleStatus === 'PAUSED' ? 'Stop bot' : nextLifecycleStatus === 'ACTIVE' ? 'Resume bot' : 'Status locked';
+    nextLifecycleStatus === 'PAUSED'
+      ? t('lifecycleLabel.stop')
+      : nextLifecycleStatus === 'ACTIVE'
+        ? t('lifecycleLabel.resume')
+        : t('lifecycleLabel.locked');
+
+  const currentStatusStyle = statusStyles[localStatus] ?? statusStyles.DELETED;
 
   return {
     isDropdownOpen,
     setIsDropdownOpen,
     statusError,
-    statusStyle: statusStyles[localStatus] ?? statusStyles.DELETED,
+    statusStyle: {
+      ...currentStatusStyle,
+      label: tStatus(localStatus),
+    },
     localStatus,
-    apiKey: bot.apiKey ?? 'Not available',
+    apiKey: bot.apiKey ?? t('notAvailable'),
     nextLifecycleStatus,
     lifecycleLabel,
     updatePending: updateStatus.isPending,

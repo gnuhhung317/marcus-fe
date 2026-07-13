@@ -41,9 +41,9 @@ export default async function TerminalDeveloperConsolePage() {
   "version": "1.2",
   "timestamp": "ISO8601",
   "strategy_id": "QUANT_BETA_9",
-  "signal": {
+    "signal": {
     "action": "BUY | SELL",
-    "asset": "BTC/USDT",
+    "asset": "BTCUSDT",
     "size": "float64",
     "limit_price": "float64"
   }

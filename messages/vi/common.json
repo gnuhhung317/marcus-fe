@@ -24,7 +24,8 @@
       "update": "Cập nhật",
       "ban": "Khóa",
       "unban": "Mở khóa",
-      "back": "Quay lại"
+      "back": "Quay lại",
+      "copy": "Sao chép vào bảng nhớ tạm"
     },
     "labels": {
       "loading": "Đang tải",

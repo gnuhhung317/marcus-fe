@@ -38,6 +38,10 @@ export interface DeveloperBotSummary {
   tradingPair?: string | null;
   exchange?: string | null;
   apiKey?: string | null;
+  annualReturn?: number | null;
+  maxDrawdown?: number | null;
+  winRate?: number | null;
+  performanceSource?: string | null;
 }
 
 export interface DeveloperBotDetail extends DeveloperBotSummary {

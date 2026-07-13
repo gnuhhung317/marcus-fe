@@ -1,4 +1,4 @@
- 'use client';
+'use client';
 
 import { useTranslations } from 'next-intl';
 import { DeveloperSignalItem } from '@/lib/contracts/types';
@@ -11,7 +11,7 @@ interface SignalStreamTableProps {
 }
 
 function formatTimestamp(value?: string | null) {
-  if (!value) return '—';
+  if (!value) return '-';
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
@@ -24,7 +24,7 @@ function statusTone(status?: string | null): BadgeProps['variant'] {
 }
 
 function formatPrice(value?: number | null) {
-  if (value === undefined || value === null) return '—';
+  if (value === undefined || value === null) return '-';
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 8,
@@ -32,7 +32,7 @@ function formatPrice(value?: number | null) {
 }
 
 function formatSize(value?: number | null) {
-  if (value === undefined || value === null) return '—';
+  if (value === undefined || value === null) return '-';
   return value.toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: 6,
@@ -76,10 +76,10 @@ export function SignalStreamTable({ signals, onSelect }: SignalStreamTableProps)
                 {formatTimestamp(signal.generatedTimestamp)}
               </td>
               <td className="px-4 py-3 font-bold text-main uppercase">
-                {signal.action ?? '—'}
+                {signal.action ?? '-'}
               </td>
               <td className="px-4 py-3 text-main">
-                {signal.symbol ?? '—'}
+                {signal.symbol ?? '-'}
               </td>
               <td className="px-4 py-3 text-right font-mono text-main">
                 {formatPrice(signal.price)}

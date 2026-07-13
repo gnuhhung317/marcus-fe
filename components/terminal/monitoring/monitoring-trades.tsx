@@ -110,7 +110,22 @@ export function MonitoringTrades({ className }: MonitoringTradesProps) {
                         </span>
                       </td>
                       <td className="px-3 py-3 text-right font-mono text-main/80">{trade.size?.toFixed(4) ?? '--'}</td>
-                      <td className="px-3 py-3 text-right font-mono text-muted">{trade.exitPrice ? formatCurrency(trade.exitPrice) : trade.entryPrice ? formatCurrency(trade.entryPrice) : '--'}</td>
+                      <td className="px-3 py-3 text-right font-mono text-muted">
+                        {trade.entryPrice !== undefined && trade.exitPrice !== undefined ? (
+                          <div className="flex flex-col items-end">
+                            <span className="text-main/90">{formatCurrency(trade.exitPrice)}</span>
+                            <span className="text-[9px] text-muted/60">
+                              {t('table.entryPrice')}: {formatCurrency(trade.entryPrice)}
+                            </span>
+                          </div>
+                        ) : trade.exitPrice !== undefined ? (
+                          formatCurrency(trade.exitPrice)
+                        ) : trade.entryPrice !== undefined ? (
+                          formatCurrency(trade.entryPrice)
+                        ) : (
+                          '--'
+                        )}
+                      </td>
                       <td className={cn('px-3 py-3 text-right font-mono font-semibold', isProfit ? 'text-positive' : 'text-negative')}>
                         {trade.pnl !== 0 ? (
                           <span className="inline-flex items-center justify-end gap-0.5">

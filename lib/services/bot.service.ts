@@ -62,6 +62,15 @@ interface BotDetailResponse extends BotSummaryResponse {
   viewerSubscription?: ViewerSubscriptionResponse | null;
 }
 
+interface BotSignalResponse {
+  signalId?: string;
+  botId?: string;
+  symbol?: string;
+  action?: string;
+  status?: string;
+  generatedTimestamp?: string;
+}
+
 interface BotSummaryPageResponse {
   items?: BotSummaryResponse[];
   meta?: {
@@ -336,13 +345,16 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
 }
 
 export async function getMarketplaceBotDetail(botId: string, source: BotPerformanceQuerySource = 'AUTO'): Promise<BotDetail> {
-  const [response, analytics, inferredViewerSubscription] = await Promise.all([
+  const [response, analytics, inferredViewerSubscription, signalsResponse] = await Promise.all([
     requestContractJson<BotDetailResponse>('bot-detail', {
       pathParams: { botId },
       queryParams: { source },
     }),
     getBotAnalyticsData(botId),
     inferViewerSubscriptionFromPortfolio(botId),
+    requestContractJson<BotSignalResponse[]>('system-signals', {
+      queryParams: { botId, limit: 50 },
+    }).catch(() => []),
   ]);
 
   if (!response.botId) {
@@ -352,6 +364,14 @@ export async function getMarketplaceBotDetail(botId: string, source: BotPerforma
   return {
     ...mapBotDetail(response),
     analytics,
+    signals: (signalsResponse ?? []).map((signal, index) => ({
+      signalId: signal.signalId ?? `sig_${index + 1}`,
+      botId: signal.botId ?? botId,
+      symbol: signal.symbol ?? null,
+      action: signal.action ?? null,
+      status: signal.status ?? null,
+      generatedTimestamp: signal.generatedTimestamp ?? null,
+    })),
     viewerSubscription: normalizeViewerSubscription(response.viewerSubscription) ?? inferredViewerSubscription,
   };
 }

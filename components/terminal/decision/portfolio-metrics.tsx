@@ -22,12 +22,16 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
     return `${(num * 100).toFixed(1)}%`;
   };
 
-  const winRatePercent = formatPercent(overview.aggregateWinRate24h);
-  const winRateTrend: 'up' | 'down' | 'neutral' = overview.aggregateWinRate24h >= 0.6 ? 'up' : 'down';
   const openPnLTrend: 'up' | 'down' | 'neutral' = overview.aggregateOpenPnL >= 0 ? 'up' : 'down';
 
   const atRiskCount = overview.atRiskSubscriptionCount;
   const atRiskTrend: 'up' | 'down' | 'neutral' = atRiskCount > 0 ? 'down' : 'up';
+  const freshCount = overview.freshAccountsCount ?? 0;
+  const staleCount = overview.staleAccountsCount ?? 0;
+  const totalSyncAccounts = freshCount + staleCount;
+  const syncCoverage = totalSyncAccounts > 0 ? freshCount / totalSyncAccounts : 0;
+  const syncCoverageTrend: 'up' | 'down' | 'neutral' = totalSyncAccounts === 0 ? 'neutral' : syncCoverage >= 0.75 ? 'up' : 'down';
+  const syncCoverageText = totalSyncAccounts > 0 ? formatPercent(syncCoverage) : t('syncCoverage.none');
 
   const pnlPercentStr = overview.totalEquity > 0
     ? `${(overview.aggregateOpenPnL / overview.totalEquity * 100).toFixed(2)}%`
@@ -47,11 +51,11 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
       delta: pnlPercentStr,
     },
     {
-      label: t('winRate.label'),
-      value: winRatePercent,
-      subtext: overview.aggregateWinRate24h >= 0.6 ? t('winRate.healthy') : t('winRate.below'),
-      trend: winRateTrend,
-      delta: overview.aggregateWinRate24h >= 0.6 ? t('ok') : t('warn'),
+      label: t('syncCoverage.label'),
+      value: syncCoverageText,
+      subtext: t('syncCoverage.subtext', { fresh: freshCount, total: totalSyncAccounts }),
+      trend: syncCoverageTrend,
+      delta: totalSyncAccounts > 0 ? `${freshCount}/${totalSyncAccounts}` : t('warn'),
     },
     {
       label: t('atRisk.label'),

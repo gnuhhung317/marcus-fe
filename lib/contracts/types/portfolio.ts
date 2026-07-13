@@ -24,17 +24,15 @@ export interface BotDecisionCard {
   botName: string;
   botIcon: string;
   status: 'ACTIVE' | 'INACTIVE' | 'PAUSED';
-  currentPnL: number;
-  pnlPercent: number;
-  drawdownPercent: number;
-  winRate: number;
-  signalCount24h: number;
-  successfulSignals24h: number;
+  currentPnL: number | null;
+  pnlPercent: number | null;
+  drawdownPercent: number | null;
   reason: DecisionReason;
   reasonExplanation: string;
   riskScore: number;  // 0.0 to 1.0
   subscribedSinceDay: number;
-  daysAtRisk: number;
+  lastSyncAt: string | null;
+  syncFreshness: 'FRESH' | 'STALE' | 'NEVER_SYNCED' | string;
   lastSignal: string | null;
   exchange: string;
 }

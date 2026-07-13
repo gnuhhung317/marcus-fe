@@ -76,7 +76,7 @@ export function MarketplaceBotSidebar({ botId, botStatus, initialSubscription, s
                   <div className="min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-sm font-semibold text-main">
-                        {signal.symbol ?? 'BTC/USDT'}
+                        {signal.symbol ?? 'UNKNOWN'}
                       </span>
                       <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${actionColor}`}>
                         {signal.action ?? 'SIGNAL'}

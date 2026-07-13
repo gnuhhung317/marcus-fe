@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-
-function clearAuthCookies() {
-  const cookieStore = cookies();
-  cookieStore.delete('marcus_access_token');
-  cookieStore.delete('marcus_refresh_token');
-  cookieStore.delete('marcus_role');
-  cookieStore.delete('marcus_username');
-}
+import { clearAuthCookies } from '@/lib/auth/logout';
 
 export async function POST() {
-  clearAuthCookies();
-  return NextResponse.json({ success: true });
+  const response = NextResponse.json({ success: true });
+  clearAuthCookies(response);
+  return response;
 }
 
 export async function GET(request: Request) {
@@ -23,11 +16,11 @@ export async function GET(request: Request) {
     return new NextResponse(null, { status: 204 });
   }
 
-  clearAuthCookies();
-
   const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'localhost:3000';
   const proto = request.headers.get('x-forwarded-proto') || 'http';
   const baseUrl = `${proto}://${host}`;
+  const response = NextResponse.redirect(new URL('/login?logged_out=1', baseUrl));
 
-  return NextResponse.redirect(new URL('/login?logged_out=1', baseUrl));
+  clearAuthCookies(response);
+  return response;
 }

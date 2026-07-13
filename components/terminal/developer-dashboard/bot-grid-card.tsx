@@ -16,6 +16,7 @@ interface BotGridCardProps {
 
 export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps) {
   const t = useTranslations('DeveloperDashboard.botGridCard');
+  const tStatus = useTranslations('Common.botStatus');
   const {
     isDropdownOpen,
     setIsDropdownOpen,
@@ -152,7 +153,7 @@ export function BotGridCard({ bot, onStatusChange, onSelect }: BotGridCardProps)
         <div className="flex items-center justify-between gap-3">
           <Badge variant="outline" className="rounded-lg px-2.5 py-1 text-[10px] uppercase tracking-wider">
             <span className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
-            {localStatus}
+            {tStatus(localStatus)}
           </Badge>
 
           <Button

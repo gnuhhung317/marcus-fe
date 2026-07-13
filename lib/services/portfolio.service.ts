@@ -27,17 +27,15 @@ interface BotDecisionCardResponse {
   botName?: string;
   botIcon?: string;
   status?: string;
-  currentPnL?: number;
-  pnlPercent?: number;
-  drawdownPercent?: number;
-  winRate?: number;
-  signalCount24h?: number;
-  successfulSignals24h?: number;
+  currentPnL?: number | null;
+  pnlPercent?: number | null;
+  drawdownPercent?: number | null;
   reason?: string;
   reasonExplanation?: string;
   riskScore?: number;
   subscribedSinceDay?: number;
-  daysAtRisk?: number;
+  lastSyncAt?: string | null;
+  syncFreshness?: string;
   lastSignal?: string | null;
   exchange?: string;
 }
@@ -100,17 +98,15 @@ export async function getPortfolioDecisions(
         botName: d.botName ?? '',
         botIcon: d.botIcon ?? '',
         status: (d.status ?? 'ACTIVE') as 'ACTIVE' | 'INACTIVE' | 'PAUSED',
-        currentPnL: d.currentPnL ?? 0,
-        pnlPercent: d.pnlPercent ?? 0,
-        drawdownPercent: d.drawdownPercent ?? 0,
-        winRate: d.winRate ?? 0,
-        signalCount24h: d.signalCount24h ?? 0,
-        successfulSignals24h: d.successfulSignals24h ?? 0,
+        currentPnL: d.currentPnL ?? null,
+        pnlPercent: d.pnlPercent ?? null,
+        drawdownPercent: d.drawdownPercent ?? null,
         reason: (d.reason as DecisionReason) ?? DecisionReason.NEEDS_REVIEW,
         reasonExplanation: d.reasonExplanation ?? '',
         riskScore: d.riskScore ?? 0,
         subscribedSinceDay: d.subscribedSinceDay ?? 0,
-        daysAtRisk: d.daysAtRisk ?? 0,
+        lastSyncAt: d.lastSyncAt ?? null,
+        syncFreshness: d.syncFreshness ?? 'NEVER_SYNCED',
         lastSignal: d.lastSignal ?? null,
         exchange: d.exchange ?? '',
       })),

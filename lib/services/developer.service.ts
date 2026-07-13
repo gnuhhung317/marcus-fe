@@ -30,6 +30,10 @@ interface DeveloperBotSummaryResponse {
   tradingPair?: string;
   exchange?: string;
   apiKey?: string;
+  annualReturn?: number;
+  maxDrawdown?: number;
+  winRate?: number;
+  performanceSource?: string;
 }
 
 interface DeveloperBotDetailResponse extends DeveloperBotSummaryResponse {
@@ -182,6 +186,10 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     tradingPair: item.tradingPair ?? null,
     exchange: item.exchange ?? null,
     apiKey: item.apiKey ?? null,
+    annualReturn: item.annualReturn !== undefined && item.annualReturn !== null ? toNumber(item.annualReturn) : null,
+    maxDrawdown: item.maxDrawdown !== undefined && item.maxDrawdown !== null ? toNumber(item.maxDrawdown) : null,
+    winRate: item.winRate !== undefined && item.winRate !== null ? toNumber(item.winRate) : null,
+    performanceSource: item.performanceSource ?? null,
   }));
 
   const resolvedBots = bots;

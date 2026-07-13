@@ -62,7 +62,7 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
       localStorage.removeItem('marcus_username');
     }
 
-    router.push('/login?logged_out=1');
+    router.replace('/login?logged_out=1');
     router.refresh();
   };
 

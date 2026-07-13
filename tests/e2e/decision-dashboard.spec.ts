@@ -59,14 +59,12 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
         currentPnL: -123.45,
         pnlPercent: -0.031,
         drawdownPercent: -0.22,
-        winRate: 0.42,
-        signalCount24h: 12,
-        successfulSignals24h: 5,
         reason: 'HIGH_RISK',
-        reasonExplanation: 'Drawdown exceeded the risk threshold and the bot is underperforming.',
+        reasonExplanation: 'Critical 22.0% subscription drawdown.',
         riskScore: 0.91,
         subscribedSinceDay: 41,
-        daysAtRisk: 3,
+        lastSyncAt: new Date().toISOString(),
+        syncFreshness: 'FRESH',
         lastSignal: new Date().toISOString(),
         exchange: 'BINANCE',
       },
@@ -76,18 +74,16 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
         botName: 'BTC Momentum',
         botIcon: '',
         status: 'ACTIVE',
-        currentPnL: 84.91,
-        pnlPercent: 0.027,
-        drawdownPercent: -0.11,
-        winRate: 0.56,
-        signalCount24h: 18,
-        successfulSignals24h: 12,
+        currentPnL: null,
+        pnlPercent: null,
+        drawdownPercent: null,
         reason: 'NEEDS_REVIEW',
-        reasonExplanation: 'Signals remain active, but the win rate has softened over the last session.',
+        reasonExplanation: 'No subscription telemetry has been synced yet.',
         riskScore: 0.62,
         subscribedSinceDay: 18,
-        daysAtRisk: 1,
-        lastSignal: new Date().toISOString(),
+        lastSyncAt: null,
+        syncFreshness: 'NEVER_SYNCED',
+        lastSignal: null,
         exchange: 'BYBIT',
       },
       {
@@ -99,14 +95,12 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
         currentPnL: 42.18,
         pnlPercent: 0.011,
         drawdownPercent: -0.03,
-        winRate: 0.51,
-        signalCount24h: 4,
-        successfulSignals24h: 2,
         reason: 'SLIPPING',
-        reasonExplanation: 'Signals have slowed down and need closer observation.',
+        reasonExplanation: 'Telemetry is fresh, but no bot signals were seen in the last 24 hours.',
         riskScore: 0.21,
         subscribedSinceDay: 9,
-        daysAtRisk: 0,
+        lastSyncAt: new Date().toISOString(),
+        syncFreshness: 'FRESH',
         lastSignal: new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString(),
         exchange: 'BINANCE',
       },
@@ -119,14 +113,12 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
         currentPnL: 522.73,
         pnlPercent: 0.061,
         drawdownPercent: -0.04,
-        winRate: 0.74,
-        signalCount24h: 22,
-        successfulSignals24h: 18,
         reason: 'SOLID_PERFORMER',
-        reasonExplanation: 'Stable execution, strong win rate, and controlled drawdown.',
+        reasonExplanation: 'Subscription telemetry is fresh and within configured risk limits.',
         riskScore: 0.12,
         subscribedSinceDay: 72,
-        daysAtRisk: 0,
+        lastSyncAt: new Date().toISOString(),
+        syncFreshness: 'FRESH',
         lastSignal: new Date().toISOString(),
         exchange: 'OKX',
       },
@@ -217,7 +209,9 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
   await expect(page.getByRole('heading', { name: 'Decision Dashboard' })).toBeVisible();
   await expect(page.getByText('Subscription Triage', { exact: true }).first()).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Capital Allocation by Exchange' })).toBeVisible();
+  await expect(page.getByText('Sync coverage')).toBeVisible();
   await expect(page.getByText('100%')).toBeVisible();
+  await expect(page.getByText('0/0')).toHaveCount(0);
 
   await expect(page.getByRole('tab', { name: 'All Bots (4)' })).toBeVisible();
   await expect(page.getByRole('tab', { name: 'Active (2)' })).toBeVisible();
@@ -229,6 +223,8 @@ test('Decision Dashboard smoke: load, filter, search, refresh', async ({ page })
   await page.getByRole('tab', { name: 'At-Risk (2)' }).click();
   await expect(page.getByText('BTC Sentinel')).toBeVisible();
   await expect(page.getByText('BTC Momentum')).toBeVisible();
+  await expect(page.getByText('Unsynced')).toBeVisible();
+  await expect(page.getByText('No recent signal')).toBeVisible();
   await expect(page.getByText('SOL Trend')).toHaveCount(0);
   await expect.poll(() => decisionRequestCount).toBe(initialDecisionRequestCount);
 

@@ -24,7 +24,8 @@
       "update": "Update",
       "ban": "Ban",
       "unban": "Unban",
-      "back": "Go back"
+      "back": "Go back",
+      "copy": "Copy to clipboard"
     },
     "labels": {
       "loading": "Loading",

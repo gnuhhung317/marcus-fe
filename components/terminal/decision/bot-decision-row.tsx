@@ -48,9 +48,30 @@ export const BotDecisionRow = memo(function BotDecisionRow({
   const t = useTranslations('Decision.row');
   const style = reasonStyles[card.reason];
 
-  const pnlColor = card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
-  const drawdownColor = card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
+  const pnlColor = card.currentPnL == null ? 'text-muted' : card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
+  const drawdownColor = card.drawdownPercent == null
+    ? 'text-muted'
+    : card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
   const actionDisabled = isBusy;
+  const syncFreshness = (card.syncFreshness || 'NEVER_SYNCED').toUpperCase();
+  const syncLabel = syncFreshness === 'FRESH'
+    ? t('syncFresh')
+    : syncFreshness === 'STALE'
+      ? t('syncStale')
+      : t('syncNever');
+  const syncStatus: 'live' | 'warning' | 'offline' =
+    syncFreshness === 'FRESH' ? 'live' : syncFreshness === 'STALE' ? 'warning' : 'offline';
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const lastSignalText = card.lastSignal ? formatter.format(new Date(card.lastSignal)) : t('signalNone');
+  const pnlText = card.currentPnL == null ? '—' : `${card.currentPnL >= 0 ? '+' : ''}$${card.currentPnL.toFixed(2)}`;
+  const returnText = card.pnlPercent == null ? '—' : `${(card.pnlPercent * 100).toFixed(2)}%`;
+  const drawdownText = card.drawdownPercent == null ? '—' : `${(card.drawdownPercent * 100).toFixed(1)}%`;
 
   return (
     <Card
@@ -100,21 +121,22 @@ export const BotDecisionRow = memo(function BotDecisionRow({
 
       <div className="grid grid-cols-3 gap-2 sm:w-1/5 sm:min-w-[150px]">
         <div>
-          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('winRate')}</span>
-          <span className="font-mono text-xs font-semibold text-main">
-            {(card.winRate * 100).toFixed(0)}%
+          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('sync')}</span>
+          <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-main">
+            <StatusDot status={syncStatus} pulse={syncStatus !== 'offline'} size="sm" />
+            {syncLabel}
           </span>
         </div>
         <div>
           <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('maxDd')}</span>
           <span className={`font-mono text-xs font-semibold ${drawdownColor}`}>
-            {(card.drawdownPercent * 100).toFixed(1)}%
+            {drawdownText}
           </span>
         </div>
         <div>
-          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('signals')}</span>
+          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('lastSignal')}</span>
           <span className="font-mono text-xs text-main">
-            {card.successfulSignals24h}/{card.signalCount24h}
+            {lastSignalText}
           </span>
         </div>
       </div>
@@ -123,13 +145,13 @@ export const BotDecisionRow = memo(function BotDecisionRow({
         <div>
           <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">{t('pnlLabel')}</span>
           <span className={`font-mono text-sm font-semibold ${pnlColor}`}>
-            {card.currentPnL >= 0 ? '+' : ''}${card.currentPnL.toFixed(2)}
+            {pnlText}
           </span>
         </div>
         <div>
           <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">{t('returnLabel')}</span>
           <span className={`font-mono text-[10px] ${pnlColor}`}>
-            {(card.pnlPercent * 100).toFixed(2)}%
+            {returnText}
           </span>
         </div>
       </div>

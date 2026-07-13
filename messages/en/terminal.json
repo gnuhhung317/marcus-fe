@@ -551,6 +551,8 @@
         "side": "Side",
         "size": "Size",
         "price": "Price",
+        "entryPrice": "Entry",
+        "exitPrice": "Exit",
         "pnl": "PnL",
         "time": "Time"
       }

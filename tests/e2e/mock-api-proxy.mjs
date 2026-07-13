@@ -3,6 +3,7 @@ import http from 'node:http';
 const listenPort = Number(process.env.MOCK_API_PORT ?? 4010);
 const realApiBaseUrl = (process.env.REAL_API_BASE_URL ?? 'https://marcus-api.tromoi.xyz/api/v1').replace(/\/$/, '');
 const apiPrefix = '/api/v1';
+const runtimeSnapshotTestBotId = 'runtime-snapshot-test-bot';
 
 function json(res, status, body) {
   res.writeHead(status, {
@@ -42,6 +43,147 @@ function createSession(username = 'trader@example.com') {
     username: normalizedUsername,
     role: 'TRADER',
   };
+}
+
+function getRuntimeSnapshotTestMode(authHeader = '') {
+  if (authHeader.includes('runtime-snapshot-historical')) {
+    return 'historical';
+  }
+
+  if (authHeader.includes('runtime-snapshot-fallback')) {
+    return 'fallback';
+  }
+
+  if (authHeader.includes('runtime-snapshot-dry-run')) {
+    return 'dry-run';
+  }
+
+  return null;
+}
+
+function createRuntimeSnapshotTestPayload(mode) {
+  const detail = {
+    botId: runtimeSnapshotTestBotId,
+    botName: 'Runtime Snapshot Test Bot',
+    description: 'Deterministic fixture for marketplace runtime snapshot consistency.',
+    status: 'ACTIVE',
+    tradingPair: 'BTC/USDT',
+    exchange: 'BINANCE',
+    performanceSource: mode === 'historical' ? 'HISTORICAL' : mode === 'fallback' ? 'SIGNAL_BASED' : 'DRY_RUN',
+    performance: {
+      annualReturn: 21.3742,
+      maxDrawdown: 1.0,
+      sharpe: 51.55,
+      winRate: 0.1111,
+      avgTradeReturn: 0.42,
+      tradesPerDay: 1.5,
+    },
+    viewerSubscription: null,
+  };
+
+  const metrics = {
+    total: {
+      annualReturn: 5.3612,
+      maxDrawdown: -0.4821,
+      sharpe: 2.707,
+      sortino: 3.404,
+      calmar: 4.501,
+      profitFactor: 1.55,
+      winRate: 0.7381,
+      sampleSizeDays: 110,
+      sampleSizeTrades: 42,
+      statisticalSignificanceWarning: null,
+    },
+    historical: {
+      annualReturn: 1.1111,
+      maxDrawdown: -0.1234,
+      sharpe: 1.11,
+      sortino: 2.22,
+      calmar: 3.33,
+      profitFactor: 1.44,
+      winRate: 0.55,
+      sampleSizeDays: 40,
+      sampleSizeTrades: 12,
+      statisticalSignificanceWarning: null,
+    },
+    outOfSample: {
+      annualReturn: 4.2492,
+      maxDrawdown: -1.9842,
+      sharpe: 0.71,
+      sortino: 8.88,
+      calmar: 2.14,
+      profitFactor: 1.02,
+      winRate: 0.8667,
+      sampleSizeDays: 70,
+      sampleSizeTrades: 30,
+      statisticalSignificanceWarning: null,
+    },
+  };
+
+  const performanceSeries = {
+    splitTimestamp: '2026-05-11T00:00:00Z',
+    points: [
+      { timestamp: '2026-04-01T00:00:00Z', value: 0, phase: 'HISTORICAL' },
+      { timestamp: '2026-05-10T00:00:00Z', value: 35.5, phase: 'HISTORICAL' },
+      { timestamp: '2026-05-11T00:00:00Z', value: 36.0, phase: 'OUT_OF_SAMPLE' },
+      { timestamp: '2026-07-10T00:00:00Z', value: 61.25, phase: 'OUT_OF_SAMPLE' },
+    ],
+  };
+
+  return {
+    detail,
+    metrics,
+    performanceSeries,
+  };
+}
+
+function handleRuntimeSnapshotTestRoute(req, res, pathname, search, authHeader) {
+  const mode = getRuntimeSnapshotTestMode(authHeader);
+  if (!mode) {
+    return false;
+  }
+
+  const { detail, metrics, performanceSeries } = createRuntimeSnapshotTestPayload(mode);
+  const detailPath = `${apiPrefix}/bots/${runtimeSnapshotTestBotId}`;
+  const metricsPath = `${detailPath}/analytics/metrics`;
+  const seriesPath = `${detailPath}/analytics/performance-series`;
+  const decisionsPath = `${apiPrefix}/dashboard/portfolio/decisions`;
+
+  if (req.method === 'GET' && pathname === detailPath) {
+    json(res, 200, detail);
+    return true;
+  }
+
+  if (req.method === 'GET' && pathname === metricsPath) {
+    json(res, 200, metrics);
+    return true;
+  }
+
+  if (req.method === 'GET' && pathname === seriesPath) {
+    const range = new URLSearchParams(search).get('range');
+    if (range && range.toUpperCase() !== 'ALL') {
+      json(res, 200, { ...performanceSeries, points: performanceSeries.points.slice(-2) });
+      return true;
+    }
+
+    json(res, 200, performanceSeries);
+    return true;
+  }
+
+  if (req.method === 'GET' && pathname === decisionsPath) {
+    json(res, 200, {
+      decisions: [],
+      summary: {
+        totalCount: 0,
+        activeCount: 0,
+        reviewNeededCount: 0,
+        highRiskCount: 0,
+      },
+    });
+    return true;
+  }
+
+  return false;
 }
 
 async function handleAuthRoute(req, res, pathname) {
@@ -88,6 +230,10 @@ async function proxyToRealBackend(req, res, pathname, search) {
   const upstreamUrl = new URL(`${pathname.slice(apiPrefix.length)}${search}`, realApiBaseUrl);
   const headers = new Headers();
   const authHeader = typeof req.headers.authorization === 'string' ? req.headers.authorization : '';
+
+  if (handleRuntimeSnapshotTestRoute(req, res, pathname, search, authHeader)) {
+    return;
+  }
 
   for (const [key, value] of Object.entries(req.headers)) {
     if (typeof value !== 'string') {

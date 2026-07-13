@@ -12,8 +12,9 @@ export function CredentialPanel({ bot }: CredentialPanelProps) {
   const t = useTranslations('DeveloperDashboard.credentialPanel');
   const apiKey = bot.apiKey ?? t('notAvailable');
   const snippet = `POST /api/v1/signals
-X-Marcus-Api-Key: ${apiKey}
-X-Marcus-Bot-Secret: <rawSecret-from-provisioning>
+X-Bot-Api-Key: ${apiKey}
+X-Timestamp: <current-timestamp>
+X-Signature: <computed-signature>
 Content-Type: application/json
 
 {

@@ -36,6 +36,7 @@ interface DeveloperBotListProps {
 
 export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterClick }: DeveloperBotListProps) {
   const t = useTranslations('DeveloperDashboard.botList');
+  const tStatus = useTranslations('Common.botStatus');
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredBots = bots.filter(
@@ -154,7 +155,7 @@ export function DeveloperBotList({ bots, activeBotId, onSelectBot, onRegisterCli
                     </div>
                     <span className={`flex-shrink-0 flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-bold ${style.bg} ${style.text} font-mono`}>
                       <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-                      {bot.status}
+                      {tStatus(bot.status)}
                     </span>
                   </div>
 

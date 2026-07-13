@@ -551,6 +551,8 @@
         "side": "Chiều",
         "size": "Khối lượng",
         "price": "Giá",
+        "entryPrice": "Vào",
+        "exitPrice": "Ra",
         "pnl": "PnL",
         "time": "Thời gian"
       }

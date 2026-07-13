@@ -81,7 +81,9 @@ function getActionBadge(action: string, labels: { buy: string; sell: string }) {
 }
 
 function getStatusBadge(status: string, labels: { executed: string; pending: string; rejected: string }) {
-  if (status.toUpperCase() === 'EXECUTED') {
+  const upperStatus = status.toUpperCase();
+
+  if (['EXECUTED', 'ACKNOWLEDGED', 'DELIVERED', 'SUCCESS'].includes(upperStatus)) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-positive">
         <span className="h-1.5 w-1.5 rounded-full bg-positive" />
@@ -90,7 +92,7 @@ function getStatusBadge(status: string, labels: { executed: string; pending: str
     );
   }
 
-  if (status.toUpperCase() === 'PENDING') {
+  if (['PENDING', 'RECEIVED'].includes(upperStatus)) {
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-warning">
         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-warning" />

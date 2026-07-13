@@ -24,7 +24,7 @@ function parsePerformanceSource(value: string | string[] | undefined): BotPerfor
   return 'AUTO';
 }
 
-function getSummaryBlock(
+function getSelectedMetricBlock(
   analytics: BotDetail['analytics'],
   performanceSource?: BotPerformanceSource | null,
 ): BotMetricBlock | null {
@@ -43,20 +43,32 @@ function getSummaryBlock(
   return null;
 }
 
-function getSummarySourceLabel(
+function resolveSnapshotSource(
+  analytics: BotDetail['analytics'],
   performanceSource: BotPerformanceSource | null | undefined,
   t: Awaited<ReturnType<typeof getTranslations>>,
 ) {
+  const selectedMetricBlock = getSelectedMetricBlock(analytics, performanceSource);
+
+  let summarySourceLabel: string | null;
   switch (performanceSource) {
     case 'DRY_RUN':
-      return t('summarySource.dryRun');
+      summarySourceLabel = t('summarySource.dryRun');
+      break;
     case 'HISTORICAL':
-      return t('summarySource.historical');
+      summarySourceLabel = t('summarySource.historical');
+      break;
     case 'SIGNAL_BASED':
-      return t('summarySource.signalBasedFallback');
+      summarySourceLabel = t('summarySource.signalBasedFallback');
+      break;
     default:
-      return null;
+      summarySourceLabel = null;
   }
+
+  return {
+    selectedMetricBlock,
+    summarySourceLabel,
+  };
 }
 
 export default async function TerminalMarketplaceBotDetailPage({
@@ -70,8 +82,7 @@ export default async function TerminalMarketplaceBotDetailPage({
   try {
     const requestedSource = parsePerformanceSource(searchParams?.source);
     const bot = await getMarketplaceBotDetail(params.botId, requestedSource);
-    const summaryBlock = getSummaryBlock(bot.analytics, bot.performanceSource);
-    const summarySourceLabel = getSummarySourceLabel(bot.performanceSource, t);
+    const { selectedMetricBlock, summarySourceLabel } = resolveSnapshotSource(bot.analytics, bot.performanceSource, t);
     const isBotActive = (bot.status ?? 'ACTIVE') === 'ACTIVE';
 
     return (
@@ -92,7 +103,7 @@ export default async function TerminalMarketplaceBotDetailPage({
               isActive={isBotActive}
               performance={bot.performance}
               performanceSource={bot.performanceSource}
-              summaryBlock={summaryBlock}
+              selectedMetricBlock={selectedMetricBlock}
               status={bot.status}
             />
 

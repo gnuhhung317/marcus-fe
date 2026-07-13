@@ -3,6 +3,9 @@ import { BotTrade } from './shared';
 
 export interface ConnectivityHealth {
   overallStatus: string;
+  executorConnectionStatus: string;
+  heartbeatStatus: string;
+  lastHeartbeatAt: string | null;
   checkedAt: string;
 }
 
@@ -38,6 +41,10 @@ export interface DeveloperBotSummary {
   tradingPair?: string | null;
   exchange?: string | null;
   apiKey?: string | null;
+  annualReturn?: number | null;
+  maxDrawdown?: number | null;
+  winRate?: number | null;
+  performanceSource?: string | null;
 }
 
 export interface DeveloperBotDetail extends DeveloperBotSummary {

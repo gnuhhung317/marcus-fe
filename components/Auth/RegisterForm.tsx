@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Form, FormField } from '@/components/ui/form-primitive';
-import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth.schema';
+import { createRegisterSchema, type RegisterFormValues } from '@/lib/validations/auth.schema';
 import { setBrowserAccessToken } from '@/lib/api/http';
 
 const REGISTER_ROUTE = '/api/auth/register';
 
 export default function RegisterForm() {
+  const t = useTranslations('Register.form');
+  const tValidation = useTranslations('Common.validation');
+  const registerSchema = createRegisterSchema(tValidation);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -31,7 +35,7 @@ export default function RegisterForm() {
 
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(payload?.message || 'Registration failed.');
+        throw new Error(payload?.message || t('errors.generic'));
       }
 
       if (typeof payload?.next === 'string' && payload.next.startsWith('/')) {
@@ -40,17 +44,17 @@ export default function RegisterForm() {
         }
 
         if (payload.next.startsWith('/login')) {
-          setSuccessMessage('Account created successfully. Redirecting to login...');
+          setSuccessMessage(t('success'));
         }
 
         window.location.replace(payload.next);
         return;
       }
 
-      setSuccessMessage('Account created successfully. Redirecting to login...');
+      setSuccessMessage(t('success'));
       window.location.replace('/login?registered=true&next=/terminal');
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Unexpected error.';
+      const message = err instanceof Error ? err.message : t('errors.generic');
       setError(message);
     }
   }
@@ -84,7 +88,7 @@ export default function RegisterForm() {
       >
         {({ register, formState: { errors, isSubmitting } }) => (
           <>
-            <FormField label="Email" error={errors.email?.message} hint="Use a reachable email for account recovery.">
+            <FormField label={t('email')} error={errors.email?.message} hint={t('hints.email')}>
               <input
                 {...register('email')}
                 type="email"
@@ -93,17 +97,17 @@ export default function RegisterForm() {
               />
             </FormField>
 
-            <FormField label="Account type" error={errors.role?.message} hint="Select developer if you plan to publish bots or integrations.">
+            <FormField label={t('accountType')} error={errors.role?.message} hint={t('hints.accountType')}>
               <select
                 {...register('role')}
                 className="w-full rounded-xl border border-border bg-surface px-4 py-2.5 text-sm text-white outline-none focus:border-positive/50"
               >
-                <option value="TRADER">Trader</option>
-                <option value="DEVELOPER">Developer</option>
+                <option value="TRADER">{t('roles.trader')}</option>
+                <option value="DEVELOPER">{t('roles.developer')}</option>
               </select>
             </FormField>
 
-            <FormField label="Display name" error={errors.displayName?.message}>
+            <FormField label={t('fullName')} error={errors.displayName?.message}>
               <input
                 {...register('displayName')}
                 type="text"
@@ -112,7 +116,7 @@ export default function RegisterForm() {
               />
             </FormField>
 
-            <FormField label="Password" error={errors.password?.message} hint="At least 8 chars, with upper/lowercase and a number.">
+            <FormField label={t('password')} error={errors.password?.message} hint={t('hints.password')}>
               <input
                 {...register('password')}
                 type="password"
@@ -127,10 +131,10 @@ export default function RegisterForm() {
                 isLoading={isSubmitting}
                 className="w-full"
               >
-                Create account
+                {isSubmitting ? t('submitting') : t('submit')}
               </Button>
             </div>
-            <p className="text-xs text-muted">By creating an account, you agree to system access and audit policies.</p>
+            <p className="text-xs text-muted">{t('terms')}</p>
           </>
         )}
       </Form>

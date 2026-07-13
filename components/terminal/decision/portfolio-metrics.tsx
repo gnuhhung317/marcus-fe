@@ -1,63 +1,34 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { PortfolioOverview } from '@/lib/contracts/types';
 import { MetricStrip } from '@/components/shared/metric-strip';
 import { StatusDot } from '@/components/shared/status-dot';
+import { Badge } from '@/components/ui/badge';
+import { formatRatioPercent } from '@/lib/utils';
 
 interface PortfolioMetricsProps {
   overview: PortfolioOverview;
 }
 
 export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const t = useTranslations('Decision.portfolioMetrics');
 
   const formatNumber = (num: number, decimals = 0) => {
     return new Intl.NumberFormat('en-US', { maximumFractionDigits: decimals }).format(num);
   };
 
-  const formatPercent = (num: number) => {
-    return `${(num * 100).toFixed(1)}%`;
-  };
-
-  const winRatePercent = formatPercent(overview.aggregateWinRate24h);
-  const winRateTrend: 'up' | 'down' | 'neutral' = overview.aggregateWinRate24h >= 0.6 ? 'up' : 'down';
   const openPnLTrend: 'up' | 'down' | 'neutral' = overview.aggregateOpenPnL >= 0 ? 'up' : 'down';
-  
+
   const atRiskCount = overview.atRiskSubscriptionCount;
   const atRiskTrend: 'up' | 'down' | 'neutral' = atRiskCount > 0 ? 'down' : 'up';
-
-  let statusLabel = 'Offline';
-  let statusValue: 'live' | 'active' | 'warning' | 'critical' | 'danger' | 'offline' | 'inactive' = 'offline';
-  let shouldPulse = false;
-  let lastUpdatedText = 'Never synced';
-
-  if (mounted && overview.lastUpdated) {
-    const lastUpdatedDate = new Date(overview.lastUpdated);
-    const diffMs = Date.now() - lastUpdatedDate.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-
-    lastUpdatedText = lastUpdatedDate.toLocaleTimeString();
-
-    if (diffMins < 5) {
-      statusLabel = 'Live';
-      statusValue = 'live';
-      shouldPulse = true;
-    } else if (diffMins < 60) {
-      statusLabel = `Synced ${diffMins}m ago`;
-      statusValue = 'warning';
-      shouldPulse = true;
-    } else {
-      const hours = Math.floor(diffMins / 60);
-      statusLabel = hours < 24 ? `Synced ${hours}h ago` : `Synced ${Math.floor(hours / 24)}d ago`;
-      statusValue = 'offline';
-      shouldPulse = false;
-    }
-  }
+  const freshCount = overview.freshAccountsCount ?? 0;
+  const staleCount = overview.staleAccountsCount ?? 0;
+  const totalSyncAccounts = freshCount + staleCount;
+  const syncCoverage = totalSyncAccounts > 0 ? freshCount / totalSyncAccounts : 0;
+  const syncCoverageTrend: 'up' | 'down' | 'neutral' = totalSyncAccounts === 0 ? 'neutral' : syncCoverage >= 0.75 ? 'up' : 'down';
+  const syncCoverageText = totalSyncAccounts > 0 ? formatRatioPercent(syncCoverage, 1) : t('syncCoverage.none');
 
   const pnlPercentStr = overview.totalEquity > 0
     ? `${(overview.aggregateOpenPnL / overview.totalEquity * 100).toFixed(2)}%`
@@ -65,70 +36,108 @@ export function PortfolioMetrics({ overview }: PortfolioMetricsProps) {
 
   const metrics = [
     {
-      label: 'Total equity',
+      label: t('totalEquity.label'),
       value: `$${formatNumber(overview.totalEquity, 2)}`,
-      subtext: 'Base capital + float PnL',
+      subtext: t('totalEquity.subtext'),
     },
     {
-      label: 'Open PnL',
+      label: t('openPnl.label'),
       value: `${overview.aggregateOpenPnL >= 0 ? '+' : ''}$${formatNumber(overview.aggregateOpenPnL, 2)}`,
-      subtext: 'Portfolio unrealized delta',
+      subtext: t('openPnl.subtext'),
       trend: openPnLTrend,
       delta: pnlPercentStr,
     },
     {
-      label: 'Win rate (24h)',
-      value: winRatePercent,
-      subtext: overview.aggregateWinRate24h >= 0.6 ? 'Healthy signal quality' : 'Below target',
-      trend: winRateTrend,
-      delta: overview.aggregateWinRate24h >= 0.6 ? 'OK' : 'WARN',
+      label: t('syncCoverage.label'),
+      value: syncCoverageText,
+      subtext: t('syncCoverage.subtext', { fresh: freshCount, total: totalSyncAccounts }),
+      trend: syncCoverageTrend,
+      delta: totalSyncAccounts > 0 ? `${freshCount}/${totalSyncAccounts}` : t('warn'),
     },
     {
-      label: 'At-risk subscriptions',
+      label: t('atRisk.label'),
       value: atRiskCount.toString(),
-      subtext: atRiskCount > 0 ? 'Urgent attention required' : 'Optimal risk levels',
+      subtext: atRiskCount > 0 ? t('atRisk.urgent') : t('atRisk.optimal'),
       trend: atRiskTrend,
-      delta: atRiskCount > 0 ? 'ALERT' : 'STABLE',
+      delta: atRiskCount > 0 ? t('alert') : t('stable'),
     },
   ];
 
   const freshnessState = overview.dataFreshness ?? 'STALE';
+  const lastUpdatedText = useMemo(() => {
+    if (!overview.lastUpdated) {
+      return t('neverSynced');
+    }
+
+    const parsed = new Date(overview.lastUpdated);
+    return Number.isNaN(parsed.getTime()) ? overview.lastUpdated : parsed.toISOString().slice(11, 19);
+  }, [overview.lastUpdated, t]);
+
+  const syncStatus = useMemo(() => {
+    if (!overview.lastUpdated) {
+      return {
+        label: t('neverSynced'),
+        value: 'offline' as const,
+        pulse: false,
+      };
+    }
+
+    if (freshnessState === 'FRESH') {
+      return {
+        label: t('live'),
+        value: 'live' as const,
+        pulse: true,
+      };
+    }
+
+    if (freshnessState === 'PARTIAL') {
+      return {
+        label: t('warn'),
+        value: 'warning' as const,
+        pulse: true,
+      };
+    }
+
+    return {
+      label: t('offline'),
+      value: 'offline' as const,
+      pulse: false,
+    };
+  }, [freshnessState, overview.lastUpdated, t]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-[0.16em] text-muted">
-          Portfolio Telemetry
+          {t('title')}
         </h2>
-        {mounted && (
-          <div className="flex items-center gap-2 rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 text-xs font-mono">
-            <StatusDot status={statusValue} pulse={shouldPulse} size="sm" />
-            <span className="text-muted">{statusLabel}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-mono">
+          <StatusDot status={syncStatus.value} pulse={syncStatus.pulse} size="sm" />
+          <span className="text-muted">{syncStatus.label}</span>
+        </div>
       </div>
 
       <MetricStrip items={metrics} />
 
       <div className="flex flex-wrap gap-2 text-xs">
-        <span className="rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 font-mono text-muted">
-          Active fleet: <span className="font-semibold text-white">{overview.activeBotsCount}</span>
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-muted">
+          {t('activeFleet')}: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
         </span>
-        <span className="rounded border border-white/5 bg-white/[0.02] px-2.5 py-1 font-mono text-muted">
-          Last sync: <span className="font-semibold text-white">{lastUpdatedText}</span>
+        <span className="rounded-full border border-border bg-surface px-2.5 py-1 font-mono text-muted">
+          {t('lastSync')}: <span className="font-semibold text-main">{lastUpdatedText}</span>
         </span>
-        <span className={`rounded border px-2.5 py-1 font-mono ${
+        <Badge variant={
           freshnessState === 'FRESH'
-            ? 'border-positive/20 bg-positive/5 text-positive'
+            ? 'success'
             : freshnessState === 'PARTIAL'
-            ? 'border-warning/20 bg-warning/5 text-warning'
-            : 'border-negative/20 bg-negative/5 text-negative'
-        }`}>
-          Data state: <span className="font-semibold">{freshnessState}</span>
-        </span>
+            ? 'warning'
+            : 'error'
+        }>
+          {t('dataState')}: <span className="font-semibold">{freshnessState}</span>
+        </Badge>
         {overview.staleAccountsCount !== undefined && overview.staleAccountsCount > 0 && (
-          <span className="rounded border border-warning/20 bg-warning/5 px-2.5 py-1 font-mono text-warning">
-            Stale accounts: <span className="font-semibold text-white">{overview.staleAccountsCount}</span>
+          <span className="rounded-full border border-warning/20 bg-warning-soft px-2.5 py-1 font-mono text-warning">
+            {t('staleAccounts')}: <span className="font-semibold text-main">{overview.staleAccountsCount}</span>
           </span>
         )}
       </div>

@@ -1,9 +1,11 @@
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MarketplaceBot } from '@/lib/contracts/types';
 import { cn } from '@/lib/utils';
+import { TrendingUp, TrendingDown, Award, ShieldAlert, ArrowRight } from 'lucide-react';
 
 interface MarketplaceBotCardProps {
   bot: MarketplaceBot;
@@ -18,55 +20,111 @@ function formatPercent(value: number | null, digits = 1, signed = false) {
 }
 
 export function MarketplaceBotCard({ bot }: MarketplaceBotCardProps) {
-  const returnTone = bot.pnl30d === null || bot.pnl30d === undefined
+  const t = useTranslations('Marketplace.card');
+  const annualReturnTone = bot.annualReturn === null || bot.annualReturn === undefined
     ? 'text-main'
-    : bot.pnl30d >= 0
+    : bot.annualReturn >= 0
       ? 'text-positive'
       : 'text-negative';
+  
   const drawdownTone = bot.drawdown === null || bot.drawdown === undefined ? 'text-main' : 'text-negative';
+  const detailHref = bot.performanceSource
+    ? `/terminal/marketplace/${encodeURIComponent(bot.botId)}?source=${bot.performanceSource}`
+    : `/terminal/marketplace/${encodeURIComponent(bot.botId)}`;
+
+  const displayId = bot.botId.startsWith('bot_')
+    ? `bot_${bot.botId.slice(4, 8)}...${bot.botId.slice(-4)}`
+    : `${bot.botId.slice(0, 8)}...${bot.botId.slice(-4)}`;
 
   return (
-    <Card variant="glass-strong" className="p-5">
-      <div className="flex h-full flex-col">
-        <div className="flex-1 space-y-4">
+    <Card 
+      variant="glass-strong" 
+      className="p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_8px_30px_rgba(16,185,129,0.06)] bg-surface-strong/30"
+    >
+      <div className="flex h-full flex-col justify-between">
+        <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="truncate text-2xl font-semibold text-main">{bot.name}</h2>
-              <p className="mt-1 font-mono text-xs text-muted">{bot.botId}</p>
+              <h2 className="truncate text-lg font-semibold text-main tracking-tight">{bot.name}</h2>
+              <p className="mt-0.5 font-mono text-[10px] text-muted">{displayId}</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            {bot.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="bg-surface normal-case">
-                {tag}
-              </Badge>
-            ))}
+          <div className="flex flex-wrap gap-1.5">
+            {bot.tags.map((tag) => {
+              const isRisk = ['HIGH', 'MEDIUM', 'LOW'].includes(tag.toUpperCase());
+              let badgeVariant: 'default' | 'secondary' | 'success' | 'warning' | 'error' | 'outline' = 'outline';
+              
+              if (isRisk) {
+                if (tag.toUpperCase() === 'HIGH') badgeVariant = 'error';
+                else if (tag.toUpperCase() === 'MEDIUM') badgeVariant = 'warning';
+                else if (tag.toUpperCase() === 'LOW') badgeVariant = 'success';
+              }
+
+              return (
+                <Badge 
+                  key={tag} 
+                  variant={badgeVariant} 
+                  className={cn(
+                    "normal-case text-[9px] px-1.5 py-0.5 font-medium tracking-normal",
+                    !isRisk && "bg-surface/50 border-border/40 text-muted"
+                  )}
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <Card variant="default" className="p-3 border-border rounded-xl">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Return</p>
-              <p className={cn("mt-2 text-lg font-semibold", returnTone)}>
-                {formatPercent(bot.pnl30d, 1, true)}
+          <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-border/30 bg-surface/30 shadow-none divide-x divide-border/30 text-center">
+            <div className="p-2 flex flex-col justify-between h-full min-w-0">
+              <span className="text-[9px] uppercase tracking-[0.12em] text-muted flex items-center justify-center gap-1 font-medium">
+                {bot.annualReturn !== null && bot.annualReturn >= 0 ? (
+                  <TrendingUp className="w-3 h-3 text-positive shrink-0" />
+                ) : (
+                  <TrendingDown className="w-3 h-3 text-negative shrink-0" />
+                )}
+                {t('cagr')}
+              </span>
+              <p className={cn('mt-1 text-base font-semibold', annualReturnTone)}>
+                {formatPercent(bot.annualReturn, 1, true)}
               </p>
-            </Card>
-            <Card variant="default" className="p-3 border-border rounded-xl">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Win rate</p>
-              <p className="mt-2 text-lg font-semibold text-main">{formatPercent(bot.winRate)}</p>
-            </Card>
-            <Card variant="default" className="p-3 border-border rounded-xl">
-              <p className="text-[10px] uppercase tracking-[0.16em] text-muted">Drawdown</p>
-              <p className={cn("mt-2 text-lg font-semibold", drawdownTone)}>
-                {bot.drawdown === null || bot.drawdown === undefined ? 'N/A' : `-${bot.drawdown.toFixed(1)}%`}
+            </div>
+
+            <div className="p-2 flex flex-col justify-between h-full min-w-0">
+              <span className="text-[9px] uppercase tracking-[0.12em] text-muted flex items-center justify-center gap-1 font-medium">
+                <Award className="w-3 h-3 text-muted shrink-0" />
+                {t('winRate')}
+              </span>
+              <p className="mt-1 text-base font-semibold text-main">
+                {formatPercent(bot.winRate)}
               </p>
-            </Card>
+            </div>
+
+            <div className="p-2 flex flex-col justify-between h-full min-w-0">
+              <span className="text-[9px] uppercase tracking-[0.12em] text-muted flex items-center justify-center gap-1 font-medium">
+                <ShieldAlert className="w-3 h-3 text-muted shrink-0" />
+                {t('drawdown')}
+              </span>
+              <p className={cn('mt-1 text-base font-semibold', drawdownTone)}>
+                {bot.drawdown === null || bot.drawdown === undefined 
+                  ? t('na') 
+                  : bot.drawdown === 0 
+                    ? '0.0%' 
+                    : `-${Math.abs(bot.drawdown).toFixed(1)}%`}
+              </p>
+            </div>
           </div>
         </div>
 
-        <Button variant="primary" asChild className="mt-6 w-full">
-          <Link href={`/terminal/marketplace/${encodeURIComponent(bot.botId)}`}>
-            Open bot
+        <Button 
+          variant="outline" 
+          asChild 
+          className="mt-4 w-full group/btn border-border hover:border-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 shadow-sm"
+        >
+          <Link href={detailHref} className="flex items-center justify-center gap-1">
+            {t('openBot')}
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
           </Link>
         </Button>
       </div>

@@ -1,5 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { useUrlFilters } from '@/lib/hooks/use-url-filters';
 
 interface FleetFiltersBarProps {
@@ -7,76 +12,63 @@ interface FleetFiltersBarProps {
 }
 
 export function FleetFiltersBar({ uniqueExchanges }: FleetFiltersBarProps) {
+  const t = useTranslations('DeveloperDashboard.fleetFilters');
   const { getFilter, setFilter, resetFilters } = useUrlFilters();
 
   const searchQuery = getFilter('q', '');
   const selectedStatus = getFilter('status', 'ALL');
   const selectedExchange = getFilter('venue', 'ALL');
 
-  const hasActiveFilters = searchQuery || selectedStatus !== 'ALL' || selectedExchange !== 'ALL';
+  const hasActiveFilters = Boolean(searchQuery) || selectedStatus !== 'ALL' || selectedExchange !== 'ALL';
 
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-2xl border border-border bg-surface shadow-[var(--shadow-soft)]">
-      {/* Search Input */}
-      <div className="relative flex-1 max-w-md">
-        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </span>
-        <input
+    <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-soft)] md:flex-row md:items-center md:justify-between">
+      <div className="relative w-full max-w-md">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        <Input
           type="text"
-          placeholder="Search by bot name or ID..."
+          placeholder={t('searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setFilter('q', e.target.value)}
-          className="w-full pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 bg-slate-950/40 rounded-xl border border-border focus:border-positive/50 focus:outline-none transition-colors"
+          className="h-11 pl-10 text-xs"
         />
       </div>
 
-      {/* Selection Dropdowns */}
       <div className="flex flex-wrap items-center gap-4">
-        {/* Status Select */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Status:</span>
-          <select
+        <label className="flex items-center gap-1.5">
+          <Select
             value={selectedStatus}
             onChange={(e) => setFilter('status', e.target.value)}
-            className="bg-slate-950/40 border border-border rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-positive/50 cursor-pointer transition-colors"
+            className="h-11 w-auto min-w-[10rem] text-xs"
           >
-            <option value="ALL" className="bg-slate-950">All Statuses</option>
-            <option value="ACTIVE" className="bg-slate-950">Active Only</option>
-            <option value="PAUSED" className="bg-slate-950">Paused Only</option>
-            <option value="DOWN" className="bg-slate-950">Down Only</option>
-            <option value="DELETED" className="bg-slate-950">Deleted Only</option>
-          </select>
-        </div>
+            <option value="ALL">{t('status.all')}</option>
+            <option value="ACTIVE">{t('status.active')}</option>
+            <option value="PAUSED">{t('status.paused')}</option>
+            <option value="DOWN">{t('status.down')}</option>
+            <option value="DELETED">{t('status.deleted')}</option>
+          </Select>
+        </label>
 
-        {/* Venue Select */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Venue:</span>
-          <select
+        <label className="flex items-center gap-1.5">
+          <Select
             value={selectedExchange}
             onChange={(e) => setFilter('venue', e.target.value)}
-            className="bg-slate-950/40 border border-border rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none focus:border-positive/50 cursor-pointer transition-colors"
+            className="h-11 w-auto min-w-[10rem] text-xs"
           >
-            <option value="ALL" className="bg-slate-950">All Venues</option>
+            <option value="ALL">{t('venues.all')}</option>
             {uniqueExchanges.map((ex) => (
-              <option key={ex} value={ex.toUpperCase()} className="bg-slate-950">
+              <option key={ex} value={ex.toUpperCase()}>
                 {ex}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </label>
 
-        {/* Clear Active Filters */}
-        {hasActiveFilters && (
-          <button
-            onClick={() => resetFilters(['q', 'status', 'venue'])}
-            className="text-xs text-positive hover:text-emerald-300 font-bold px-2 py-1 transition-colors cursor-pointer"
-          >
-            Clear Filters
-          </button>
-        )}
+        {hasActiveFilters ? (
+          <Button variant="ghost" size="sm" onClick={() => resetFilters(['q', 'status', 'venue'])} className="h-9 px-3 text-xs font-bold">
+            {t('clear')}
+          </Button>
+        ) : null}
       </div>
     </div>
   );

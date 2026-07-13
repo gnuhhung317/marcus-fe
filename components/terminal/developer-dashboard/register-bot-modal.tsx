@@ -3,9 +3,10 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import { useBotMutations } from '@/lib/hooks/use-bot-mutations';
 import { BotProvisioningCredentials } from '@/lib/contracts/types';
-import { registerBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
+import { createRegisterBotSchema, type RegisterBotFormValues } from '@/lib/validations/bot.schema';
 
 interface RegisterBotModalProps {
   isOpen: boolean;
@@ -14,9 +15,11 @@ interface RegisterBotModalProps {
 }
 
 export function RegisterBotModal({ isOpen, onClose, onBotCreated }: RegisterBotModalProps) {
+  const t = useTranslations('DeveloperDashboard.registerBot');
+  const tValidation = useTranslations('Common.validation');
+  const registerBotSchema = createRegisterBotSchema(tValidation);
   const [credentials, setCredentials] = useState<BotProvisioningCredentials | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const { registerBot } = useBotMutations();
@@ -45,11 +48,11 @@ export function RegisterBotModal({ isOpen, onClose, onBotCreated }: RegisterBotM
           setCredentials(result);
         },
         onError: () => {
-          setSubmitError('Unable to generate bot credentials. Please retry.');
-        }
+          setSubmitError(t('errors.generateFailed'));
+        },
       });
     } catch {
-      setSubmitError('Unable to generate bot credentials. Please retry.');
+      setSubmitError(t('errors.generateFailed'));
     }
   };
 
@@ -77,24 +80,20 @@ export function RegisterBotModal({ isOpen, onClose, onBotCreated }: RegisterBotM
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div 
-        className="absolute inset-0 bg-black/75 transition-opacity duration-300"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-canvas/80 backdrop-blur-sm transition-opacity duration-300" onClick={handleClose} />
 
-      <div className="relative w-full max-w-lg overflow-hidden rounded-lg border border-border bg-surface p-6 sm:p-8 shadow-2xl transition-all duration-300 scale-100 max-h-[90vh] flex flex-col font-mono">
-
-        <header className="relative flex items-center justify-between pb-5 border-b border-border font-sans">
+      <div className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-lg border border-border bg-surface p-6 font-mono shadow-2xl transition-all duration-300 sm:p-8">
+        <header className="relative flex items-center justify-between border-b border-border pb-5 font-sans">
           <div>
-            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-positive">Signal Gateway</span>
-            <h3 className="text-lg font-bold text-white tracking-tight mt-1">
-              {credentials ? 'Credentials Generated' : 'Register New Webhook Bot'}
+            <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-positive">{t('eyebrow')}</span>
+            <h3 className="mt-1 text-lg font-bold tracking-tight text-main">
+              {credentials ? t('credentialsGenerated') : t('title')}
             </h3>
           </div>
           {!credentials && (
-            <button 
+            <button
               onClick={handleClose}
-              className="rounded p-1.5 text-slate-400 hover:bg-white/5 hover:text-white transition-colors cursor-pointer"
+              className="cursor-pointer rounded p-1.5 text-muted transition-colors hover:bg-surface-strong hover:text-main"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -103,156 +102,145 @@ export function RegisterBotModal({ isOpen, onClose, onBotCreated }: RegisterBotM
           )}
         </header>
 
-        <div className="relative mt-6 overflow-y-auto pr-1 flex-1">
+        <div className="relative mt-6 flex-1 overflow-y-auto pr-1">
           {!credentials ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 font-sans">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Bot Name</label>
+                <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted">{t('form.botName')}</label>
                 <input
                   type="text"
-                  placeholder="e.g. BTC_BREAKOUT_BOT"
-                  className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-primary focus:outline-none transition-all font-mono"
+                  placeholder={t('form.botNamePlaceholder')}
+                  className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-main placeholder:text-muted outline-none transition-all focus:border-primary font-mono"
                   {...register('botName')}
                 />
-                {errors.botName && (
-                  <p className="mt-1 text-xs text-negative font-mono">{errors.botName.message}</p>
-                )}
+                {errors.botName && <p className="mt-1 text-xs font-mono text-negative">{errors.botName.message}</p>}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Exchange Venue</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted">{t('form.exchange')}</label>
                   <select
-                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white focus:border-primary focus:outline-none transition-all font-sans"
+                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-main outline-none transition-all focus:border-primary font-sans"
                     {...register('exchange')}
                   >
-                    <option value="BINANCE">Binance</option>
-                    <option value="BYBIT">Bybit</option>
-                    <option value="OKX">OKX</option>
+                    <option value="BINANCE">{t('venues.binance')}</option>
+                    <option value="BYBIT">{t('venues.bybit')}</option>
+                    <option value="OKX">{t('venues.okx')}</option>
                   </select>
-                  {errors.exchange && (
-                    <p className="mt-1 text-xs text-negative font-mono">{errors.exchange.message}</p>
-                  )}
+                  {errors.exchange && <p className="mt-1 text-xs font-mono text-negative">{errors.exchange.message}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Trading Pair</label>
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted">{t('form.tradingPair')}</label>
                   <input
                     type="text"
-                    placeholder="BTC/USDT"
-                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-white placeholder-slate-600 focus:border-primary focus:outline-none transition-all font-mono"
+                    placeholder={t('form.tradingPairPlaceholder')}
+                    className="w-full rounded border border-border bg-surface px-4 py-3 text-sm text-main placeholder:text-muted outline-none transition-all focus:border-primary font-mono"
                     {...register('tradingPair')}
                   />
-                  {errors.tradingPair && (
-                    <p className="mt-1 text-xs text-negative font-mono">{errors.tradingPair.message}</p>
-                  )}
+                  {errors.tradingPair && <p className="mt-1 text-xs font-mono text-negative">{errors.tradingPair.message}</p>}
                 </div>
               </div>
 
-              {submitError && (
-                <div className="rounded border border-negative/20 bg-negative/5 p-3 text-xs text-negative font-mono">
-                  {submitError}
-                </div>
-              )}
+              {submitError && <div className="rounded border border-negative/20 bg-negative/5 p-3 text-xs font-mono text-negative">{submitError}</div>}
 
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3 font-sans">
+              <div className="flex items-center justify-end gap-3 border-t border-border pt-4 font-sans">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="rounded px-4 py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors cursor-pointer"
+                  className="cursor-pointer rounded px-4 py-2 text-xs font-bold text-muted transition-colors hover:text-main"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center justify-center gap-2 rounded border border-primary bg-primary text-black px-5 py-2 text-xs font-bold hover:bg-primary/95 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  className="cursor-pointer inline-flex items-center justify-center gap-2 rounded border border-primary bg-primary px-5 py-2 text-xs font-bold text-background transition-all hover:bg-primary/95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" fill="none" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 -ml-1 mr-2 animate-spin text-background" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                       </svg>
-                      Provisioning...
+                      {t('provisioning')}
                     </>
                   ) : (
-                    'Provision Credentials'
+                    t('submit')
                   )}
                 </button>
               </div>
             </form>
           ) : (
             <div className="space-y-6">
-              <div className="rounded border border-warning/20 bg-warning/5 p-4 flex gap-3 font-sans">
-                <svg className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <div className="flex gap-3 rounded border border-warning/20 bg-warning/5 p-4 font-sans">
+                <svg className="mt-0.5 h-5 w-5 shrink-0 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
                 <div className="space-y-1">
-                  <h4 className="text-xs font-bold text-warning uppercase tracking-wider">Warning: One-Time Secret</h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    For security reasons, your **Signing Secret** will not be accessible once this window is closed. Please copy and store it securely immediately.
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-warning">{t('warningTitle')}</h4>
+                  <p className="text-[11px] leading-relaxed text-muted">
+                    {t('warningBody')}
                   </p>
                 </div>
               </div>
 
               <div className="relative group">
-                <div className="flex justify-between items-center mb-1 font-sans">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Bot ID</span>
-                  <button 
+                <div className="mb-1 flex items-center justify-between font-sans">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted">{t('botId')}</span>
+                  <button
                     onClick={() => handleCopy('botId', credentials.botId)}
-                    className="text-[10px] font-bold text-positive hover:text-positive transition-colors flex items-center gap-1 cursor-pointer"
+                    className="cursor-pointer flex items-center gap-1 text-[10px] font-bold text-positive transition-colors hover:text-positive/90"
                   >
-                    {copiedField === 'botId' ? 'Copied!' : 'Copy'}
+                    {copiedField === 'botId' ? t('copied') : t('copy')}
                   </button>
                 </div>
-                <div className="w-full rounded border border-border bg-surface px-4 py-2.5 text-xs text-white select-all break-all pr-12">
+                <div className="w-full select-all break-all rounded border border-border bg-surface px-4 py-2.5 pr-12 text-xs text-main">
                   {credentials.botId}
                 </div>
               </div>
 
               <div className="relative group">
-                <div className="flex justify-between items-center mb-1 font-sans">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Public API Key</span>
-                  <button 
+                <div className="mb-1 flex items-center justify-between font-sans">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-muted">{t('apiKey')}</span>
+                  <button
                     onClick={() => handleCopy('apiKey', credentials.apiKey)}
-                    className="text-[10px] font-bold text-positive hover:text-positive transition-colors flex items-center gap-1 cursor-pointer"
+                    className="cursor-pointer flex items-center gap-1 text-[10px] font-bold text-positive transition-colors hover:text-positive/90"
                   >
-                    {copiedField === 'apiKey' ? 'Copied!' : 'Copy'}
+                    {copiedField === 'apiKey' ? t('copied') : t('copy')}
                   </button>
                 </div>
-                <div className="w-full rounded border border-border bg-surface px-4 py-2.5 text-xs text-white select-all break-all pr-12">
+                <div className="w-full select-all break-all rounded border border-border bg-surface px-4 py-2.5 pr-12 text-xs text-main">
                   {credentials.apiKey}
                 </div>
               </div>
 
               <div className="relative group">
-                <div className="flex justify-between items-center mb-1 font-sans">
-                  <span className="text-[9px] font-bold text-positive uppercase tracking-wider">Signing Secret (rawSecret)</span>
-                  <button 
+                <div className="mb-1 flex items-center justify-between font-sans">
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-positive">{t('rawSecret')}</span>
+                  <button
                     onClick={() => handleCopy('rawSecret', credentials.rawSecret)}
-                    className="text-[10px] font-bold text-positive hover:text-positive transition-colors flex items-center gap-1 cursor-pointer"
+                    className="cursor-pointer flex items-center gap-1 text-[10px] font-bold text-positive transition-colors hover:text-positive/90"
                   >
-                    {copiedField === 'rawSecret' ? 'Copied!' : 'Copy'}
+                    {copiedField === 'rawSecret' ? t('copied') : t('copy')}
                   </button>
                 </div>
-                <div className="w-full rounded border border-positive/30 bg-positive/5 px-4 py-3 text-xs text-positive select-all break-all pr-12">
+                <div className="w-full select-all break-all rounded border border-positive/30 bg-positive/5 px-4 py-3 pr-12 text-xs text-positive">
                   {credentials.rawSecret}
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-border flex items-center justify-end font-sans">
+              <div className="flex items-center justify-end border-t border-border pt-4 font-sans">
                 <button
                   onClick={handleDone}
-                  className="rounded bg-positive px-5 py-2.5 text-xs font-bold text-black hover:bg-positive/90 transition-all cursor-pointer uppercase tracking-wider"
+                  className="cursor-pointer rounded bg-positive px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-background transition-all hover:bg-positive/90"
                 >
-                  Done & Connect Bot
+                  {t('done')}
                 </button>
               </div>
             </div>
           )}
         </div>
-
       </div>
     </div>
   );

@@ -16,7 +16,6 @@
 | app/terminal/marketplace/page.tsx | Marketplace app page | Render bot cards and deploy CTA |
 | app/terminal/bots/[botId]/page.tsx | Bot analytics page | Render bot curve and trade logs |
 | app/terminal/create-bot/page.tsx | Bot wizard page | Render step flow and strategy configuration form |
-| app/terminal/paper-trading/page.tsx | Paper trading page | Render session controls, equity curve, quick order fields |
 | app/terminal/profile/page.tsx | User profile page | Render subscription and API key sections |
 | app/terminal/developer-console/page.tsx | Developer console page | Render signal schema and stream logs |
 | app/terminal/leaderboard/page.tsx | Terminal leaderboard page | Render top strategy cards and actions |

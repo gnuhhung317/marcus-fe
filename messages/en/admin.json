@@ -1,0 +1,251 @@
+{
+  "Admin": {
+    "Overview": {
+      "title": "Admin Overview",
+      "description": "Operational control surface for Marcus Trading.",
+      "stats": {
+        "users": "Users",
+        "banned": "Banned",
+        "bots": "Bots",
+        "activeSubscriptions": "Active subscriptions"
+      },
+      "panels": {
+        "operationalMix": {
+          "title": "Operational mix",
+          "description": "Status distribution across the bot fleet."
+        },
+        "recentActions": {
+          "title": "Recent actions",
+          "description": "Latest admin mutations from the audit trail."
+        }
+      },
+      "states": {
+        "active": "Active",
+        "paused": "Paused",
+        "deleted": "Deleted",
+        "disconnectedExecutors": "Disconnected executors",
+        "checkedAt": "Checked at"
+      },
+      "actions": {
+        "systemLogs": "System logs",
+        "manageUsers": "Manage users",
+        "inspectBots": "Inspect bots",
+        "reviewSystemHealth": "Review system health"
+      },
+      "emptyAudit": "No audit events yet."
+    },
+    "Users": {
+      "page": {
+        "title": "Users",
+        "description": "Search, promote, ban, and audit user accounts."
+      },
+      "filters": {
+        "searchPlaceholder": "Search username, email, or user id",
+        "roleAll": "All roles",
+        "roleAdmin": "Admin",
+        "roleTrader": "Trader",
+        "roleDeveloper": "Developer",
+        "banAll": "All users",
+        "banActive": "Active",
+        "banBanned": "Banned",
+        "liveUpdate": "Live filter updates. Showing {count} users."
+      },
+      "table": {
+        "user": "User",
+        "role": "Role",
+        "banState": "Ban state",
+        "meta": "Meta",
+        "actions": "Actions",
+        "roleButton": "Role",
+        "banButton": "Ban",
+        "unbanButton": "Unban",
+        "noUsersFound": "No users found.",
+        "noReasonStored": "No reason stored",
+        "unknown": "Unknown"
+      },
+      "dialogs": {
+        "role": {
+          "title": "Change role",
+          "description": "Update the account role for {username}.",
+          "roleLabel": "Role",
+          "reasonLabel": "Reason",
+          "cancel": "Cancel",
+          "submit": "Update role",
+          "requiredReason": "Reason is required",
+          "failed": "Failed to update role",
+          "selectedUser": "selected user",
+          "trader": "Trader",
+          "developer": "Developer"
+        },
+        "ban": {
+          "titleBan": "Ban user",
+          "titleUnban": "Unban user",
+          "descriptionBan": "Block account access with a reason.",
+          "descriptionUnban": "Restore account access with a reason.",
+          "reasonLabel": "Reason",
+          "hint": "Required for audit history.",
+          "cancel": "Cancel",
+          "submitBan": "Ban user",
+          "submitUnban": "Unban user",
+          "requiredReason": "Reason is required",
+          "failed": "Failed to update ban state",
+          "protectTraders": "Use this when pausing or deleting a bot to protect traders.",
+          "selectedUser": "selected user"
+        }
+      },
+      "state": {
+        "loadingTitle": "Loading users",
+        "loadingMessage": "Fetching the latest admin user list.",
+        "errorTitle": "Users unavailable",
+        "errorMessage": "Unable to load users right now.",
+        "emptyTitle": "No users found",
+        "emptyMessage": "Try adjusting the search, role, or ban filters."
+      },
+      "toast": {
+        "roleUpdatedTitle": "Role updated",
+        "roleUpdatedMessage": "{username} is now {role}.",
+        "userBannedTitle": "User banned",
+        "userUnbannedTitle": "User unbanned"
+      },
+      "pagination": {
+        "pageOfItems": "Page {page} of {totalPages} · {totalElements} users"
+      }
+    },
+    "Bots": {
+      "page": {
+        "title": "Bots",
+        "description": "Inspect and control all bots across the platform."
+      },
+      "filters": {
+        "searchPlaceholder": "Search bot name, id, pair, or developer",
+        "statusAll": "All statuses",
+        "developerId": "Developer id",
+        "liveUpdate": "Live filter updates. Showing {count} bots."
+      },
+      "table": {
+        "bot": "Bot",
+        "developer": "Developer",
+        "status": "Status",
+        "subscribers": "Subscribers",
+        "actions": "Actions",
+        "open": "Open",
+        "statusButton": "Status",
+        "noBotsFound": "No bots found.",
+        "noPairSet": "No pair set"
+      },
+      "state": {
+        "loadingTitle": "Loading bots",
+        "loadingMessage": "Fetching the latest admin bot list.",
+        "errorTitle": "Bots unavailable",
+        "errorMessage": "Unable to load bots right now.",
+        "emptyTitle": "No bots found",
+        "emptyMessage": "Try adjusting the search term, status, or developer filter."
+      },
+      "toast": {
+        "statusUpdatedTitle": "Bot status updated",
+        "subscriptionCanceledTitle": "Subscription canceled"
+      },
+      "detail": {
+        "page": {
+          "description": "Audit the bot, inspect subscribers, and override status."
+        },
+        "header": {
+          "descriptionFallback": "No description provided.",
+          "updateStatus": "Update status",
+          "developer": "Developer",
+          "tradingPair": "Trading pair",
+          "subscribers": "Subscribers",
+          "signals": "Signals",
+          "unset": "Unset"
+        },
+        "tabs": {
+          "overview": "Overview",
+          "signals": "Signals",
+          "subscribers": "Subscribers",
+          "audit": "Audit trail"
+        },
+        "overview": {
+          "exchange": "Exchange",
+          "riskLevel": "Risk level",
+          "activeSubscribers": "Active subscribers",
+          "unset": "Unset"
+        },
+        "signals": {
+          "emptyTitle": "No signals found",
+          "emptyMessage": "This bot has not emitted any signals yet.",
+          "signal": "Signal",
+          "action": "Action",
+          "symbol": "Symbol",
+          "status": "Status",
+          "time": "Time",
+          "unknown": "Unknown"
+        },
+        "subscribers": {
+          "emptyTitle": "No subscribers found",
+          "emptyMessage": "This bot has no linked executor sessions.",
+          "subscriber": "Subscriber",
+          "status": "Status",
+          "executor": "Executor",
+          "lifecycle": "Lifecycle",
+          "actions": "Actions",
+          "connected": "Connected",
+          "disconnected": "Disconnected",
+          "noEmail": "No email",
+          "unknown": "Unknown",
+          "forceCancel": "Force cancel"
+        },
+        "audit": {
+          "emptyTitle": "No audit events found",
+          "emptyMessage": "There is no audit trail for this bot yet.",
+          "action": "Action",
+          "target": "Target",
+          "reason": "Reason",
+          "time": "Time",
+          "noReasonStored": "No reason stored",
+          "unknown": "Unknown"
+        },
+        "statusDialog": {
+          "title": "Update bot status",
+          "description": "Change the lifecycle state for {botName}.",
+          "statusLabel": "Status",
+          "reasonLabel": "Reason",
+          "cancelActiveSubscriptions": "Cancel active subscriptions",
+          "cancelActiveSubscriptionsHint": "Use this when pausing or deleting a bot to protect traders.",
+          "requiredReason": "Reason is required",
+          "failed": "Failed to update bot status",
+          "cancel": "Cancel",
+          "submit": "Update status",
+          "selectedBot": "selected bot"
+        },
+        "reasonDialog": {
+          "title": "Force cancel subscription",
+          "description": "Cancel the active subscription for {subscriberName}.",
+          "confirm": "Cancel subscription",
+          "reasonLabel": "Reason",
+          "hint": "Required for audit history.",
+          "placeholder": "Enter the reason",
+          "requiredReason": "Reason is required",
+          "failed": "Action failed",
+          "cancel": "Cancel",
+          "selectedTrader": "this trader"
+        }
+      }
+    },
+    "System": {
+      "page": {
+        "title": "System Health",
+        "description": "Admin access to connectivity and execution logs."
+      },
+      "connectivity": {
+        "title": "Connectivity",
+        "description": "Current executor and infrastructure health snapshot.",
+        "checkedAt": "Checked at"
+      },
+      "logs": {
+        "title": "Execution logs",
+        "description": "Recent system events."
+      },
+      "emptyLogs": "No execution logs available."
+    }
+  }
+}

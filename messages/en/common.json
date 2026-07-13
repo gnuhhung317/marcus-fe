@@ -1,0 +1,101 @@
+{
+  "Common": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "home": "Home",
+    "training": "Training",
+    "market": "Market",
+    "blog": "Blog",
+    "research": "Research",
+    "terminal": "Terminal",
+    "marketplace": "Marketplace",
+    "developer": "Developer",
+    "developers": "Developers",
+    "dashboard": "Dashboard",
+    "menu": "Menu",
+    "actions": {
+      "cancel": "Cancel",
+      "retry": "Retry",
+      "save": "Save",
+      "search": "Search",
+      "open": "Open",
+      "edit": "Edit",
+      "update": "Update",
+      "ban": "Ban",
+      "unban": "Unban",
+      "back": "Go back",
+      "copy": "Copy to clipboard"
+    },
+    "labels": {
+      "loading": "Loading",
+      "error": "Error",
+      "empty": "Empty",
+      "unknown": "Unknown",
+      "by": "By",
+      "riskLevel": "Risk Level"
+    },
+    "branding": {
+      "name": "Marcus Trading",
+      "homeLabel": "Marcus Trading home",
+      "logoAlt": "Marcus Trading logo"
+    },
+    "languageSwitcher": {
+      "label": "Language",
+      "en": "English",
+      "vi": "Vietnamese"
+    },
+    "chart": {
+      "insufficientData": "Insufficient data for chart",
+      "outOfSampleStart": "Out-of-sample start"
+    },
+    "apiState": {
+      "loading": "Loading",
+      "error": "Error",
+      "empty": "Empty",
+      "retry": "Retry",
+      "dashboardBlock": "Loading dashboard block"
+    },
+    "pagination": {
+      "prev": "Prev",
+      "next": "Next"
+    },
+    "roles": {
+      "ADMIN": "Admin",
+      "TRADER": "Trader",
+      "DEVELOPER": "Developer",
+      "OPERATOR": "Operator",
+      "GUEST": "Guest"
+    },
+    "botStatus": {
+      "ACTIVE": "Active",
+      "PAUSED": "Paused",
+      "DOWN": "Down",
+      "DELETED": "Deleted"
+    },
+    "systemHealth": {
+      "UP": "Up",
+      "DEGRADED": "Degraded",
+      "DOWN": "Down"
+    },
+    "userStatus": {
+      "active": "Active",
+      "banned": "Banned"
+    },
+    "validation": {
+      "usernameRequired": "Username or email is required",
+      "passwordRequired": "Password is required",
+      "emailInvalid": "Please enter a valid email address",
+      "displayNameRequired": "Display name is required",
+      "passwordMin": "Password must be at least 8 characters",
+      "passwordLowercase": "Password must include at least one lowercase letter",
+      "passwordUppercase": "Password must include at least one uppercase letter",
+      "passwordNumber": "Password must include at least one number",
+      "nameMin": "Bot name must be at least 3 characters",
+      "nameMax": "Bot name is too long",
+      "pairRequired": "Trading pair is required",
+      "pairFormat": "Must be in format ASSET/QUOTE (e.g., BTC/USDT)",
+      "descriptionMax": "Description is too long"
+    }
+  }
+}

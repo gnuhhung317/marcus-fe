@@ -70,17 +70,7 @@
 | Deploy runtime signal channel | /signals | POST | submitSignal | AVAILABLE | Bot process authenticates using apiKey + rawSecret |
 | Credential display UX | n/a | n/a | n/a | AVAILABLE | Frontend should show rawSecret once and force secure storage |
 
-### 10) Terminal: Paper Trading
-| UI Block | API Contract | Method | OperationId | Status | Notes |
-|---|---|---|---|---|---|
-| Session metrics | /paper/session | GET | getPaperSessionSummary | AVAILABLE | Session status and balances |
-| Signal terminal | /paper/signals | GET | listPaperSignals | AVAILABLE | Active/executed feed |
-| Quick order | /paper/orders | POST | createPaperOrder | AVAILABLE | Market/limit input |
-| Pause/resume | /paper/session/pause | POST | pausePaperSession | AVAILABLE | Session control |
-| Resume | /paper/session/resume | POST | resumePaperSession | AVAILABLE | Session control |
-| Logs | /paper/logs | GET | listPaperExecutionLogs | AVAILABLE | Cursor log stream |
-
-### 11) Terminal: Profile
+### 10) Terminal: Profile
 | UI Block | API Contract | Method | OperationId | Status | Notes |
 |---|---|---|---|---|---|
 | User info | /users/me | GET | getCurrentUserProfile | AVAILABLE | Identity card |
@@ -90,7 +80,7 @@
 | Revoke key | /users/me/api-keys/{apiKeyId} | DELETE | deleteApiKey | AVAILABLE | Key revocation |
 | Login activity | /users/me/login-activities | GET | listLoginActivities | AVAILABLE | Security activity table |
 
-### 12) Terminal: Developer Console
+### 11) Terminal: Developer Console
 | UI Block | API Contract | Method | OperationId | Status | Notes |
 |---|---|---|---|---|---|
 | Signal stream | /signals | GET | listSignals | AVAILABLE | Monitoring feed |

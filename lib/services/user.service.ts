@@ -77,6 +77,7 @@ interface DashboardOverviewResponse {
   freshAccountsCount?: number;
   staleAccountsCount?: number;
   dataFreshness?: string;
+  lastUpdated?: string | null;
 }
 
 interface ExchangeAllocationItemResponse {
@@ -103,6 +104,13 @@ interface TimeSeriesPointResponse {
   value?: number;
 }
 
+function clampPercent(value: number) {
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.min(100, Math.max(0, value));
+}
+
 export interface ApiKeyCreateRequest {
   label: string;
 }
@@ -110,6 +118,11 @@ export interface ApiKeyCreateRequest {
 export interface UpdateProfileRequest {
   username?: string;
   email?: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
 }
 
 export interface UpdatePreferencesRequest {
@@ -180,29 +193,29 @@ function mapDashboardKpis(overview: DashboardOverviewResponse): TerminalKpi[] {
     {
       label: 'Total Equity',
       value: formatCurrency(totalEquity),
-      delta: 'Live snapshot',
-      context: 'from dashboard overview',
+      delta: '',
+      context: '',
       trend: 'neutral',
     },
     {
       label: 'Today PnL',
       value: formatSignedCurrency(openPnl),
-      delta: formatSignedCurrency(openPnl, 0),
-      context: 'open pnl snapshot',
+      delta: '',
+      context: '',
       trend: openPnl > 0 ? 'up' : openPnl < 0 ? 'down' : 'neutral',
     },
     {
       label: 'Active Bots',
       value: String(activeBots).padStart(2, '0'),
-      delta: `${activeBots} running`,
-      context: 'runtime status',
+      delta: '',
+      context: '',
       trend: activeBots > 0 ? 'up' : 'neutral',
     },
     {
       label: 'Win Rate 24h',
       value: `${winRate.toFixed(1)}%`,
-      delta: formatSignedPercent(winRate - 50, 1),
-      context: 'from strategy metrics',
+      delta: '',
+      context: '',
       trend: winRate >= 65 ? 'up' : winRate < 50 ? 'down' : 'neutral',
     },
   ];
@@ -284,6 +297,22 @@ export async function updateCurrentUserProfile(payload: UpdateProfileRequest): P
   };
 }
 
+export async function changeCurrentUserPassword(payload: ChangePasswordRequest): Promise<UserProfile> {
+  const response = await requestContractJson<UserProfileResponse>('profile-password-update', {
+    init: {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    },
+  });
+
+  return {
+    userId: response?.userId ?? defaultProfile.userId,
+    username: response?.username ?? defaultProfile.username,
+    email: response?.email ?? defaultProfile.email,
+    role: response?.role ?? defaultProfile.role,
+  };
+}
+
 export async function getCurrentUserPreferences(): Promise<ProfilePreferences> {
   const response = await requestContractJson<UserPreferencesResponse>('profile-preferences');
   return mapProfilePreferences(response);
@@ -343,22 +372,19 @@ export async function listCurrentUserLoginActivities(): Promise<ProfileLoginActi
   return (response.items ?? []).map((activity, index) => mapLoginActivity(activity, index));
 }
 
-export async function getDashboardPageData(range: string = '7D'): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
-  const [overview, allocationItems, tradeLogPage, equitySeriesResponse] = await Promise.all([
+export async function getDashboardOverviewData(): Promise<DashboardPageData> {
+  const [overview, allocationItems, tradeLogPage] = await Promise.all([
     requestContractJson<DashboardOverviewResponse>('dashboard-overview'),
     requestContractJson<ExchangeAllocationItemResponse[]>('dashboard-allocation'),
     requestContractJson<TradeLogPageResponse>('dashboard-trades', {
       queryParams: { page: 0, size: 8 },
-    }),
-    requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
-      queryParams: { range },
     }),
   ]);
 
   const mappedAllocations = allocationItems
     .map((item) => ({
       name: item.exchange ?? 'Unknown Exchange',
-      value: Math.max(0, toNumber(item.percentage)),
+      percent: clampPercent(toNumber(item.percentage)),
     }))
     .filter((item) => item.name.length > 0);
 
@@ -366,17 +392,44 @@ export async function getDashboardPageData(range: string = '7D'): Promise<Dashbo
     .map((item) => mapTradeLogItem(item))
     .filter((item): item is BotTrade => item !== null);
 
-  const performanceSeries = (equitySeriesResponse ?? [])
-    .map((point) => ({
-      timestamp: point.timestamp ?? new Date().toISOString(),
-      value: toNumber(point.value),
-    }))
-    .filter((point) => Number.isFinite(point.value));
-
   return {
     terminalKpis: overview ? mapDashboardKpis(overview) : [],
     botTrades: mappedTrades,
     allocations: mappedAllocations,
+    lastUpdated: overview?.lastUpdated ?? null,
+  };
+}
+
+export async function getDashboardPerformanceSeries(range: string = '7D'): Promise<TimeSeriesValue[]> {
+  const equitySeriesResponse = await requestContractJson<TimeSeriesPointResponse[]>('dashboard-equity', {
+    queryParams: { range },
+  });
+
+  return (equitySeriesResponse ?? [])
+    .flatMap((point) => {
+      if (typeof point?.timestamp !== 'string' || point.timestamp.length === 0) {
+        return [];
+      }
+
+      if (typeof point.value !== 'number' || !Number.isFinite(point.value)) {
+        return [];
+      }
+
+      return [{
+        timestamp: point.timestamp,
+        value: point.value,
+      }];
+    });
+}
+
+export async function getDashboardPageData(range: string = '7D'): Promise<DashboardPageData & { performanceSeries: TimeSeriesValue[] }> {
+  const [dashboard, performanceSeries] = await Promise.all([
+    getDashboardOverviewData(),
+    getDashboardPerformanceSeries(range),
+  ]);
+
+  return {
+    ...dashboard,
     performanceSeries,
   };
 }

@@ -5,13 +5,17 @@ import {
   BotMetricBlock,
   MarketplaceBot,
   MarketplacePageData,
+  BotPerformanceQuerySource,
+  BotPerformanceSource,
   MarketplaceQueryParams,
   MarketplaceSortBy,
   SubscriptionResult,
   DeveloperSubscriptionSummary,
+  ViewerSubscription,
   TimeSeriesValue,
   BotTrade,
 } from '@/lib/contracts/types';
+import { formatRatioPercent, ratioToPercent } from '@/lib/utils';
 import {
   DEFAULT_BOT_ID,
   requestContractJson,
@@ -20,6 +24,7 @@ import {
   formatRatio,
   normalizeTradeSide,
 } from '@/lib/services/base.service';
+import { getPortfolioDecisions } from '@/lib/services/portfolio.service';
 
 // --- Internal Response Interfaces ---
 
@@ -35,6 +40,7 @@ interface BotSummaryResponse {
   annualReturn?: number | null;
   maxDrawdown?: number | null;
   winRate?: number | null;
+  performanceSource?: string | null;
   subscribers?: number;
 }
 
@@ -53,6 +59,17 @@ interface BotDetailResponse extends BotSummaryResponse {
   createdAt?: string;
   updatedAt?: string;
   performance?: BotPerformanceResponse;
+  performanceSource?: string | null;
+  viewerSubscription?: ViewerSubscriptionResponse | null;
+}
+
+interface BotSignalResponse {
+  signalId?: string;
+  botId?: string;
+  symbol?: string;
+  action?: string;
+  status?: string;
+  generatedTimestamp?: string;
 }
 
 interface BotSummaryPageResponse {
@@ -76,6 +93,11 @@ interface BotSubscriptionResultResponse {
   botId?: string;
   wsToken?: string;
   status?: string;
+}
+
+interface ViewerSubscriptionResponse {
+  status?: string;
+  wsToken?: string | null;
 }
 
 interface BotAnalyticsMetricBlockResponse {
@@ -128,7 +150,7 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
   const hasPerformanceData = bot.annualReturn != null || bot.maxDrawdown != null || bot.winRate != null;
   const annualReturnPct = bot.annualReturn == null ? null : bot.annualReturn * 100;
   const maxDrawdownPct = bot.maxDrawdown == null ? null : Math.abs(bot.maxDrawdown) * 100;
-  const winRatePct = bot.winRate == null ? null : bot.winRate * 100;
+  const winRatePct = bot.winRate == null ? null : ratioToPercent(bot.winRate);
 
   const tags: string[] = [];
   if (bot.asset) {
@@ -151,9 +173,10 @@ function mapBotSummary(bot: BotSummaryResponse): MarketplaceBot {
     botId: bot.botId,
     name: bot.botName ?? 'Unnamed Bot',
     tags: tags,
-    pnl30d: hasPerformanceData ? annualReturnPct : null,
+    annualReturn: hasPerformanceData ? annualReturnPct : null,
     winRate: hasPerformanceData ? winRatePct : null,
     drawdown: hasPerformanceData ? maxDrawdownPct : null,
+    performanceSource: normalizePerformanceSource(bot.performanceSource),
   };
 }
 
@@ -180,10 +203,28 @@ function mapBotDetail(bot: BotDetailResponse): BotDetail {
     status: bot.status ?? 'ACTIVE',
     tradingPair: bot.tradingPair ?? 'BTC/USDT',
     exchange: bot.exchange ?? 'BINANCE',
+    performanceSource: normalizePerformanceSource(bot.performanceSource),
     apiKey: bot.apiKey,
     createdAt: bot.createdAt,
     updatedAt: bot.updatedAt,
     performance,
+    viewerSubscription: normalizeViewerSubscription(bot.viewerSubscription),
+  };
+}
+
+function normalizeViewerSubscription(subscription?: ViewerSubscriptionResponse | null): ViewerSubscription | null {
+  if (!subscription) {
+    return null;
+  }
+
+  const status = (subscription.status ?? '').trim().toUpperCase();
+  if (!status || status === 'UNSUBSCRIBED') {
+    return null;
+  }
+
+  return {
+    status,
+    wsToken: subscription.wsToken ?? null,
   };
 }
 
@@ -193,10 +234,20 @@ function mapMarketplaceSortToBackend(sortBy?: MarketplaceSortBy) {
       return 'drawdown';
     case 'SUBSCRIBERS':
       return '-subscribers';
+    case 'CAGR':
     case 'RETURN_30D':
     default:
       return '-return';
   }
+}
+
+function normalizePerformanceSource(source?: string | null): BotPerformanceSource | null {
+  const normalizedSource = (source ?? '').trim().toUpperCase();
+  if (normalizedSource === 'DRY_RUN' || normalizedSource === 'HISTORICAL' || normalizedSource === 'SIGNAL_BASED') {
+    return normalizedSource;
+  }
+
+  return null;
 }
 
 function mapBotAnalyticsData(
@@ -235,7 +286,7 @@ function mapMetricBlock(title: BotMetricBlock['title'], block: BotAnalyticsMetri
     sortino: formatRatio(toNumber(block.sortino, 0), 2),
     calmar: formatRatio(toNumber(block.calmar, 0), 2),
     profitFactor: formatRatio(toNumber(block.profitFactor, 0), 2),
-    winRate: `${(toNumber(block.winRate, 0) * 100).toFixed(2)}%`,
+    winRate: formatRatioPercent(toNumber(block.winRate, 0), 2),
     sampleSizeDays: Math.max(0, Math.round(toNumber(block.sampleSizeDays, 0))),
     sampleSizeTrades: Math.max(0, Math.round(toNumber(block.sampleSizeTrades, 0))),
     warning: block.statisticalSignificanceWarning ?? null,
@@ -294,12 +345,17 @@ export async function listMarketplaceBots(query: MarketplaceQueryParams = {}): P
   return pageData.bots;
 }
 
-export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail> {
-  const [response, analytics] = await Promise.all([
+export async function getMarketplaceBotDetail(botId: string, source: BotPerformanceQuerySource = 'AUTO'): Promise<BotDetail> {
+  const [response, analytics, inferredViewerSubscription, signalsResponse] = await Promise.all([
     requestContractJson<BotDetailResponse>('bot-detail', {
       pathParams: { botId },
+      queryParams: { source },
     }),
     getBotAnalyticsData(botId),
+    inferViewerSubscriptionFromPortfolio(botId),
+    requestContractJson<BotSignalResponse[]>('system-signals', {
+      queryParams: { botId, limit: 50 },
+    }).catch(() => []),
   ]);
 
   if (!response.botId) {
@@ -309,7 +365,39 @@ export async function getMarketplaceBotDetail(botId: string): Promise<BotDetail>
   return {
     ...mapBotDetail(response),
     analytics,
+    signals: (signalsResponse ?? []).map((signal, index) => ({
+      signalId: signal.signalId ?? `sig_${index + 1}`,
+      botId: signal.botId ?? botId,
+      symbol: signal.symbol ?? null,
+      action: signal.action ?? null,
+      status: signal.status ?? null,
+      generatedTimestamp: signal.generatedTimestamp ?? null,
+    })),
+    viewerSubscription: normalizeViewerSubscription(response.viewerSubscription) ?? inferredViewerSubscription,
   };
+}
+
+async function inferViewerSubscriptionFromPortfolio(botId: string): Promise<ViewerSubscription | null> {
+  try {
+    const portfolio = await getPortfolioDecisions('ALL');
+    const matchedDecision = portfolio.decisions.find((decision) => decision.botId === botId);
+
+    if (!matchedDecision) {
+      return null;
+    }
+
+    const normalizedStatus = (matchedDecision.status ?? '').trim().toUpperCase();
+    if (!normalizedStatus || normalizedStatus === 'INACTIVE') {
+      return null;
+    }
+
+    return {
+      status: normalizedStatus,
+      wsToken: null,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function subscribeToBot(botId: string): Promise<SubscriptionResult> {
@@ -402,7 +490,7 @@ export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): P
     { label: 'Sortino ratio', value: formatRatio(toNumber(totalMetrics.sortino, 0), 2) },
     { label: 'Calmar ratio', value: formatRatio(toNumber(totalMetrics.calmar, 0), 2) },
     { label: 'Profit factor', value: formatRatio(toNumber(totalMetrics.profitFactor, 0), 2) },
-    { label: 'Win rate', value: `${(toNumber(totalMetrics.winRate, 0) * 100).toFixed(2)}%` },
+    { label: 'Win rate', value: formatRatioPercent(toNumber(totalMetrics.winRate, 0), 2) },
     { label: 'Sample days', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeDays, 0)))) },
     { label: 'Closed trades', value: String(Math.max(0, Math.round(toNumber(totalMetrics.sampleSizeTrades, 0)))) },
   ];
@@ -422,13 +510,4 @@ export async function getBotAnalyticsPageData(botId: string = DEFAULT_BOT_ID): P
     performanceSeries: analytics.performanceSeries,
     trades,
   };
-}
-
-export async function favoriteBot(botId: string): Promise<{ botId: string; favorited: boolean }> {
-  return requestContractJson<{ botId: string; favorited: boolean }>('bot-favorite', {
-    pathParams: { botId },
-    init: {
-      method: 'POST',
-    },
-  });
 }

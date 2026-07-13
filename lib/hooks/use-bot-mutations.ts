@@ -9,6 +9,10 @@ import {
 import { DeveloperBotStatus, RegisterBotInput } from '@/lib/contracts/types';
 import { developerDashboardKeys } from './use-developer-dashboard';
 
+type BotMetadataUpdatePayload = Partial<RegisterBotInput> & {
+  description?: string;
+};
+
 export function useBotMutations() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -21,7 +25,7 @@ export function useBotMutations() {
     },
   });
 
-  const metadataMutation = useMutation<any, Error, { botId: string; payload: Partial<RegisterBotInput> }>({
+  const metadataMutation = useMutation<any, Error, { botId: string; payload: BotMetadataUpdatePayload }>({
     mutationFn: ({ botId, payload }) => updateBotMetadata(botId, payload as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: developerDashboardKeys.all });

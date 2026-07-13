@@ -1,19 +1,22 @@
 import { ReactNode } from 'react';
 import { cookies } from 'next/headers';
+import { hasAuthenticatedSession, normalizeRole } from '@/lib/auth/session-state';
 import { SiteFooter } from './site-footer';
 import { SiteHeader } from './site-header';
 
 export async function MarketingShell({ children }: { children: ReactNode }) {
   const cookieStore = cookies();
   const accessToken = cookieStore.get('marcus_access_token')?.value;
+  const refreshToken = cookieStore.get('marcus_refresh_token')?.value;
   const role = cookieStore.get('marcus_role')?.value;
   const username = cookieStore.get('marcus_username')?.value;
+  const normalizedRole = normalizeRole(role);
+  const isAuthenticated = hasAuthenticatedSession({ accessToken, refreshToken, role });
 
   return (
-    <div className="relative min-h-screen overflow-hidden shell-grid">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(148,163,184,0.12),transparent_55%)]" />
-      <SiteHeader isAuthenticated={!!accessToken} role={role} username={username} />
-      <main className="mx-auto w-full max-w-7xl px-5 py-10 md:px-8">{children}</main>
+    <div className="relative flex flex-col min-h-screen overflow-hidden shell-grid bg-background text-main">
+      <SiteHeader isAuthenticated={isAuthenticated} role={normalizedRole} username={username} />
+      <main className="mx-auto w-full max-w-7xl flex-1 px-5 py-10 md:px-8">{children}</main>
       <SiteFooter />
     </div>
   );

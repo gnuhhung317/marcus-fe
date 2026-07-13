@@ -1,84 +1,132 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { SplitPerformanceChart } from '@/components/shared/split-performance-chart';
-import { BotAnalyticsData } from '@/lib/contracts/types';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { BotAnalyticsData, BotMetricBlock } from '@/lib/contracts/types';
 
 interface BotAnalyticsSectionProps {
   analytics?: BotAnalyticsData | null;
   className?: string;
+  summarySourceLabel?: string | null;
 }
 
-export function BotAnalyticsSection({ analytics, className = '' }: BotAnalyticsSectionProps) {
+const metricRows = [
+  { labelKey: 'annualReturn', key: 'annualReturn', tone: 'return' },
+  { labelKey: 'maxDrawdown', key: 'maxDrawdown', tone: 'negative' },
+  { labelKey: 'sharpeRatio', key: 'sharpe', tone: 'neutral' },
+  { labelKey: 'sortinoRatio', key: 'sortino', tone: 'neutral' },
+  { labelKey: 'calmarRatio', key: 'calmar', tone: 'neutral' },
+  { labelKey: 'profitFactor', key: 'profitFactor', tone: 'neutral' },
+  { labelKey: 'winRate', key: 'winRate', tone: 'neutral' },
+  { labelKey: 'sampleDays', key: 'sampleSizeDays', tone: 'muted' },
+  { labelKey: 'closedTrades', key: 'sampleSizeTrades', tone: 'muted' },
+] as const;
+
+type MetricTone = (typeof metricRows)[number]['tone'];
+
+function formatBlockTitle(title: BotMetricBlock['title'], t: ReturnType<typeof useTranslations>) {
+  if (title === 'Total Data') return t('blockTitles.totalData');
+  if (title === 'Historical') return t('blockTitles.historical');
+  if (title === 'Out-of-sample') return t('blockTitles.outOfSample');
+  return title;
+}
+
+function getValueTone(tone: MetricTone, value: string) {
+  if (!value || value === 'N/A') {
+    return 'text-muted';
+  }
+
+  if (tone === 'return') {
+    return value.startsWith('-') ? 'text-negative' : 'text-positive';
+  }
+
+  if (tone === 'negative') {
+    return 'text-negative';
+  }
+
+  if (tone === 'muted') {
+    return 'text-muted';
+  }
+
+  return 'text-main';
+}
+
+function formatMetricValue(value: string | number) {
+  return typeof value === 'number' ? String(value) : value;
+}
+
+export function BotAnalyticsSection({ analytics, className = '', summarySourceLabel = null }: BotAnalyticsSectionProps) {
+  const t = useTranslations('BotAnalytics');
   const hasChartData = (analytics?.performanceSeries.length ?? 0) >= 2;
 
   if (!analytics || !hasChartData) {
-    return (
-      <Card className={`p-5 bg-surface border-border shadow-soft ${className}`}>
-        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border bg-surface p-6 text-center">
-          <p className="text-sm font-semibold text-main">No live/OOS performance yet</p>
-          <p className="text-xs text-muted">
-            Analytics will appear after the bot has enough historical and live/dry run runtime data.
-          </p>
+      return (
+      <Card className={`p-5 ${className}`}>
+        <div className="flex flex-col gap-2 rounded-xl border border-dashed border-border/40 bg-surface/40 p-6 text-center">
+          <p className="text-sm font-semibold text-main">{t('empty.title')}</p>
+          <p className="text-xs text-muted">{t('empty.message')}</p>
         </div>
       </Card>
     );
   }
 
+  const warning = analytics.metricBlocks.find((block) => block.warning)?.warning ?? null;
+
   return (
     <section className={`space-y-5 ${className}`}>
-      <div className="grid items-stretch gap-4 lg:grid-cols-3">
-        {analytics.metricBlocks.map((block) => {
-          const displayTitle = block.title === 'Out-of-sample' ? 'Live / Dry Run' : block.title;
-          return (
-            <Card key={block.title} className="p-5 bg-surface border-border shadow-soft flex flex-col justify-between">
-              <div className="flex-1">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">{displayTitle}</h3>
-                <div className="mt-5 space-y-3 font-mono">
-                  {[
-                    { label: 'Annual return', value: block.sampleSizeDays || block.sampleSizeTrades ? block.annualReturn : 'N/A', tone: block.annualReturn.startsWith('-') ? 'text-negative' : 'text-positive' },
-                    { label: 'Drawdown', value: block.sampleSizeDays || block.sampleSizeTrades ? block.maxDrawdown : 'N/A', tone: 'text-negative' },
-                    { label: 'Sharpe ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.sharpe : 'N/A', tone: 'text-main' },
-                    { label: 'Sortino ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.sortino : 'N/A', tone: 'text-main' },
-                    { label: 'Calmar ratio', value: block.sampleSizeDays || block.sampleSizeTrades ? block.calmar : 'N/A', tone: 'text-main' },
-                    { label: 'Profit factor', value: block.sampleSizeDays || block.sampleSizeTrades ? block.profitFactor : 'N/A', tone: 'text-main' },
-                    { label: 'Win rate', value: block.sampleSizeTrades ? block.winRate : 'N/A', tone: 'text-main' },
-                    { label: 'Sample days', value: String(block.sampleSizeDays), tone: 'text-muted' },
-                    { label: 'Closed trades', value: String(block.sampleSizeTrades), tone: 'text-muted' },
-                  ].map((item) => (
-                    <div key={item.label} className="flex items-center justify-between rounded-lg border border-border bg-surface-strong px-3 py-2.5">
-                      <span className="text-xs text-muted font-sans">{item.label}</span>
-                      <span className={`text-sm font-bold ${item.tone}`}>{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+      {summarySourceLabel ? (
+        <div className="rounded-xl border border-primary/15 bg-primary-soft/40 px-4 py-3 text-sm text-muted">
+          {t('summarySource', { source: summarySourceLabel })}
+        </div>
+      ) : null}
 
-              {block.title === 'Out-of-sample' && block.warning ? (
-                <div className="mt-4 rounded-lg border border-warning/20 bg-warning/5 px-3 py-2.5 text-xs text-warning" title={block.warning}>
+      <div className="overflow-hidden rounded-2xl border border-border/40 bg-surface/30 shadow-[var(--shadow-soft)]">
+        <div className="grid grid-cols-[minmax(170px,1.05fr)_repeat(3,minmax(0,1fr))] border-b border-border/40 bg-surface/40">
+          <div className="px-4 py-3 text-[10px] uppercase tracking-[0.16em] text-muted">{t('metric')}</div>
+          {analytics.metricBlocks.map((block) => (
+            <div key={block.title} className="border-l border-border/40 px-4 py-3">
+              <p className="text-sm font-semibold text-main">{formatBlockTitle(block.title, t)}</p>
+              <p className="mt-1 text-[10px] uppercase tracking-[0.16em] text-muted">
+                {t('sample', { days: block.sampleSizeDays, trades: block.sampleSizeTrades })}
+              </p>
+              {block.warning ? (
+                <div className="mt-2 inline-flex rounded-full border border-warning/20 bg-warning/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-warning">
                   {block.warning}
                 </div>
               ) : null}
-            </Card>
-          );
-        })}
+            </div>
+          ))}
+        </div>
+
+        {metricRows.map((row) => (
+          <div
+            key={row.key}
+            className="grid grid-cols-[minmax(170px,1.05fr)_repeat(3,minmax(0,1fr))] border-b border-border/40 last:border-b-0"
+          >
+            <div className="px-4 py-3 text-sm text-main">{t(`metrics.${row.labelKey}`)}</div>
+            {analytics.metricBlocks.map((block) => {
+              const value = formatMetricValue(block[row.key]);
+              return (
+                <div
+                  key={`${block.title}-${row.key}`}
+                  className={`border-l border-border/40 px-4 py-3 text-right font-mono text-sm ${getValueTone(row.tone, value)}`}
+                >
+                  {value}
+                </div>
+              );
+            })}
+          </div>
+        ))}
       </div>
 
-      <Card className="p-5 bg-surface border-border shadow-soft">
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">Performance Charts</h3>
-            <p className="mt-1 text-xs text-muted font-sans">Decoupled backtest simulation and live trading equity performance curve panels.</p>
-          </div>
-          <Badge variant="outline" className="border-positive/20 bg-positive-soft text-positive">
-            Bot Performance
-          </Badge>
+      {warning ? (
+        <div className="rounded-xl border border-warning/20 bg-warning/5 px-4 py-3 text-sm text-warning">
+          {warning}
         </div>
-        <div className="mt-6 border-t border-border/40 pt-6">
-          <SplitPerformanceChart data={analytics.performanceSeries} splitTimestamp={analytics.splitTimestamp} />
-        </div>
-      </Card>
+      ) : null}
+
+      <SplitPerformanceChart data={analytics.performanceSeries} splitTimestamp={analytics.splitTimestamp} />
     </section>
   );
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MarketplacePaginationProps {
   page: number;
@@ -10,29 +10,39 @@ interface MarketplacePaginationProps {
 }
 
 export function MarketplacePagination({ page, hasPrev, hasNext, buildHref }: MarketplacePaginationProps) {
+  if (!hasPrev && !hasNext) {
+    return null;
+  }
+
   return (
-    <Card variant="default" className="flex items-center justify-between px-4 py-3 shadow-[var(--shadow-soft)]">
-      <span className="text-muted text-sm">Page {page}</span>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" disabled={!hasPrev} asChild={hasPrev}>
-          {hasPrev ? (
-            <Link href={buildHref(page - 1)}>
-              Previous
-            </Link>
-          ) : (
-            "Previous"
-          )}
+    <div className="flex items-center justify-center gap-1.5 mt-2">
+      {hasPrev ? (
+        <Button variant="outline" size="icon" asChild className="h-8 w-8 border-border hover:border-primary/40 hover:bg-primary/5 transition-all rounded-lg shadow-none">
+          <Link href={buildHref(page - 1)} aria-label="Previous page">
+            <ChevronLeft className="w-4 h-4 text-main" />
+          </Link>
         </Button>
-        <Button variant="outline" size="sm" disabled={!hasNext} asChild={hasNext}>
-          {hasNext ? (
-            <Link href={buildHref(page + 1)}>
-              Next
-            </Link>
-          ) : (
-            "Next"
-          )}
+      ) : (
+        <Button variant="outline" size="icon" disabled className="h-8 w-8 border-border/40 opacity-40 rounded-lg shadow-none">
+          <ChevronLeft className="w-4 h-4 text-muted" />
         </Button>
+      )}
+
+      <div className="flex items-center justify-center min-w-[2.5rem] h-8 bg-surface-strong/20 border border-border rounded-lg text-xs font-medium text-main px-2">
+        Page {page}
       </div>
-    </Card>
+
+      {hasNext ? (
+        <Button variant="outline" size="icon" asChild className="h-8 w-8 border-border hover:border-primary/40 hover:bg-primary/5 transition-all rounded-lg shadow-none">
+          <Link href={buildHref(page + 1)} aria-label="Next page">
+            <ChevronRight className="w-4 h-4 text-main" />
+          </Link>
+        </Button>
+      ) : (
+        <Button variant="outline" size="icon" disabled className="h-8 w-8 border-border/40 opacity-40 rounded-lg shadow-none">
+          <ChevronRight className="w-4 h-4 text-muted" />
+        </Button>
+      )}
+    </div>
   );
 }

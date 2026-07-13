@@ -1,79 +1,82 @@
 'use client';
 
+import { memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { BotDecisionCard, DecisionReason } from '@/lib/contracts/types';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { StatusDot } from '@/components/shared/status-dot';
 import { RiskBar } from '@/components/shared/risk-bar';
 
 interface BotDecisionRowProps {
   card: BotDecisionCard;
   isBusy: boolean;
-  isKept: boolean;
-  onKeep: (botId: string) => void;
-  onUnsubscribe: (botId: string) => void;
+  onUnsubscribe: (card: BotDecisionCard) => void;
 }
 
-const reasonStyles: Record<DecisionReason, { border: string; label: string; text: string; bg: string }> = {
+const reasonStyles: Record<DecisionReason, { border: string; labelKey: string; badge: 'success' | 'warning' | 'error' }> = {
   [DecisionReason.SOLID_PERFORMER]: {
-    border: 'border-l-[3px] border-l-[#10b981]',
-    label: 'Solid',
-    text: 'text-positive',
-    bg: 'bg-positive/5',
+    border: 'border-l-4 border-l-positive',
+    labelKey: 'solid',
+    badge: 'success',
   },
   [DecisionReason.NEEDS_REVIEW]: {
-    border: 'border-l-[3px] border-l-[#f59e0b]',
-    label: 'Review',
-    text: 'text-warning',
-    bg: 'bg-warning/5',
+    border: 'border-l-4 border-l-warning',
+    labelKey: 'review',
+    badge: 'warning',
   },
   [DecisionReason.HIGH_RISK]: {
-    border: 'border-l-[3px] border-l-[#f43f5e]',
-    label: 'High Risk',
-    text: 'text-negative',
-    bg: 'bg-negative/5',
+    border: 'border-l-4 border-l-negative',
+    labelKey: 'highRisk',
+    badge: 'error',
   },
   [DecisionReason.SLIPPING]: {
-    border: 'border-l-[3px] border-l-[#f59e0b]/70',
-    label: 'Slipping',
-    text: 'text-warning/80',
-    bg: 'bg-warning/3',
+    border: 'border-l-4 border-l-warning/70',
+    labelKey: 'slipping',
+    badge: 'warning',
   },
 };
 
-export function BotDecisionRow({
+export const BotDecisionRow = memo(function BotDecisionRow({
   card,
   isBusy,
-  isKept,
-  onKeep,
   onUnsubscribe,
 }: BotDecisionRowProps) {
-  const [isPending, setIsPending] = useState(false);
+  const t = useTranslations('Decision.row');
   const style = reasonStyles[card.reason];
 
-  const handleKeep = async () => {
-    setIsPending(true);
-    try {
-      await onKeep(card.botId);
-    } finally {
-      setIsPending(false);
-    }
-  };
-
-  const pnlColor = card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
-  const drawdownColor = card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
-  const signalSuccess = card.signalCount24h > 0
-    ? Math.round((card.successfulSignals24h / card.signalCount24h) * 100)
-    : 0;
-
-  const actionDisabled = isBusy || isPending;
+  const pnlColor = card.currentPnL == null ? 'text-muted' : card.currentPnL >= 0 ? 'text-positive' : 'text-negative';
+  const drawdownColor = card.drawdownPercent == null
+    ? 'text-muted'
+    : card.drawdownPercent < -0.1 ? 'text-negative' : 'text-warning';
+  const actionDisabled = isBusy;
+  const syncFreshness = (card.syncFreshness || 'NEVER_SYNCED').toUpperCase();
+  const syncLabel = syncFreshness === 'FRESH'
+    ? t('syncFresh')
+    : syncFreshness === 'STALE'
+      ? t('syncStale')
+      : t('syncNever');
+  const syncStatus: 'live' | 'warning' | 'offline' =
+    syncFreshness === 'FRESH' ? 'live' : syncFreshness === 'STALE' ? 'warning' : 'offline';
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const lastSignalText = card.lastSignal ? formatter.format(new Date(card.lastSignal)) : t('signalNone');
+  const pnlText = card.currentPnL == null ? '—' : `${card.currentPnL >= 0 ? '+' : ''}$${card.currentPnL.toFixed(2)}`;
+  const returnText = card.pnlPercent == null ? '—' : `${(card.pnlPercent * 100).toFixed(2)}%`;
+  const drawdownText = card.drawdownPercent == null ? '—' : `${(card.drawdownPercent * 100).toFixed(1)}%`;
 
   return (
-    <div
-      className={`flex flex-col gap-4 border border-white/5 bg-[#0b0e14] p-4 transition-colors hover:bg-white/[0.01] sm:flex-row sm:items-center sm:justify-between ${style.border}`}
+    <Card
+      className={`flex flex-col gap-4 p-4 transition-colors hover:border-border-line sm:flex-row sm:items-center sm:justify-between ${style.border}`}
     >
-      {/* Col 1: Bot details & status */}
       <div className="flex items-center gap-3 sm:w-1/4 sm:min-w-[180px]">
         {card.botIcon ? (
           <Image
@@ -82,14 +85,14 @@ export function BotDecisionRow({
             width={28}
             height={28}
             unoptimized
-            className="h-7 w-7 rounded border border-white/10 object-cover"
+            className="h-7 w-7 rounded border border-border object-cover"
           />
         ) : (
-          <div className="h-7 w-7 rounded border border-white/10 bg-white/[0.02]" />
+          <div className="h-7 w-7 rounded border border-border bg-surface" />
         )}
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="truncate text-sm font-semibold text-white">
+            <span className="truncate text-sm font-semibold text-main">
               {card.botName}
             </span>
             <StatusDot
@@ -101,89 +104,68 @@ export function BotDecisionRow({
         </div>
       </div>
 
-      {/* Col 2: Risk indicator and reason explanation */}
       <div className="flex flex-col gap-1.5 sm:w-1/3">
         <div className="flex items-center gap-2">
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${style.bg} ${style.text}`}>
-            {style.label}
-          </span>
-          <span className="text-xs text-muted font-mono">
-            Risk: {(card.riskScore * 100).toFixed(0)}%
+          <Badge variant={style.badge}>{t(style.labelKey)}</Badge>
+          <span className="text-xs font-mono text-muted">
+            {t('risk', { value: (card.riskScore * 100).toFixed(0) })}
           </span>
           <div className="w-16">
             <RiskBar value={card.riskScore} max={1} />
           </div>
         </div>
-        <p className="line-clamp-2 text-xs text-muted leading-normal">
+        <p className="line-clamp-2 text-xs leading-normal text-muted">
           {card.reasonExplanation}
         </p>
       </div>
 
-      {/* Col 3: Technical Metrics (Win Rate / Drawdown) */}
       <div className="grid grid-cols-3 gap-2 sm:w-1/5 sm:min-w-[150px]">
         <div>
-          <span className="block text-[9px] uppercase tracking-wider text-muted/60">Win rate</span>
-          <span className="font-mono text-xs font-semibold text-white">
-            {(card.winRate * 100).toFixed(0)}%
+          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('sync')}</span>
+          <span className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-main">
+            <StatusDot status={syncStatus} pulse={syncStatus !== 'offline'} size="sm" />
+            {syncLabel}
           </span>
         </div>
         <div>
-          <span className="block text-[9px] uppercase tracking-wider text-muted/60">Max DD</span>
+          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('maxDd')}</span>
           <span className={`font-mono text-xs font-semibold ${drawdownColor}`}>
-            {(card.drawdownPercent * 100).toFixed(1)}%
+            {drawdownText}
           </span>
         </div>
         <div>
-          <span className="block text-[9px] uppercase tracking-wider text-muted/60">Signals</span>
-          <span className="font-mono text-xs text-white">
-            {card.successfulSignals24h}/{card.signalCount24h}
+          <span className="block text-[9px] uppercase tracking-wider text-muted/60">{t('lastSignal')}</span>
+          <span className="font-mono text-xs text-main">
+            {lastSignalText}
           </span>
         </div>
       </div>
 
-      {/* Col 4: PnL and floating delta */}
       <div className="flex flex-row gap-4 sm:w-1/6 sm:flex-col sm:gap-0 sm:text-right">
         <div>
-          <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">PnL: </span>
+          <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">{t('pnlLabel')}</span>
           <span className={`font-mono text-sm font-semibold ${pnlColor}`}>
-            {card.currentPnL >= 0 ? '+' : ''}${card.currentPnL.toFixed(2)}
+            {pnlText}
           </span>
         </div>
         <div>
-          <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">Return: </span>
+          <span className="inline-block text-[9px] uppercase tracking-wider text-muted/60 sm:hidden">{t('returnLabel')}</span>
           <span className={`font-mono text-[10px] ${pnlColor}`}>
-            {(card.pnlPercent * 100).toFixed(2)}%
+            {returnText}
           </span>
         </div>
       </div>
 
-      {/* Col 5: Actions */}
-      <div className="flex items-center gap-2 border-t border-white/5 pt-3 sm:border-t-0 sm:pt-0">
-        <button
-          onClick={handleKeep}
-          disabled={actionDisabled}
-          className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors border ${
-            isKept
-              ? 'border-positive/20 bg-positive/5 text-positive hover:bg-positive/10'
-              : 'border-white/10 bg-white/[0.02] text-white hover:bg-white/[0.06]'
-          } disabled:opacity-50`}
-        >
-          {isKept ? 'Kept' : 'Keep'}
-        </button>
-        <Link
-          href={`/terminal/marketplace/${card.botId}`}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-white/10 bg-white/[0.02] text-white hover:bg-white/[0.06] text-center"
-        >
-          Review
-        </Link>
-        <button
-          onClick={() => onUnsubscribe(card.botId)}
-          disabled={actionDisabled}
-          className="px-3 py-1.5 text-xs font-semibold rounded border border-negative/20 bg-negative/5 text-negative hover:bg-negative/10 disabled:opacity-50"
-        >
-          Unsubscribe
-        </button>
+      <div className="flex items-center gap-2 border-t border-border pt-3 sm:border-t-0 sm:pt-0">
+        <Button asChild size="sm" variant="outline">
+          <Link href={`/terminal/marketplace/${card.botId}`}>{t('reviewAction')}</Link>
+        </Button>
+        <Button onClick={() => onUnsubscribe(card)} disabled={actionDisabled} size="sm" variant="danger">
+          {t('unsubscribe')}
+        </Button>
       </div>
-    </div>
+    </Card>
   );
-}
+});
+
+BotDecisionRow.displayName = 'BotDecisionRow';

@@ -1,17 +1,15 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Link, usePathname, useRouter } from '@/lib/navigation';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { LanguageSwitcher } from '@/components/shared/language-switcher';
+import { cn } from '@/lib/utils';
 import brandLogo from '@/assets/images/marcustradingvn-Photoroom.png';
-
-const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/training', label: 'Training' },
-  { href: '/market', label: 'Market' },
-  { href: '/blog', label: 'Blog' },
-  { href: '/research', label: 'Research' },
-];
 
 interface SiteHeaderProps {
   isAuthenticated?: boolean;
@@ -19,31 +17,44 @@ interface SiteHeaderProps {
   username?: string;
 }
 
-function formatRole(role?: string): string {
-  if (!role) return '';
-  const map: Record<string, string> = {
-    ADMIN: 'Admin',
-    USER: 'Trader',
-    TRADER: 'Trader',
-    DEVELOPER: 'Developer',
-    OPERATOR: 'Operator',
-  };
-  return map[role.toUpperCase()] ?? role;
-}
-
 export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps) {
+  const t = useTranslations('Common');
+  const tRoles = useTranslations('Common.roles');
   const pathname = usePathname();
   const router = useRouter();
-  const focusClass = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(16,185,129,0.75)] focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(4,7,13,0.92)]';
+  const focusClass =
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background';
 
-  const handleLogout = async (e: React.MouseEvent) => {
+  const navItems = [
+    { href: '/', label: t('home') },
+    { href: '/developers/docs', label: t('developers') },
+    { href: '/training', label: t('training') },
+    { href: '/market', label: t('market') },
+    { href: '/blog', label: t('blog') },
+    { href: '/research', label: t('research') },
+  ];
+
+  function formatRoleLabel(value?: string): string {
+    if (!value) return '';
+
+    const normalized = value.toUpperCase();
+    if (normalized === 'USER') return tRoles('TRADER');
+    if (normalized === 'ADMIN') return tRoles('ADMIN');
+    if (normalized === 'TRADER') return tRoles('TRADER');
+    if (normalized === 'DEVELOPER') return tRoles('DEVELOPER');
+    if (normalized === 'OPERATOR') return tRoles('OPERATOR');
+    if (normalized === 'GUEST') return tRoles('GUEST');
+    return value;
+  }
+
+  const handleLogout = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     try {
-      await fetch('/logout', { method: 'POST' });
+      await fetch('/api/auth/logout', { method: 'POST' });
     } catch (err) {
       console.error('Logout failed:', err);
     }
-    
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem('marcus_access_token');
       localStorage.removeItem('marcus_refresh_token');
@@ -51,140 +62,143 @@ export function SiteHeader({ isAuthenticated, role, username }: SiteHeaderProps)
       localStorage.removeItem('marcus_username');
     }
 
-    router.push('/login?logged_out=1');
+    router.replace('/login?logged_out=1');
     router.refresh();
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-[rgba(132,162,191,0.2)] bg-[rgba(4,7,13,0.78)] backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link href="/" aria-label="Marcus Trading home" className={`inline-flex items-center gap-2 text-lg tracking-tight text-white ${focusClass}`}>
+        <Link href="/" aria-label={t('branding.homeLabel')} className={cn('inline-flex items-center gap-2 text-lg text-main', focusClass)}>
           <Image
             src={brandLogo}
-            alt="Marcus Trading logo"
+            alt={t('branding.logoAlt')}
             width={32}
             height={32}
-            className="h-8 w-8 rounded-md object-contain"
+            className="size-8 rounded-md object-contain"
             priority
           />
-          <span className="font-display">Marcus Trading</span>
+          <span className="font-display whitespace-nowrap">{t('branding.name')}</span>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex" aria-label="Primary navigation">
+        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary navigation">
           {navItems.map((item) => {
             const active = pathname === item.href;
             return (
-              <Link
+              <Button
                 key={item.href}
-                href={item.href}
-                aria-current={active ? 'page' : undefined}
-                className={`text-sm transition-colors duration-200 ${
-                  active ? 'text-white' : 'text-muted hover:text-white'
-                } ${focusClass}`}
+                asChild
+                variant="ghost"
+                size="sm"
+                className={cn('h-9 px-3 text-sm', active ? 'text-main' : 'text-muted')}
               >
-                {item.label}
-              </Link>
+                <Link href={item.href as any} aria-current={active ? 'page' : undefined} className={focusClass}>
+                  {item.label}
+                </Link>
+              </Button>
             );
           })}
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <LanguageSwitcher />
           {!isAuthenticated ? (
             <>
-              <Link
-                href="/register"
-                className={`rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-200 ${
-                  pathname === '/register' ? 'bg-border/16 text-white' : 'text-muted hover:text-white'
-                } ${focusClass}`}
-                aria-label="Open registration"
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className={cn('h-9 px-4 text-sm', pathname === '/register' ? 'border-border bg-surface text-main' : '')}
               >
-                Sign Up
-              </Link>
-              <Link
-                href="/login?next=/terminal"
-                className={`rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200 ${focusClass}`}
-                aria-label="Sign in"
-              >
-                Sign In
-              </Link>
+                <Link href="/register" aria-label="Open registration" className={focusClass}>
+                  {t('register')}
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="h-9 px-4 text-sm">
+                <Link href="/login?next=/terminal" aria-label="Sign in" className={focusClass}>
+                  {t('login')}
+                </Link>
+              </Button>
             </>
           ) : (
             <>
-              <span className="rounded-xl bg-border/12 px-3 py-2 text-sm text-muted">
-                {username ?? formatRole(role)}
-              </span>
-              <Link
-                href="/terminal"
-                className={`rounded-xl px-4 py-2 text-sm font-semibold cta-primary transition-colors duration-200 ${focusClass}`}
-                aria-label="Go to dashboard"
-              >
-                Dashboard
-              </Link>
-              <button
-                onClick={handleLogout}
-                className={`rounded-xl border border-border/30 px-4 py-2 text-sm text-white transition-colors hover:bg-border/12 ${focusClass}`}
-                aria-label="Sign out"
-              >
-                Sign Out
-              </button>
+              <Badge variant="outline" className="rounded-xl px-3 py-2 text-[11px] uppercase tracking-[0.12em]">
+                {username ?? formatRoleLabel(role)}
+              </Badge>
+              <Button asChild size="sm" className="h-9 px-4 text-sm">
+                <Link href="/terminal" aria-label="Go to dashboard" className={focusClass}>
+                  {t('dashboard')}
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" className="h-9 px-4 text-sm" onClick={handleLogout} aria-label="Sign out">
+                {t('logout')}
+              </Button>
             </>
           )}
         </div>
 
-        <details className="relative md:hidden">
-          <summary
-            aria-label="Open menu"
-            className={`list-none cursor-pointer rounded-lg border border-border/24 px-3 py-2 text-xs uppercase tracking-[0.12em] text-white ${focusClass}`}
-          >
-            Menu
-          </summary>
-          <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border/20 bg-[rgba(6,10,18,0.95)] p-3 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
-            <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
-              {navItems.map((item) => {
-                const active = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={`rounded-lg px-3 py-2 text-sm transition-colors ${
-                      active ? 'bg-border/16 text-white' : 'text-muted hover:bg-border/8 hover:text-white'
-                    } ${focusClass}`}
-                  >
-                    {item.label}
-                  </Link>
-                );
-              })}
-              <div className="my-2 h-px bg-border/18" />
-              {!isAuthenticated ? (
-                <>
-                  <Link href="/register" className={`rounded-lg px-3 py-2 text-sm text-white hover:bg-border/8 ${focusClass}`} aria-label="Open registration">
-                    Sign Up
-                  </Link>
-                  <Link href="/login?next=/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Sign in">
-                    Sign In
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <span className="rounded-lg bg-border/12 px-3 py-2 text-xs text-muted">
-                  {username ?? formatRole(role)}
-                  </span>
-                  <Link href="/terminal" className={`rounded-lg cta-primary px-3 py-2 text-sm font-semibold text-center ${focusClass}`} aria-label="Go to dashboard">
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className={`rounded-lg border border-border/30 px-3 py-2 text-sm text-white hover:bg-border/8 text-left w-full ${focusClass}`}
-                    aria-label="Sign out"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              )}
-            </nav>
-          </div>
-        </details>
+        <div className="flex items-center gap-3 md:hidden">
+          <LanguageSwitcher />
+          <details className="relative">
+            <summary
+              aria-label="Open menu"
+              className={cn('list-none cursor-pointer rounded-lg border border-border/60 px-3 py-2 text-xs uppercase tracking-[0.12em] text-main', focusClass)}
+            >
+              {t('menu')}
+            </summary>
+            <Card variant="glass-strong" className="absolute right-0 mt-2 w-56 p-3 shadow-[var(--shadow-soft)]">
+              <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+                {navItems.map((item) => {
+                  const active = pathname === item.href;
+                  return (
+                    <Button
+                      key={item.href}
+                      asChild
+                      variant="ghost"
+                      size="sm"
+                      className={cn('h-9 w-full justify-start px-3 text-sm', active ? 'text-main' : 'text-muted')}
+                    >
+                      <Link href={item.href as any} aria-current={active ? 'page' : undefined} className={focusClass}>
+                        {item.label}
+                      </Link>
+                    </Button>
+                  );
+                })}
+
+                <div className="my-2 h-px bg-border/60" />
+
+                {!isAuthenticated ? (
+                  <>
+                    <Button asChild variant="outline" size="sm" className="h-9 w-full justify-start px-3 text-sm">
+                      <Link href="/register" aria-label="Open registration" className={focusClass}>
+                        {t('register')}
+                      </Link>
+                    </Button>
+                    <Button asChild size="sm" className="h-9 w-full justify-start px-3 text-sm">
+                      <Link href="/login?next=/terminal" aria-label="Sign in" className={focusClass}>
+                        {t('login')}
+                      </Link>
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Badge variant="outline" className="rounded-lg px-3 py-2 text-xs uppercase tracking-[0.12em]">
+                      {username ?? formatRoleLabel(role)}
+                    </Badge>
+                    <Button asChild size="sm" className="h-9 w-full justify-start px-3 text-sm">
+                      <Link href="/terminal" aria-label="Go to dashboard" className={focusClass}>
+                        {t('dashboard')}
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-9 w-full justify-start px-3 text-sm" onClick={handleLogout} aria-label="Sign out">
+                      {t('logout')}
+                    </Button>
+                  </>
+                )}
+              </nav>
+            </Card>
+          </details>
+        </div>
       </div>
     </header>
   );

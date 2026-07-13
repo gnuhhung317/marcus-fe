@@ -1,0 +1,340 @@
+{
+  "Auth": {
+    "loginTitle": "Đăng nhập vào tài khoản của bạn",
+    "registerTitle": "Tạo tài khoản",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "submit": "Gửi"
+  },
+  "Login": {
+    "ecosystem": "Hệ sinh thái Marcus Trading",
+    "headline": "Giao dịch thuật toán thế hệ mới",
+    "description": "Mở khóa thực thi định lượng chuyên nghiệp, tình báo danh mục theo thời gian thực và vận hành bot API an toàn trong một không gian làm việc thống nhất.",
+    "securityTitle": "Bảo mật cấp tổ chức",
+    "securityDesc": "Mã hóa phiên doanh nghiệp, xác thực MFA an toàn và bot API tách biệt giúp bảo vệ giao dịch của bạn.",
+    "latencyTitle": "Thực thi độ trễ thấp",
+    "latencyDesc": "Vận hành bot với định tuyến trực tiếp tới sàn, không trễ thực thi và telemetry trực tiếp.",
+    "terminalAccess": "Truy cập Terminal",
+    "welcomeBack": "Chào mừng trở lại",
+    "instructions": "Dùng thông tin Marcus của bạn để truy cập terminal.",
+    "usernameOrEmail": "Tên đăng nhập hoặc email",
+    "password": "Mật khẩu",
+    "signingIn": "Đang đăng nhập...",
+    "signIn": "Đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "signUp": "Đăng ký",
+    "errors": {
+      "missingCredentials": "Vui lòng nhập cả tên đăng nhập/email và mật khẩu.",
+      "invalidCredentials": "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.",
+      "serviceUnavailable": "Dịch vụ đăng nhập hiện tạm thời không khả dụng.",
+      "genericFail": "Đăng nhập thất bại với mã trạng thái {status}.",
+      "noTokens": "Đăng nhập hoàn tất nhưng không cấp được token xác thực.",
+      "invalidUserPass": "Tên đăng nhập/email hoặc mật khẩu không hợp lệ."
+    },
+    "placeholders": {
+      "username": "ban@example.com",
+      "password": "Nhập mật khẩu"
+    }
+  },
+  "Home": {
+    "badge": "Engine Online · {activeBots} bot đang chạy",
+    "headline": "Giao dịch thuật toán tần suất cao.",
+    "description": "Thiết kế, backtest và triển khai bot tần suất cao với telemetry cấp tổ chức và thực thi độ trễ cực thấp cho trader retail và prop.",
+    "launchTerminal": "Mở Terminal",
+    "readDocs": "Tài liệu developer",
+    "stats": {
+      "developers": "Nhà phát triển",
+      "executors": "Executor",
+      "uptime": "Thời gian hoạt động",
+      "exchanges": "Sàn hỗ trợ"
+    },
+    "lifecycle": {
+      "title": "Vòng đời định lượng",
+      "subtitle": "Từ mã chiến lược đến tín hiệu đã kiểm chứng và thực thi phía trader.",
+      "docsCta": "Đọc hướng dẫn",
+      "step1": {
+        "title": "Học & Backtest",
+        "desc": "Truy cập Academy dành cho bot định lượng cấp tổ chức. Chạy backtest lịch sử trên nhiều năm dữ liệu tick ngay trong trình duyệt chỉ trong vài giây."
+      },
+      "step2": {
+        "title": "Xây dựng & Mô phỏng",
+        "desc": "Dùng Quant Signal SDK để mô hình hóa tín hiệu, chạy backtest, upload kết quả lịch sử và publish tín hiệu đã ký cho live hoặc dry-run."
+      },
+      "step3": {
+        "title": "Triển khai & Mở rộng",
+        "desc": "Chạy Marcus Local Executor Client như runtime phía trader để nhận tín hiệu và thực thi qua tài khoản sàn của bạn."
+      }
+    },
+    "hub": {
+      "title": "Tham gia Hub",
+      "desc": "Kết nối với các nhà phát triển định lượng, chia sẻ bot và nhận hỗ trợ ưu tiên từ đội ngũ kỹ thuật Marcus.",
+      "discord": "Máy chủ Discord",
+      "forums": "Diễn đàn nhà phát triển"
+    },
+    "terminal": {
+      "badge": "quant-signal-sdk · local-executor",
+      "install": "$ pip install quant-signal-sdk",
+      "collecting": "Đang tải quant-signal-sdk...",
+      "installed": "Đã cài đặt quant-signal-sdk-0.2.0",
+      "deploy": "$ quant-sdk backtest --bot-file my_bot.py --data-csv candles.csv --initial-cash 1000",
+      "ok": "OK",
+      "validating": "Đang xác thực schema SignalPayload...",
+      "connecting": "Đang chuẩn bị transport tín hiệu đã ký...",
+      "provisioning": "Executor runtime: dry-run hoặc live qua CCXT",
+      "deployed": "Backtest đã hoàn tất",
+      "routingId": "CLI: quant-sdk",
+      "latency": "Executor: local-executor qua WebSocket + CCXT"
+    }
+  },
+  "DeveloperDocs": {
+    "eyebrow": "Tài liệu developer",
+    "badge": "Hướng dẫn SDK + Executor",
+    "title": "Xây tín hiệu bằng SDK, chạy thực thi bằng local executor",
+    "description": "Hướng dẫn thực tế để dùng Quant Signal SDK đã publish và Marcus Local Executor Client mà không trộn lẫn trách nhiệm của hai phần.",
+    "hero": {
+      "pypiCta": "Mở PyPI",
+      "credentialsCta": "Cấp credentials"
+    },
+    "overview": {
+      "sdkTitle": "Quant Signal SDK",
+      "sdkDescription": "Python package để mô hình hóa, xác thực, backtest, upload và publish tín hiệu giao dịch Marcus.",
+      "executorTitle": "Local Executor Client",
+      "executorDescription": "Runtime phía trader kết nối dispatcher, nhận tín hiệu và đặt lệnh qua tài khoản sàn.",
+      "flowTitle": "Luồng vận hành",
+      "flowDescription": "Developer publish tín hiệu đã ký. Trader chạy executor với credential sàn và execution mode của riêng họ."
+    },
+    "sdk": {
+      "eyebrow": "SDK quickstart",
+      "title": "Quant Signal SDK",
+      "description": "Cài package đã publish từ PyPI, tạo SignalPayload, gửi qua QuantSignalClient và dùng quant-sdk để backtest hoặc upload kết quả.",
+      "signalLabel": "Ví dụ publish tín hiệu",
+      "backtestLabel": "CLI backtest và upload",
+      "capabilities": {
+        "models": "Pydantic signal model và enum cho action, market type, order type, status và execution policy.",
+        "strategy": "BaseStrategy và runtime interface giữ logic chiến lược tách khỏi transport và signing.",
+        "backtest": "PortfolioBacktestRunner replay dữ liệu OHLCV cục bộ mà không đặt lệnh lên sàn thật.",
+        "upload": "Backtest upload có thể publish kết quả lịch sử lên Marcus backend dưới dạng batch report.",
+        "sync": "Dry-run sync helper lưu trạng thái paper-trading tách biệt với backtest lịch sử.",
+        "telemetry": "TelemetryClient dành riêng cho metric vận hành như CPU, latency và heartbeat-style signal."
+      }
+    },
+    "executor": {
+      "eyebrow": "Executor quickstart",
+      "title": "Marcus Local Executor Client",
+      "description": "Chạy executor như runtime local hoặc Dockerized. Nó duy trì kết nối WebSocket, xác thực signal frame, ghi SQLite local state và định tuyến lệnh qua CCXT ở dry-run hoặc live mode.",
+      "envLabel": "Environment bắt buộc",
+      "localLabel": "Chạy local",
+      "dockerLabel": "Chạy bằng Docker compose",
+      "requirements": {
+        "wsUrl": "SYSTEM_WS_URL trỏ tới Marcus executor WebSocket endpoint của deployment đang dùng.",
+        "wsToken": "SYSTEM_WS_TOKEN xác thực handshake WebSocket của executor.",
+        "botId": "BOT_ID gắn runtime với bot Marcus đã được cấp phát.",
+        "exchange": "Credential sàn nằm phía trader và bắt buộc khi chạy live mode.",
+        "amount": "DEFAULT_ORDER_AMOUNT là lượng đặt lệnh fallback khi tín hiệu không gửi amount.",
+        "mode": "EXECUTION_MODE dùng dry-run để log an toàn hoặc live để đặt lệnh thật lên sàn."
+      }
+    },
+    "boundaries": {
+      "eyebrow": "Ranh giới trách nhiệm",
+      "title": "Tách rõ SDK và executor",
+      "description": "Ranh giới này quan trọng cho bảo mật, độ trung thực sản phẩm và hỗ trợ vận hành.",
+      "notes": {
+        "sdkNoExchange": "SDK không đặt lệnh thật lên sàn. Nó tạo, validate, ký, backtest, upload và publish tín hiệu.",
+        "executorRuntime": "Executor là runtime nhận tín hiệu hợp lệ và thực thi ở dry-run hoặc live mode qua tài khoản sàn của trader.",
+        "deploymentConfig": "Backend URL và WebSocket URL là cấu hình deployment, không phải branding hard-code của sản phẩm."
+      }
+    },
+    "next": {
+      "label": "Bước tiếp theo",
+      "description": "Cấp bot credentials trong terminal, lưu raw secret một lần, rồi cấu hình SDK và executor bằng bot ID cùng secret đã sinh.",
+      "cta": "Tạo bot credentials"
+    }
+  },
+  "Register": {
+    "title": "Tạo tài khoản",
+    "subtitle": "Tạo tài khoản Marcus Trading để bắt đầu khám phá bot, mô phỏng và công cụ thực thi trực tiếp.",
+    "form": {
+      "fullName": "Họ và tên",
+      "email": "Email",
+      "username": "Tên đăng nhập",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "accountType": "Loại tài khoản",
+      "hints": {
+        "email": "Dùng email có thể truy cập để khôi phục tài khoản.",
+        "accountType": "Chọn nhà phát triển nếu bạn muốn xuất bản bot hoặc tích hợp.",
+        "password": "Tối thiểu 8 ký tự, có chữ hoa, chữ thường và một chữ số."
+      },
+      "roles": {
+        "trader": "Nhà giao dịch",
+        "developer": "Nhà phát triển"
+      },
+      "terms": "Bằng cách tạo tài khoản, bạn đồng ý với chính sách truy cập hệ thống và kiểm toán.",
+      "submit": "Tạo tài khoản",
+      "submitting": "Đang tạo tài khoản...",
+      "success": "Tạo tài khoản thành công! Đang chuyển tới đăng nhập...",
+      "errors": {
+        "generic": "Đăng ký thất bại. Vui lòng thử lại.",
+        "emailTaken": "Email này đã được đăng ký.",
+        "usernameTaken": "Tên đăng nhập này đã được sử dụng."
+      }
+    }
+  },
+  "Market": {
+    "title": "Bảng xếp hạng thị trường",
+    "rankedBots": "{count} bot đã xếp hạng",
+    "retry": "Thử lại",
+    "refresh": "Làm mới",
+    "error": {
+      "title": "Không thể tải bảng xếp hạng thị trường",
+      "message": "Hiện không thể tải bảng xếp hạng công khai."
+    },
+    "empty": {
+      "title": "Chưa có dữ liệu bảng xếp hạng thị trường",
+      "message": "Nguồn benchmark công khai chưa trả về dòng dữ liệu nào."
+    },
+    "table": {
+      "rank": "Hạng",
+      "bot": "Bot",
+      "creator": "Người tạo",
+      "cagr": "CAGR",
+      "drawdown": "Sụt giảm",
+      "sharpe": "Sharpe",
+      "status": "Trạng thái"
+    }
+  },
+  "Training": {
+    "eyebrow": "Học viện giao dịch",
+    "badge": "Sắp ra mắt",
+    "title": "Academy đang được chuẩn bị trước khi mở công khai",
+    "description": "Chúng tôi đang xây dựng lại lộ trình đào tạo rõ ràng hơn cho trader chuyển từ thực thi thủ công sang quy trình giao dịch có hệ thống.",
+    "availabilityNote": "Hiện chưa mở enrollment công khai. Trang này chỉ chuyển sang nội dung Academy thật khi curriculum, lab thực hành và luồng enrollment đã có source of truth rõ ràng.",
+    "primaryCta": "Xem Research",
+    "secondaryCta": "Mở Terminal",
+    "status": {
+      "label": "Trạng thái hiện tại",
+      "title": "Prelaunch, chưa phải đào tạo live",
+      "description": "Route public vẫn được giữ để người dùng biết Academy đang được phát triển, nhưng sẽ không còn hiển thị KPI placeholder hay tiến độ khóa học giả như dữ liệu vận hành thật.",
+      "curriculumLabel": "Curriculum",
+      "curriculumValue": "Các mô-đun thực chiến đang được cấu trúc theo quy trình giao dịch có thể lặp lại.",
+      "labsLabel": "Execution labs",
+      "labsValue": "Lab thực hành sẽ chỉ mở khi đã gắn được với luồng sản phẩm Marcus đang hoạt động.",
+      "enrollmentLabel": "Enrollment",
+      "enrollmentValue": "Enrollment công khai vẫn đóng cho đến khi rollout sẵn sàng về mặt vận hành."
+    },
+    "roadmap": {
+      "eyebrow": "Lộ trình dự kiến",
+      "title": "Những gì sẽ xuất hiện tại đây",
+      "description": "Mục tiêu là một Academy nhỏ gọn nhưng trung thực, chỉ công khai các khả năng đã đủ sẵn sàng để phục vụ người dùng thật.",
+      "curriculum": {
+        "title": "Nền tảng Curriculum",
+        "description": "Các mô-đun cốt lõi sẽ tập trung vào market structure, kỷ luật rủi ro và tư duy hệ thống trước khi nói tới automation nâng cao."
+      },
+      "labs": {
+        "title": "Execution Labs",
+        "description": "Lab tương tác sẽ bám vào research và terminal flow hiện có để người học đi từ ý tưởng sang workflow vận hành."
+      },
+      "enrollment": {
+        "title": "Luồng Enrollment",
+        "description": "Hành động enroll và các course action public chỉ xuất hiện khi backend hỗ trợ và mô hình vận hành đã sẵn sàng."
+      }
+    },
+    "footnote": {
+      "label": "Đang khả dụng",
+      "description": "Trong lúc Academy chưa mở, giá trị thật hiện nằm ở research feed, bề mặt sản phẩm đang chạy và các luồng tài khoản hiện có.",
+      "cta": "Tạo tài khoản"
+    }
+  },
+  "Research": {
+    "eyebrow": "Thư viện nghiên cứu",
+    "badge": "Sắp ra mắt",
+    "title": "Thư viện nghiên cứu đang được chuẩn bị trước khi mở công khai",
+    "description": "Route research vẫn được giữ lại, nhưng briefing đã xuất bản và báo cáo tải xuống hiện chưa phải nội dung live.",
+    "availabilityNote": "Trang này chỉ chuyển sang nội dung nghiên cứu thật khi quy trình review, metadata báo cáo và thư viện file đã có source of truth production.",
+    "primaryCta": "Mở Terminal",
+    "secondaryCta": "Tạo tài khoản",
+    "status": {
+      "label": "Trạng thái hiện tại",
+      "title": "Prelaunch, chưa phải research live",
+      "description": "Route này không còn hiển thị report placeholder hay file PDF giả như nghiên cứu đã được xuất bản.",
+      "reportsLabel": "Reports",
+      "reportsValue": "Các briefing định lượng đang được soạn và review trước khi công bố.",
+      "libraryLabel": "Thư viện file",
+      "libraryValue": "File tải xuống chỉ xuất hiện khi storage, metadata và access policy đã sẵn sàng.",
+      "publishingLabel": "Publishing",
+      "publishingValue": "Timestamp và report card public sẽ được ẩn cho đến khi có workflow xuất bản thật."
+    },
+    "roadmap": {
+      "eyebrow": "Lộ trình dự kiến",
+      "title": "Những gì sẽ xuất hiện tại đây",
+      "description": "Research sẽ trở lại dưới dạng thư viện nhỏ gọn, đã xác thực, thay vì feed placeholder trông như dữ liệu thật.",
+      "methodology": {
+        "title": "Ghi chú Methodology",
+        "description": "Các bài giải thích public sẽ mô tả cách Marcus đánh giá tín hiệu, regime thị trường và kiểm soát rủi ro."
+      },
+      "briefings": {
+        "title": "Quant Briefings",
+        "description": "Bài nghiên cứu chỉ được công bố sau khi đã có review, gắn nguồn và căn chỉnh với sản phẩm."
+      },
+      "library": {
+        "title": "Thư viện đã xác thực",
+        "description": "PDF và report download sẽ gắn với file thật, có ownership và versioning rõ ràng."
+      }
+    },
+    "footnote": {
+      "label": "Đang khả dụng",
+      "description": "Trong lúc research publishing chưa sẵn sàng, người dùng có thể khám phá bề mặt sản phẩm live và luồng tài khoản hiện có.",
+      "cta": "Tạo tài khoản"
+    }
+  },
+  "Blog": {
+    "eyebrow": "Luồng tình báo",
+    "badge": "Sắp ra mắt",
+    "title": "Blog Marcus vẫn đang ở giai đoạn prelaunch",
+    "description": "Ghi chú biên tập, bài giải thích thị trường và cập nhật sản phẩm đang được chuẩn bị, nhưng blog public chưa phải feed nội dung live.",
+    "availabilityNote": "Route này được giữ lại để người dùng biết phần blog đang được phát triển. Bài viết thật chỉ hiển thị khi workflow xuất bản đã hoạt động.",
+    "primaryCta": "Mở Terminal",
+    "secondaryCta": "Tạo tài khoản",
+    "status": {
+      "label": "Trạng thái hiện tại",
+      "title": "Prelaunch, chưa phải blog live",
+      "description": "Trang này cố ý không dùng alert placeholder, read time giả hay article card mock cho đến khi có bài viết thật.",
+      "postsLabel": "Posts",
+      "postsValue": "Các bản nháp biên tập chưa được xuất bản trên route public.",
+      "reviewLabel": "Review",
+      "reviewValue": "Nội dung cần quy trình review và ownership thật trước khi xuất hiện tại đây.",
+      "publishingLabel": "Publishing",
+      "publishingValue": "Blog feed chỉ mở khi đã kết nối với nguồn xuất bản production."
+    },
+    "roadmap": {
+      "eyebrow": "Lộ trình dự kiến",
+      "title": "Những gì sẽ xuất hiện tại đây",
+      "description": "Blog sẽ trở lại với bài viết đã xác thực và tác giả rõ ràng, thay vì placeholder tĩnh.",
+      "editorial": {
+        "title": "Lịch biên tập",
+        "description": "Đội ngũ sẽ xuất bản product note và bài giải thích workflow giao dịch theo nhịp ổn định."
+      },
+      "research": {
+        "title": "Tóm tắt Research",
+        "description": "Blog sẽ tóm tắt các chủ đề nghiên cứu mà không giả vờ rằng report chưa xuất bản đã khả dụng."
+      },
+      "publishing": {
+        "title": "Workflow xuất bản",
+        "description": "Bài viết sẽ xuất hiện khi review, timestamp và ownership nguồn đã gắn với quy trình content thật."
+      }
+    },
+    "footnote": {
+      "label": "Đang khả dụng",
+      "description": "Trong lúc blog chưa mở, bề mặt sản phẩm đang hoạt động vẫn là terminal và các luồng tài khoản xung quanh nó.",
+      "cta": "Tạo tài khoản"
+    }
+  },
+  "Marketing": {
+    "footer": {
+      "copyright": "2026 Marcus Trading Systems. Lớp trí tuệ vận hành.",
+      "research": "Nghiên cứu",
+      "blog": "Blog",
+      "apiDocs": "Tài liệu API"
+    }
+  }
+}

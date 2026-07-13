@@ -5,6 +5,7 @@ import {
   DeveloperConsolePageData,
   DeveloperDashboardPageData,
   DeveloperSignalItem,
+  ExecutionLogLine,
   RegisterBotInput,
   DeveloperBotStatus,
 } from '@/lib/contracts/types';
@@ -30,6 +31,10 @@ interface DeveloperBotSummaryResponse {
   tradingPair?: string;
   exchange?: string;
   apiKey?: string;
+  annualReturn?: number;
+  maxDrawdown?: number;
+  winRate?: number;
+  performanceSource?: string;
 }
 
 interface DeveloperBotDetailResponse extends DeveloperBotSummaryResponse {
@@ -75,6 +80,9 @@ interface SignalItemResponse {
 
 interface ConnectivityHealthResponse {
   overallStatus?: string;
+  executorConnectionStatus?: string;
+  heartbeatStatus?: string;
+  lastHeartbeatAt?: string | null;
   checkedAt?: string;
   dependencies?: { name?: string; status?: string; latencyMs?: number }[];
 }
@@ -100,8 +108,20 @@ interface BotRegistrationResponse {
 
 const defaultConnectivity = {
   overallStatus: 'UNKNOWN',
+  executorConnectionStatus: 'UNKNOWN',
+  heartbeatStatus: 'UNKNOWN',
+  lastHeartbeatAt: null,
   checkedAt: new Date().toISOString(),
 };
+
+function mapExecutionLogs(response: ExecutionLogPageResponse): ExecutionLogLine[] {
+  return (response.items ?? []).map((log, index) => ({
+    timestamp: log.timestamp ?? new Date(Date.now() - index * 60000).toISOString(),
+    level: log.level ?? 'INFO',
+    source: log.source ?? 'runtime',
+    message: log.message ?? 'No message',
+  }));
+}
 
 // --- Service Functions ---
 
@@ -120,11 +140,11 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
     }
   }
 
-  // If user is not OPERATOR, ADMIN, or TRADER, bypass backend calls to avoid unauthorized errors
-  if (role !== 'OPERATOR' && role !== 'ADMIN' && role !== 'TRADER') {
+  // Only operator/admin monitoring should hit system-level connectivity and execution log endpoints.
+  if (role !== 'OPERATOR' && role !== 'ADMIN') {
     return {
       connectivity: {
-        overallStatus: 'UNKNOWN',
+        ...defaultConnectivity,
         checkedAt: new Date().toISOString(),
       },
       signalStream: [],
@@ -138,13 +158,16 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
       queryParams: { limit: 8, status: 'ALL' },
     }),
     requestContractJson<ExecutionLogPageResponse>('system-execution-logs', {
-      queryParams: { limit: 10 },
+      queryParams: { limit: 100 },
     }),
   ]);
 
 
   const connectivity = {
     overallStatus: connectivityResponse?.overallStatus ?? defaultConnectivity.overallStatus,
+    executorConnectionStatus: connectivityResponse?.executorConnectionStatus ?? defaultConnectivity.executorConnectionStatus,
+    heartbeatStatus: connectivityResponse?.heartbeatStatus ?? defaultConnectivity.heartbeatStatus,
+    lastHeartbeatAt: connectivityResponse?.lastHeartbeatAt ?? defaultConnectivity.lastHeartbeatAt,
     checkedAt: connectivityResponse?.checkedAt ?? defaultConnectivity.checkedAt,
   };
 
@@ -157,18 +180,39 @@ export async function getDeveloperConsolePageData(): Promise<DeveloperConsolePag
     generatedTimestamp: signal.generatedTimestamp ?? new Date().toISOString(),
   }));
 
-  const executionLogs = (executionResponse.items ?? []).map((log, index) => ({
-    timestamp: log.timestamp ?? new Date(Date.now() - index * 60000).toISOString(),
-    level: log.level ?? 'INFO',
-    source: log.source ?? 'runtime',
-    message: log.message ?? 'No message',
-  }));
+  const executionLogs = mapExecutionLogs(executionResponse);
 
   return {
     connectivity,
     signalStream: signalStream.length ? signalStream : [],
     executionLogs,
   };
+}
+
+/**
+ * The backend scopes this feed to the authenticated trader's executor subscriptions.
+ * Operators and administrators receive the global feed through the same contract.
+ */
+export async function getMonitoringExecutionLogs(limit: number = 100): Promise<ExecutionLogLine[]> {
+  const response = await requestContractJson<ExecutionLogPageResponse>('system-execution-logs', {
+    queryParams: { limit },
+  });
+  return mapExecutionLogs(response);
+}
+
+export async function getRecentSignalStreamData(limit: number = 8): Promise<DeveloperConsolePageData['signalStream']> {
+  const signalResponse = await requestContractJson<SignalItemResponse[]>('system-signals', {
+    queryParams: { limit, status: 'ALL' },
+  }).catch(() => []);
+
+  return signalResponse.map((signal, index) => ({
+    signalId: signal.signalId ?? `signal-${index + 1}`,
+    botId: signal.botId ?? 'bot_unknown',
+    symbol: signal.symbol ?? 'BTC/USDT',
+    action: signal.action ?? 'OPEN_LONG',
+    status: signal.status ?? 'PENDING',
+    generatedTimestamp: signal.generatedTimestamp ?? new Date().toISOString(),
+  }));
 }
 
 export async function getDeveloperDashboardPageData(activeBotId?: string): Promise<DeveloperDashboardPageData> {
@@ -182,6 +226,10 @@ export async function getDeveloperDashboardPageData(activeBotId?: string): Promi
     tradingPair: item.tradingPair ?? null,
     exchange: item.exchange ?? null,
     apiKey: item.apiKey ?? null,
+    annualReturn: item.annualReturn !== undefined && item.annualReturn !== null ? toNumber(item.annualReturn) : null,
+    maxDrawdown: item.maxDrawdown !== undefined && item.maxDrawdown !== null ? toNumber(item.maxDrawdown) : null,
+    winRate: item.winRate !== undefined && item.winRate !== null ? toNumber(item.winRate) : null,
+    performanceSource: item.performanceSource ?? null,
   }));
 
   const resolvedBots = bots;

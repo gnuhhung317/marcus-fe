@@ -57,7 +57,7 @@ export function FormField({
   return (
     <div className="space-y-2">
       {label && (
-        <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-muted">
           {label}
         </label>
       )}

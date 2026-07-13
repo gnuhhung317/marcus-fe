@@ -1,5 +1,9 @@
+ 'use client';
+
+import { useTranslations } from 'next-intl';
 import { DeveloperSubscriptionSummary } from '@/lib/contracts/types';
-import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 
 interface BotSubscribersTabProps {
   subscriptions: DeveloperSubscriptionSummary[];
@@ -7,6 +11,8 @@ interface BotSubscribersTabProps {
 }
 
 export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribersTabProps) {
+  const t = useTranslations('DeveloperDashboard.botDetail.subscribers');
+  const tStatus = useTranslations('Common.labels');
   const subscriberCount = subscriptions.length;
   const connectedCount = subscriptions.filter((sub) => sub.status === 'CONNECTED').length;
   const activeCount = subscriptions.filter((sub) => sub.status === 'ACTIVE').length;
@@ -15,70 +21,65 @@ export function BotSubscribersTab({ subscriptions, isSwitching }: BotSubscribers
     <section className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 font-sans">Active Subscribers</h2>
-          <p className="mt-1 text-xs text-slate-400 font-sans">Active subscriptions and connection health.</p>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-muted font-sans">{t('title')}</h2>
         </div>
-        <span className="rounded-lg border border-border bg-surface px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono">
-          {subscriberCount} Sessions
-        </span>
+        <Badge variant="outline" className="rounded-lg px-2.5 py-1 text-[9px] font-mono">
+          {t('sessions', { count: subscriberCount })}
+        </Badge>
       </div>
 
       {isSwitching ? (
         <div className="space-y-3">
-          <div className="h-20 animate-pulse rounded-xl bg-surface" />
-          <div className="h-12 animate-pulse rounded-xl bg-surface" />
+          <div className="h-20 animate-pulse rounded-xl bg-surface/40" />
+          <div className="h-12 animate-pulse rounded-xl bg-surface/40" />
         </div>
       ) : subscriptions.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border bg-surface p-6 text-center text-xs text-slate-400 font-sans">        
-          No active subscriber sessions found.
-        </div>
+        <Card className="rounded-xl border-dashed border-border/40 p-6 text-center text-xs text-muted font-sans">
+          {t('empty')}
+        </Card>
       ) : (
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { label: 'Subscribers', value: subscriberCount },
-              { label: 'Connected', value: connectedCount },
-              { label: 'Active', value: activeCount },
+              { label: t('subscribers'), value: subscriberCount },
+              { label: t('connected'), value: connectedCount },
+              { label: t('active'), value: activeCount },
             ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-border bg-surface p-3 font-mono">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-sans">{item.label}</p>
-                <p className="mt-2 text-lg font-bold text-white tracking-tight">{item.value}</p>
-              </div>
+              <Card key={item.label} className="p-3 font-mono">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted font-sans">{item.label}</p>
+                <p className="mt-2 text-lg font-bold tracking-tight text-main">{item.value}</p>
+              </Card>
             ))}
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-border bg-surface font-mono">
+          <Card className="overflow-hidden border-border/40 bg-surface/30 font-mono">
             <table className="min-w-full border-collapse text-left text-[11px] leading-relaxed">
-              <thead className="border-b border-border bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-slate-500 font-sans">
+              <thead className="border-b border-border/40 bg-surface-strong uppercase text-[9px] font-bold tracking-wider text-muted font-sans">
                 <tr>
-                  <th className="px-4 py-3">Subscriber</th>
-                  <th className="px-4 py-3 text-right">Status</th>
+                  <th className="px-4 py-3">{t('subscriber')}</th>
+                  <th className="px-4 py-3 text-right">{t('status')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody className="divide-y divide-border/40">
                 {subscriptions.map((sub, index) => {
                   const isActive = sub.status === 'ACTIVE' || sub.status === 'CONNECTED';
                   return (
-                    <tr key={`${sub.botId}-${index}`} className="text-slate-300">
+                    <tr key={`${sub.botId}-${index}`} className="text-main">
                       <td className="px-4 py-3 font-medium font-sans">
-                        Subscriber #{index + 1}
+                        {t('subscriberLabel', { index: index + 1 })}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[9px] font-bold uppercase tracking-wider ${
-                          isActive 
-                            ? 'border-positive/20 bg-positive/10 text-positive' 
-                            : 'border-border bg-surface text-slate-400'
-                        }`}>
-                          <span className={cn("h-1.5 w-1.5 rounded-full", isActive ? 'bg-positive' : 'bg-slate-400')} />
-                          {sub.status}
-                        </span>
+                        <Badge variant={isActive ? 'success' : 'outline'} className="rounded-lg px-2.5 py-1 text-[9px]">
+                          <span className={`h-1.5 w-1.5 rounded-full ${isActive ? 'bg-positive' : 'bg-muted'}`} />
+                          {sub.status === 'ACTIVE' ? t('active') : sub.status === 'CONNECTED' ? t('connected') : tStatus('unknown')}
+                        </Badge>
                       </td>
                     </tr>
                   );
                 })}
               </tbody>
             </table>
-          </div>
+          </Card>
         </div>
       )}
     </section>

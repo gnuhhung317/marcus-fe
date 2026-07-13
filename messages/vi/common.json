@@ -1,0 +1,101 @@
+{
+  "Common": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "home": "Trang chủ",
+    "training": "Đào tạo",
+    "market": "Thị trường",
+    "blog": "Blog",
+    "research": "Nghiên cứu",
+    "terminal": "Terminal",
+    "marketplace": "Chợ chiến thuật",
+    "developer": "Nhà phát triển",
+    "developers": "Nhà phát triển",
+    "dashboard": "Bảng điều khiển",
+    "menu": "Menu",
+    "actions": {
+      "cancel": "Hủy",
+      "retry": "Thử lại",
+      "save": "Lưu",
+      "search": "Tìm kiếm",
+      "open": "Mở",
+      "edit": "Chỉnh sửa",
+      "update": "Cập nhật",
+      "ban": "Khóa",
+      "unban": "Mở khóa",
+      "back": "Quay lại",
+      "copy": "Sao chép vào bảng nhớ tạm"
+    },
+    "labels": {
+      "loading": "Đang tải",
+      "error": "Lỗi",
+      "empty": "Trống",
+      "unknown": "Không rõ",
+      "by": "Bởi",
+      "riskLevel": "Mức rủi ro"
+    },
+    "branding": {
+      "name": "Marcus Trading",
+      "homeLabel": "Trang chủ Marcus Trading",
+      "logoAlt": "Logo Marcus Trading"
+    },
+    "languageSwitcher": {
+      "label": "Ngôn ngữ",
+      "en": "Tiếng Anh",
+      "vi": "Tiếng Việt"
+    },
+    "chart": {
+      "insufficientData": "Không đủ dữ liệu cho biểu đồ",
+      "outOfSampleStart": "Bắt đầu ngoài mẫu"
+    },
+    "apiState": {
+      "loading": "Đang tải",
+      "error": "Lỗi",
+      "empty": "Trống",
+      "retry": "Thử lại",
+      "dashboardBlock": "Đang tải khối dashboard"
+    },
+    "pagination": {
+      "prev": "Trước",
+      "next": "Sau"
+    },
+    "roles": {
+      "ADMIN": "Quản trị",
+      "TRADER": "Nhà giao dịch",
+      "DEVELOPER": "Nhà phát triển",
+      "OPERATOR": "Vận hành",
+      "GUEST": "Khách"
+    },
+    "botStatus": {
+      "ACTIVE": "Hoạt động",
+      "PAUSED": "Tạm dừng",
+      "DOWN": "Ngừng",
+      "DELETED": "Đã xóa"
+    },
+    "systemHealth": {
+      "UP": "Tốt",
+      "DEGRADED": "Suy giảm",
+      "DOWN": "Ngừng"
+    },
+    "userStatus": {
+      "active": "Hoạt động",
+      "banned": "Bị khóa"
+    },
+    "validation": {
+      "usernameRequired": "Cần nhập tên đăng nhập hoặc email",
+      "passwordRequired": "Cần nhập mật khẩu",
+      "emailInvalid": "Vui lòng nhập địa chỉ email hợp lệ",
+      "displayNameRequired": "Cần nhập tên hiển thị",
+      "passwordMin": "Mật khẩu phải có ít nhất 8 ký tự",
+      "passwordLowercase": "Mật khẩu phải có ít nhất một chữ thường",
+      "passwordUppercase": "Mật khẩu phải có ít nhất một chữ hoa",
+      "passwordNumber": "Mật khẩu phải có ít nhất một chữ số",
+      "nameMin": "Tên bot phải có ít nhất 3 ký tự",
+      "nameMax": "Tên bot quá dài",
+      "pairRequired": "Cần nhập cặp giao dịch",
+      "pairFormat": "Phải theo định dạng ASSET/QUOTE (ví dụ: BTC/USDT)",
+      "descriptionMax": "Mô tả quá dài"
+    }
+  }
+}

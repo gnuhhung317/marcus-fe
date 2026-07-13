@@ -11,4 +11,5 @@ coverage
 *.txt
 test-results/
 *.tsbuildinfo
+.codex-tmp/
 

@@ -48,4 +48,5 @@ export interface DashboardPageData {
   terminalKpis: TerminalKpi[];
   botTrades: BotTrade[];
   allocations: AllocationSlice[];
+  lastUpdated: string | null;
 }

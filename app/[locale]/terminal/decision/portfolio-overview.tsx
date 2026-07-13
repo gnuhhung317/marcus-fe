@@ -1,0 +1,152 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { PortfolioOverview } from '@/lib/contracts/types';
+import { formatRatioPercent } from '@/lib/utils';
+
+function statusClasses(status: 'offline' | 'live' | 'stale' | 'aging') {
+  if (status === 'live') return 'bg-positive-soft text-positive';
+  if (status === 'stale') return 'bg-warning-soft text-warning';
+  if (status === 'aging') return 'bg-surface text-fg-muted';
+  return 'bg-negative-soft text-negative';
+}
+
+export function PortfolioOverviewStats({ overview }: { overview: PortfolioOverview }) {
+  const t = useTranslations('Decision.portfolioOverview');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const formatNumber = (num: number, decimals = 0) => {
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: decimals }).format(num);
+  };
+
+  const formatCurrency = (num: number) => {
+    const sign = num >= 0 ? '+' : '-';
+    return `${sign}$${formatNumber(Math.abs(num), 2)}`;
+  };
+
+  const winRatePercent = formatRatioPercent(overview.aggregateWinRate24h, 1);
+  const winRateColor = overview.aggregateWinRate24h >= 0.6 ? 'text-positive' : 'text-warning';
+  const atRiskColor = overview.atRiskSubscriptionCount > 0 ? 'text-negative' : 'text-positive';
+  const hasStaleAccounts = (overview.staleAccountsCount ?? 0) > 0;
+  const freshnessState = overview.dataFreshness ?? (hasStaleAccounts ? 'PARTIAL' : 'FRESH');
+
+  let statusLabel = t('status.offline');
+  let statusState: 'offline' | 'live' | 'stale' | 'aging' = 'offline';
+  let pulseColor = 'bg-negative';
+  let lastUpdatedText = t('status.neverSynced');
+
+  if (mounted && overview.lastUpdated) {
+    const lastUpdatedDate = new Date(overview.lastUpdated);
+    const diffMs = Date.now() - lastUpdatedDate.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    lastUpdatedText = lastUpdatedDate.toLocaleTimeString();
+
+    if (diffMins < 5) {
+      statusLabel = t('status.live');
+      statusState = 'live';
+      pulseColor = 'bg-positive';
+    } else if (diffMins < 60) {
+      statusLabel = t('status.syncedMinutes', { value: diffMins });
+      statusState = 'stale';
+      pulseColor = 'bg-warning';
+    } else {
+      const hours = Math.floor(diffMins / 60);
+      statusLabel = hours < 24 ? t('status.syncedHours', { value: hours }) : t('status.syncedDays', { value: Math.floor(hours / 24) });
+      statusState = 'aging';
+      pulseColor = 'bg-muted';
+    }
+  }
+
+  const statItems = [
+    {
+      label: t('stats.totalEquity.label'),
+      value: `$${formatNumber(overview.totalEquity, 2)}`,
+      detail: t('stats.totalEquity.detail'),
+      colorClass: 'text-main',
+    },
+    {
+      label: t('stats.openPnl.label'),
+      value: formatCurrency(overview.aggregateOpenPnL),
+      detail: t('stats.openPnl.detail'),
+      colorClass: overview.aggregateOpenPnL >= 0 ? 'text-positive' : 'text-negative',
+    },
+    {
+      label: t('stats.winRate.label'),
+      value: winRatePercent,
+      detail: overview.aggregateWinRate24h >= 0.6 ? t('stats.winRate.healthy') : t('stats.winRate.below'),
+      colorClass: winRateColor,
+    },
+    {
+      label: t('stats.atRiskSubscriptions.label'),
+      value: overview.atRiskSubscriptionCount,
+      detail: overview.atRiskSubscriptionCount > 0 ? t('stats.atRiskSubscriptions.review') : t('stats.atRiskSubscriptions.ok'),
+      colorClass: atRiskColor,
+    },
+  ];
+
+  const freshnessLabel =
+    freshnessState === 'FRESH'
+      ? t('freshness.fresh')
+      : freshnessState === 'PARTIAL'
+        ? t('freshness.partial')
+        : t('freshness.stale');
+
+  const staleAccountsLabel =
+    (overview.staleAccountsCount ?? 0) === 1 ? t('staleAccounts', { count: 1 }) : t('staleAccountsPlural', { count: overview.staleAccountsCount ?? 0 });
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-main">{t('title')}</h2>
+        </div>
+        {mounted && (
+          <div className={`flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs font-mono ${statusClasses(statusState)}`}>
+            <span className="relative flex h-2 w-2">
+              <span className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${pulseColor}`}></span>
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${pulseColor}`}></span>
+            </span>
+            <span>{statusLabel}</span>
+          </div>
+        )}
+      </div>
+
+      <div className="grid items-stretch grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {statItems.map((item) => (
+          <div key={item.label} className="panel h-full min-h-[118px] p-4">
+            <div className="flex h-full flex-col">
+              <div className="flex-1 space-y-2">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">{item.label}</p>
+                <p className={`font-mono text-2xl font-semibold tracking-tight ${item.colorClass || 'text-main'}`}>{item.value}</p>
+              </div>
+              <p className="text-xs text-muted">{item.detail}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-xs text-muted">
+        <span className="rounded-full border border-border bg-surface px-3 py-1">
+          {t('activeBots')}: <span className="font-semibold text-main">{overview.activeBotsCount}</span>
+        </span>
+        <span className="rounded-full border border-border bg-surface px-3 py-1">
+          {t('syncedAt')}: <span className="font-semibold text-main">{lastUpdatedText}</span>
+        </span>
+        <span className={`rounded-full border px-3 py-1 ${freshnessState === 'FRESH' ? 'border-positive/20 bg-positive/8 text-positive' : freshnessState === 'PARTIAL' ? 'border-warning/20 bg-warning/8 text-warning' : 'border-negative/20 bg-negative/8 text-negative'}`}>
+          {t('data')}: <span className="font-semibold text-main">{freshnessLabel}</span>
+        </span>
+        {hasStaleAccounts && (
+          <span className="rounded-full border border-warning/20 bg-warning/8 px-3 py-1 text-warning">
+            {staleAccountsLabel}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
